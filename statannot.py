@@ -4,7 +4,6 @@ from matplotlib import transforms, lines
 import numpy as np
 import pandas as pd
 from scipy import stats
-from copy import deepcopy
 
 
 
