@@ -5,3 +5,7 @@ Features:
 - Proper layout of annotations with correct y offset.
 - Annotations can be located inside or outside the plot.
 - Format of the statistical test can be customized: star annotation, or explicit pvalue.
+
+![Example 1](/example/example1.png "")
+
+![Example 2](/example/example2.png "")
