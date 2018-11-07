@@ -84,8 +84,10 @@ def add_statistical_test_annotation(
             # Get position of bars 1 and 2
             x1 = np.where(catValues == cat1)[0][0]
             x2 = np.where(catValues == cat2)[0][0]
-            cat1YMax = g[ylabel].max()[cat1]
-            cat2YMax = g[ylabel].max()[cat2]
+
+            cat1YMax = g[ylabel].max().loc[cat1]
+            cat2YMax = g[ylabel].max().loc[cat2]
+
             cat1Values = g.get_group(cat1)[ylabel].values
             cat2Values = g.get_group(cat2)[ylabel].values
 
