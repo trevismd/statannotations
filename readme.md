@@ -22,3 +22,4 @@ Python package to add statistical annotations on an existing boxplot generated b
 + matplotlib >= 2.2.2
 + pandas >= 0.23.0
 + scipy >= 1.1.0
+
