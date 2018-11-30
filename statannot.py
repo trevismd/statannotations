@@ -1,6 +1,8 @@
 from matplotlib.text import Text
 import matplotlib.pyplot as plt
 from matplotlib import transforms, lines
+import matplotlib.transforms as mtransforms
+from matplotlib.font_manager import FontProperties
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -105,7 +107,8 @@ def add_stat_annotation(ax,
 
         return box_data
     
-    
+    fig = plt.gcf()
+
     validList = ['inside', 'outside']
     if loc not in validList:
         raise ValueError("loc value should be one of the following: {}.".format(', '.join(validList)))
@@ -197,7 +200,7 @@ def add_stat_annotation(ax,
             lineX, lineY = [x1, x1, x2, x2], [y, y + h, y + h, y]
             if loc == 'inside':
                 ax.plot(lineX, lineY, lw=linewidth, c=color)
-            elif loc == 'outside':        
+            elif loc == 'outside':
                 line = lines.Line2D(lineX, lineY, lw=linewidth, c=color, transform=ax.transData)
                 line.set_clip_on(False)
                 ax.add_line(line)
@@ -213,9 +216,20 @@ def add_stat_annotation(ax,
             
             if text is not None:
                 plt.draw()
-                bbox = ann.get_window_extent()
-                bbox_data = bbox.transformed(ax.transData.inverted())
-                yTopAnnot = bbox_data.ymax
+                yTopAnnot = None
+                try:
+                    bbox = ann.get_window_extent(renderer=fig.canvas.get_renderer())
+                    bbox_data = bbox.transformed(ax.transData.inverted())
+                    yTopAnnot = bbox_data.ymax
+                except RuntimeError:
+                    if verbose >= 1:
+                        print("Warning: cannot get the text bounding box. Falling back to a fixed y offset. Layout may be not optimal.")
+                    # We will apply a fixed offset in points, based on the font size of the annotation.
+                    fontsizePoints = FontProperties(size='medium').get_size_in_points()
+                    offsetTrans = mtransforms.offset_copy(ax.transData, fig=fig,
+                                                          x=0, y=1.0*fontsizePoints + yTextOffsetPoints, units='points')
+                    yTopDisplay = offsetTrans.transform((0, y + h))
+                    yTopAnnot = ax.transData.inverted().transform(yTopDisplay)[1]
             else:
                 yTopAnnot = y + h
 
