@@ -218,7 +218,7 @@ def add_stat_annotation(ax,
                 plt.draw()
                 yTopAnnot = None
                 try:
-                    bbox = ann.get_window_extent(renderer=fig.canvas.get_renderer())
+                    bbox = ann.get_window_extent()
                     bbox_data = bbox.transformed(ax.transData.inverted())
                     yTopAnnot = bbox_data.ymax
                 except RuntimeError:
