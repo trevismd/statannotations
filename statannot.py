@@ -54,7 +54,7 @@ def add_stat_annotation(ax,
                         test='Mann-Whitney', textFormat='star', loc='inside',
                         pvalueThresholds=[[1e9,"ns"], [0.05,"*"], [1e-2,"**"], [1e-3,"***"], [1e-4,"****"]],
                         color='0.2', lineYOffsetAxesCoord=None, lineHeightAxesCoord=0.02, yTextOffsetPoints=1,
-                        linewidth=1.5, fontsize='medium', verbose=1):
+                        linewidth=1.5, fontsize='medium', useFixedOffset=False, verbose=1):
     """
     User should use the same argument for the data, x, y, hue, order, hue_order as the seaborn boxplot function.
     
@@ -217,11 +217,16 @@ def add_stat_annotation(ax,
             if text is not None:
                 plt.draw()
                 yTopAnnot = None
-                try:
-                    bbox = ann.get_window_extent(renderer=fig.canvas.get_renderer())
-                    bbox_data = bbox.transformed(ax.transData.inverted())
-                    yTopAnnot = bbox_data.ymax
-                except RuntimeError:
+                gotMatplotlibError = False
+                if not useFixedOffset:
+                    try:
+                        bbox = ann.get_window_extent()
+                        bbox_data = bbox.transformed(ax.transData.inverted())
+                        yTopAnnot = bbox_data.ymax
+                    except RuntimeError:
+                        gotMatplotlibError = True
+
+                if useFixedOffset or gotMatplotlibError:
                     if verbose >= 1:
                         print("Warning: cannot get the text bounding box. Falling back to a fixed y offset. Layout may be not optimal.")
                     # We will apply a fixed offset in points, based on the font size of the annotation.
