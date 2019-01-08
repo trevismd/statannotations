@@ -52,7 +52,7 @@ def add_stat_annotation(ax,
                         data=None, x=None, y=None, hue=None, order=None, hue_order=None,
                         boxPairList=None,
                         test='Mann-Whitney', textFormat='star', loc='inside',
-                        pvalueThresholds=[[1e9,"ns"], [0.05,"*"], [1e-2,"**"], [1e-3,"***"], [1e-4,"****"]],
+                        pvalueThresholds=[[1,"ns"], [0.05,"*"], [1e-2,"**"], [1e-3,"***"], [1e-4,"****"]],
                         color='0.2', lineYOffsetAxesCoord=None, lineHeightAxesCoord=0.02, yTextOffsetPoints=1,
                         linewidth=1.5, fontsize='medium', useFixedOffset=False, verbose=1):
     """
