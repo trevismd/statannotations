@@ -18,11 +18,15 @@ def stat_test(box_data1, box_data2, test):
         u_stat, pval = stats.mannwhitneyu(box_data1, box_data2, alternative='two-sided')
         testShortName = 'M.W.W.'
         formattedOutput = "MWW RankSum two-sided P_val={:.3e} U_stat={:.3e}".format(pval, u_stat)
-    elif test == 't-test':
+    elif test == 't-test_ind':
         stat, pval = stats.ttest_ind(a=box_data1, b=box_data2)
-        testShortName = 't-test'
+        testShortName = 't-test_ind'
         formattedOutput = "t-test independent samples, P_val={:.3e} stat={:.3e}".format(pval, stat)
-    
+    elif test == 't-test_paired':
+        stat, pval = stats.ttest_rel(a=box_data1, b=box_data2)
+        testShortName = 't-test_rel'
+        formattedOutput = "t-test paired samples, P_val={:.3e} stat={:.3e}".format(pval, stat)
+
     return pval, formattedOutput, testShortName
 
 
@@ -54,10 +58,11 @@ def add_stat_annotation(ax,
                         test='Mann-Whitney', textFormat='star', loc='inside',
                         pvalueThresholds=[[1,"ns"], [0.05,"*"], [1e-2,"**"], [1e-3,"***"], [1e-4,"****"]],
                         color='0.2', lineYOffsetAxesCoord=None, lineHeightAxesCoord=0.02, yTextOffsetPoints=1,
+                        y_box_distance=0,
                         linewidth=1.5, fontsize='medium', useFixedOffset=False, verbose=1):
     """
     User should use the same argument for the data, x, y, hue, order, hue_order as the seaborn boxplot function.
-    
+
     boxPairList can be of either form:
     For non-grouped boxplot: [(cat1, cat2), (cat3, cat4)]
     For boxplot grouped by hue: [((cat1, hue1), (cat2, hue2)), ((cat3, hue3), (cat4, hue4))]
@@ -79,11 +84,11 @@ def add_stat_annotation(ax,
         boxPos = groupPos + hueOffset
         return boxPos
 
-    
+
     def get_box_data(boxPlotter, boxName):
         """
         boxName can be either a name "cat" or a tuple ("cat", "hue")
-        
+
         Here we really have to duplicate seaborn code, because there is not direct access to the
         box_data in the BoxPlotter class.
         """
@@ -106,13 +111,13 @@ def add_stat_annotation(ax,
             box_data = remove_na(group_data[hue_mask])
 
         return box_data
-    
+
     fig = plt.gcf()
 
     validList = ['inside', 'outside']
     if loc not in validList:
         raise ValueError("loc value should be one of the following: {}.".format(', '.join(validList)))
-    validList = ['t-test', 'Mann-Whitney']
+    validList = ['t-test_ind', 't-test_paired', 'Mann-Whitney']
     if test not in validList:
         raise ValueError("test value should be one of the following: {}.".format(', '.join(validList)))
 
@@ -131,20 +136,22 @@ def add_stat_annotation(ax,
                                              orient=None, width=.8, color=None, palette=None, saturation=.75,
                                              dodge=True, fliersize=5, linewidth=None)
     plotData = boxPlotter.plot_data
-    
+
     xtickslabels = [t.get_text() for t in ax.xaxis.get_ticklabels()]
     ylim = ax.get_ylim()
     yRange = ylim[1] - ylim[0]
-    if loc == 'inside':
-        lineYOffsetAxesCoord = 0.05
-    elif loc == 'outside':
-        lineYOffsetAxesCoord = 0.03
+
+    if lineYOffsetAxesCoord is None:
+        if loc == 'inside':
+            lineYOffsetAxesCoord = 0.05
+        elif loc == 'outside':
+            lineYOffsetAxesCoord = 0.03
     yOffset = lineYOffsetAxesCoord*yRange
 
     yStack = []
     annList = []
     for box1, box2 in boxPairList:
-        
+
         valid = None
         groupNames = boxPlotter.group_names
         hueNames = boxPlotter.hue_names
@@ -164,8 +171,8 @@ def add_stat_annotation(ax,
             label1 = '{}_{}'.format(cat1, hue1)
             label2 = '{}_{}'.format(cat2, hue2)
             valid = cat1 in groupNames and cat2 in groupNames and hue1 in hueNames and hue2 in hueNames
-        
-        
+
+
         if valid:
             # Get position of boxes
             x1 = find_x_position_box(boxPlotter, box1)
@@ -184,7 +191,7 @@ def add_stat_annotation(ax,
                 text = None
             elif textFormat is 'star':
                 text = pvalAnnotation_text(pval, pvalueThresholds)
-            
+
             if loc == 'inside':
                 yRef = max(ymax1, ymax2)
             elif loc == 'outside':
@@ -194,7 +201,7 @@ def add_stat_annotation(ax,
                 yRef2 = max(yRef, max(yStack))
             else:
                 yRef2 = yRef
-                
+
             y = yRef2 + yOffset
             h = lineHeightAxesCoord*yRange
             lineX, lineY = [x1, x1, x2, x2], [y, y + h, y + h, y]
@@ -204,16 +211,16 @@ def add_stat_annotation(ax,
                 line = lines.Line2D(lineX, lineY, lw=linewidth, c=color, transform=ax.transData)
                 line.set_clip_on(False)
                 ax.add_line(line)
-            
+
             if text is not None:
                 ann = ax.annotate(text, xy=(np.mean([x1, x2]), y + h),
                                   xytext=(0, yTextOffsetPoints), textcoords='offset points',
                                   xycoords='data', ha='center', va='bottom', fontsize=fontsize,
                                   clip_on=False, annotation_clip=False)
                 annList.append(ann)
-                
+
             ax.set_ylim((ylim[0], 1.1*(y + h)))
-            
+
             if text is not None:
                 plt.draw()
                 yTopAnnot = None
@@ -233,7 +240,7 @@ def add_stat_annotation(ax,
                     fontsizePoints = FontProperties(size='medium').get_size_in_points()
                     offsetTrans = mtransforms.offset_copy(ax.transData, fig=fig,
                                                           x=0, y=1.0*fontsizePoints + yTextOffsetPoints, units='points')
-                    yTopDisplay = offsetTrans.transform((0, y + h))
+                    yTopDisplay = offsetTrans.transform((0, y + h + y_box_distance))
                     yTopAnnot = ax.transData.inverted().transform(yTopDisplay)[1]
             else:
                 yTopAnnot = y + h
@@ -242,12 +249,12 @@ def add_stat_annotation(ax,
         else:
             raise ValueError("boxPairList contains an unvalid box pair.")
             pass
-            
-        
+
+
     yStackMax = max(yStack)
     if loc == 'inside':
         ax.set_ylim((ylim[0], 1.03*yStackMax))
     elif loc == 'outside':
         ax.set_ylim((ylim[0], ylim[1]))
-    
+
     return ax
