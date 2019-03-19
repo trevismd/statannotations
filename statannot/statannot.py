@@ -149,6 +149,12 @@ def add_stat_annotation(ax,
         elif loc == 'outside':
             lineYOffsetAxesCoord = 0.03
             lineYOffsetToBoxAxesCoord = lineYOffsetAxesCoord
+    else:
+        if loc == 'inside':
+            if lineYOffsetToBoxAxesCoord is None:
+                lineYOffsetToBoxAxesCoord = 0.06
+        elif loc == 'outside':
+            lineYOffsetToBoxAxesCoord = lineYOffsetAxesCoord
     yOffset = lineYOffsetAxesCoord*yRange
     yOffsetToBox = lineYOffsetToBoxAxesCoord*yRange
 
