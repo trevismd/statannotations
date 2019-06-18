@@ -57,11 +57,14 @@ def add_stat_annotation(ax,
                         boxPairList=None,
                         test='Mann-Whitney', textFormat='star', loc='inside',
                         pvalueThresholds=[[1,"ns"], [0.05,"*"], [1e-2,"**"], [1e-3,"***"], [1e-4,"****"]],
-                        useFixedOffset=False, lineYOffsetToBoxAxesCoord=None, lineYOffsetAxesCoord=None,
-                        lineHeightAxesCoord=0.02, textYOffsetPoints=1,
+                        useFixedOffset=False, lineOffsetToBox=None, lineOffset=None,
+                        lineHeight=0.02, textOffset=1,
                         color='0.2', linewidth=1.5, fontsize='medium', verbose=1):
     """
     User should use the same argument for the data, x, y, hue, order, hue_order as the seaborn boxplot function.
+
+    lineHeight is in axes fraction coordinates.
+    textOffset is in points.
 
     boxPairList can be of either form:
     For non-grouped boxplot: [(cat1, cat2), (cat3, cat4)]
@@ -141,25 +144,26 @@ def add_stat_annotation(ax,
     ylim = ax.get_ylim()
     yRange = ylim[1] - ylim[0]
 
-    if lineYOffsetAxesCoord is None:
+    if lineOffset is None:
         if loc == 'inside':
-            lineYOffsetAxesCoord = 0.05
-            if lineYOffsetToBoxAxesCoord is None:
-                lineYOffsetToBoxAxesCoord = 0.06
+            lineOffset = 0.05
+            if lineOffsetToBox is None:
+                lineOffsetToBox = 0.06
         elif loc == 'outside':
-            lineYOffsetAxesCoord = 0.03
-            lineYOffsetToBoxAxesCoord = lineYOffsetAxesCoord
+            lineOffset = 0.03
+            lineOffsetToBox = lineOffset
     else:
         if loc == 'inside':
-            if lineYOffsetToBoxAxesCoord is None:
-                lineYOffsetToBoxAxesCoord = 0.06
+            if lineOffsetToBox is None:
+                lineOffsetToBox = 0.06
         elif loc == 'outside':
-            lineYOffsetToBoxAxesCoord = lineYOffsetAxesCoord
-    yOffset = lineYOffsetAxesCoord*yRange
-    yOffsetToBox = lineYOffsetToBoxAxesCoord*yRange
+            lineOffsetToBox = lineOffset
+    yOffset = lineOffset*yRange
+    yOffsetToBox = lineOffsetToBox*yRange
 
     yStack = []
     annList = []
+    testResultList = []
     for box1, box2 in boxPairList:
 
         valid = None
@@ -193,6 +197,9 @@ def add_stat_annotation(ax,
             ymax2 = box_data2.max()
 
             pval, formattedOutput, testShortName = stat_test(box_data1, box_data2, test)
+            testResultList.append({'pvalue':pval, 'testShortName':testShortName,
+                                   'formattedOutput':formattedOutput, 'box1':box1, 'box2':box2
+                                  })
             if verbose >= 2: print ("{} v.s. {}: {}".format(label1, label2, formattedOutput))
 
             if textFormat == 'full':
@@ -216,7 +223,7 @@ def add_stat_annotation(ax,
                 y = yRef2 + yOffsetToBox
             else:
                 y = yRef2 + yOffset
-            h = lineHeightAxesCoord*yRange
+            h = lineHeight*yRange
             lineX, lineY = [x1, x1, x2, x2], [y, y + h, y + h, y]
             if loc == 'inside':
                 ax.plot(lineX, lineY, lw=linewidth, c=color)
@@ -227,7 +234,7 @@ def add_stat_annotation(ax,
 
             if text is not None:
                 ann = ax.annotate(text, xy=(np.mean([x1, x2]), y + h),
-                                  xytext=(0, textYOffsetPoints), textcoords='offset points',
+                                  xytext=(0, textOffset), textcoords='offset points',
                                   xycoords='data', ha='center', va='bottom', fontsize=fontsize,
                                   clip_on=False, annotation_clip=False)
                 annList.append(ann)
@@ -252,7 +259,7 @@ def add_stat_annotation(ax,
                     # We will apply a fixed offset in points, based on the font size of the annotation.
                     fontsizePoints = FontProperties(size='medium').get_size_in_points()
                     offsetTrans = mtransforms.offset_copy(ax.transData, fig=fig,
-                                                          x=0, y=1.0*fontsizePoints + textYOffsetPoints, units='points')
+                                                          x=0, y=1.0*fontsizePoints + textOffset, units='points')
                     yTopDisplay = offsetTrans.transform((0, y + h))
                     yTopAnnot = ax.transData.inverted().transform(yTopDisplay)[1]
             else:
@@ -270,4 +277,4 @@ def add_stat_annotation(ax,
     elif loc == 'outside':
         ax.set_ylim((ylim[0], ylim[1]))
 
-    return ax
+    return ax, testResultList
