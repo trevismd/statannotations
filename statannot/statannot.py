@@ -58,7 +58,7 @@ def add_stat_annotation(ax,
                         test='Mann-Whitney', textFormat='star', loc='inside',
                         pvalueThresholds=[[1,"ns"], [0.05,"*"], [1e-2,"**"], [1e-3,"***"], [1e-4,"****"]],
                         useFixedOffset=False, lineOffsetToBox=None, lineOffset=None,
-                        lineHeight=0.02, textOffset=1,
+                        lineHeight=0.02, textOffset=1, stack=True,
                         color='0.2', linewidth=1.5, fontsize='medium', verbose=1):
     """
     User should use the same argument for the data, x, y, hue, order, hue_order as the seaborn boxplot function.
@@ -214,8 +214,11 @@ def add_stat_annotation(ax,
             elif loc == 'outside':
                 yRef = ylim[1]
 
-            if len(yStack) > 0:
-                yRef2 = max(yRef, max(yStack))
+            if stack:
+                if len(yStack) > 0:
+                    yRef2 = max(yRef, max(yStack))
+                else:
+                    yRef2 = yRef
             else:
                 yRef2 = yRef
 
