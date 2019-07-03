@@ -17,11 +17,15 @@ def stat_test(box_data1, box_data2, test):
     if test == 'Mann-Whitney':
         u_stat, pval = stats.mannwhitneyu(box_data1, box_data2, alternative='two-sided')
         testShortName = 'M.W.W.'
-        formattedOutput = "MWW RankSum two-sided P_val={:.3e} U_stat={:.3e}".format(pval, u_stat)
+        formattedOutput = "Mann-Whitney-Wilcoxon test two-sided P_val={:.3e} U_stat={:.3e}".format(pval, u_stat)
     elif test == 't-test_ind':
         stat, pval = stats.ttest_ind(a=box_data1, b=box_data2)
         testShortName = 't-test_ind'
         formattedOutput = "t-test independent samples, P_val={:.3e} stat={:.3e}".format(pval, stat)
+    elif test == 't-test_welch':
+        stat, pval = stats.ttest_ind(a=box_data1, b=box_data2, equal_var=False)
+        testShortName = 't-test_welch'
+        formattedOutput = "Welch's t-test independent samples, P_val={:.3e} stat={:.3e}".format(pval, stat)
     elif test == 't-test_paired':
         stat, pval = stats.ttest_rel(a=box_data1, b=box_data2)
         testShortName = 't-test_rel'
@@ -55,7 +59,7 @@ def pvalAnnotation_text(x, pvalueThresholds):
 def add_stat_annotation(ax,
                         data=None, x=None, y=None, hue=None, order=None, hue_order=None,
                         boxPairList=None,
-                        test='Mann-Whitney', textFormat='star', loc='inside',
+                        test='t-test_welch', textFormat='star', loc='inside',
                         pvalueThresholds=[[1,"ns"], [0.05,"*"], [1e-2,"**"], [1e-3,"***"], [1e-4,"****"]],
                         useFixedOffset=False, lineOffsetToBox=None, lineOffset=None,
                         lineHeight=0.02, textOffset=1, stack=True,
