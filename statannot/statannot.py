@@ -17,7 +17,8 @@ def stat_test(box_data1, box_data2, test):
     if test == 'Mann-Whitney':
         u_stat, pval = stats.mannwhitneyu(box_data1, box_data2, alternative='two-sided')
         testShortName = 'M.W.W.'
-        formattedOutput = "Mann-Whitney-Wilcoxon test two-sided P_val={:.3e} U_stat={:.3e}".format(pval, u_stat)
+        formattedOutput = ("Mann-Whitney-Wilcoxon test two-sided P_val={:.3e} U_stat={:.3e}"
+                           .format(pval, u_stat))
     elif test == 't-test_ind':
         stat, pval = stats.ttest_ind(a=box_data1, b=box_data2)
         testShortName = 't-test_ind'
@@ -59,7 +60,8 @@ def pvalAnnotation_text(x, pvalueThresholds):
 def add_stat_annotation(ax,
                         data=None, x=None, y=None, hue=None, order=None, hue_order=None,
                         boxPairList=None,
-                        test='t-test_welch', textFormat='star', loc='inside',
+                        test='t-test_welch', textFormat='star', pvalueFormatString='{:.3e}',
+                        loc='inside',
                         pvalueThresholds=[[1,"ns"], [0.05,"*"], [1e-2,"**"], [1e-3,"***"], [1e-4,"****"]],
                         useFixedOffset=False, lineOffsetToBox=None, lineOffset=None,
                         lineHeight=0.02, textOffset=1, stack=True,
@@ -124,7 +126,7 @@ def add_stat_annotation(ax,
     validList = ['inside', 'outside']
     if loc not in validList:
         raise ValueError("loc value should be one of the following: {}.".format(', '.join(validList)))
-    validList = ['t-test_ind', 't-test_paired', 'Mann-Whitney']
+    validList = ['t-test_ind', 't-test_welch', 't-test_paired', 'Mann-Whitney']
     if test not in validList:
         raise ValueError("test value should be one of the following: {}.".format(', '.join(validList)))
 
@@ -204,10 +206,10 @@ def add_stat_annotation(ax,
             testResultList.append({'pvalue':pval, 'testShortName':testShortName,
                                    'formattedOutput':formattedOutput, 'box1':box1, 'box2':box2
                                   })
-            if verbose >= 2: print ("{} v.s. {}: {}".format(label1, label2, formattedOutput))
+            if verbose >= 1: print ("{} v.s. {}: {}".format(label1, label2, formattedOutput))
 
             if textFormat == 'full':
-                text = "{} p < {:.2e}".format(testShortName, pval)
+                text = "{} p = {}".format('{}', pvalueFormatString).format(testShortName, pval)
             elif textFormat is None:
                 text = None
             elif textFormat is 'star':
