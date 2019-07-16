@@ -57,11 +57,26 @@ def pvalAnnotation_text(x, pvalueThresholds):
     return xAnnot if not singleValue else xAnnot.iloc[0]
 
 
+def simple_text(pval, pvalue_format, test_short_name=""):
+    if pval <= 0.00001:
+        short_pval = "p ≤ 1e-5"
+    elif pval <= 0.0001:
+        short_pval = "p ≤ 1e-4"
+    elif pval <= 0.001:
+        short_pval = "p ≤ 0.001"
+    elif pval <= 0.01:
+        short_pval = "p ≤ 0.01"
+    else:
+        short_pval = "p = {}".format(pvalue_format).format(pval)
+    text = " ".join([test_short_name, short_pval])
+    return text
+
+
 def add_stat_annotation(ax,
                         data=None, x=None, y=None, hue=None, order=None, hue_order=None,
                         boxPairList=None,
                         test='t-test_welch', textFormat='star', pvalueFormatString='{:.3e}',
-                        loc='inside',
+                        loc='inside', showTestName=True,
                         pvalueThresholds=[[1,"ns"], [0.05,"*"], [1e-2,"**"], [1e-3,"***"], [1e-4,"****"]],
                         useFixedOffset=False, lineOffsetToBox=None, lineOffset=None,
                         lineHeight=0.02, textOffset=1, stack=True,
@@ -215,17 +230,8 @@ def add_stat_annotation(ax,
             elif textFormat is 'star':
                 text = pvalAnnotation_text(pval, pvalueThresholds)
             elif textFormat is 'simple':
-                if pval <= 0.00001:
-                    short_pval = "p ≤ 10e-5"
-                elif pval <= 0.0001:
-                    short_pval = "p ≤ 10e-4"
-                elif pval <= 0.001:
-                    short_pval = "p ≤ 0.001"
-                elif pval <= 0.01:
-                    short_pval = "p ≤ 0.01"
-                else:
-                    short_pval = "p = {}".format(pvalueFormatString).format(pval)
-                text = "{} {}".format(testShortName, short_pval)
+                text = simple_text(pval, pvalueFormatString,
+                                   showTestName and testShortName or "")
 
             if loc == 'inside':
                 yRef = max(ymax1, ymax2)
