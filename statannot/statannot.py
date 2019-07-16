@@ -57,18 +57,25 @@ def pvalAnnotation_text(x, pvalueThresholds):
     return xAnnot if not singleValue else xAnnot.iloc[0]
 
 
-def simple_text(pval, pvalue_format, test_short_name=""):
+def simple_text(pval, pvalue_format, test_short_name=None):
+    """
+    Generates simple text for test name and pvalue
+    :param pval: pvalue
+    :param pvalue_format: format string for pvalue
+    :param test_short_name: Short name of test to show
+    :return: simple annotation
+    """
+    text = test_short_name and test_short_name + " " or ""
     if pval <= 0.00001:
-        short_pval = "p ≤ 1e-5"
+        text += "p ≤ 1e-5"
     elif pval <= 0.0001:
-        short_pval = "p ≤ 1e-4"
+        text += "p ≤ 1e-4"
     elif pval <= 0.001:
-        short_pval = "p ≤ 0.001"
+        text += "p ≤ 0.001"
     elif pval <= 0.01:
-        short_pval = "p ≤ 0.01"
+        text += "p ≤ 0.01"
     else:
-        short_pval = "p = {}".format(pvalue_format).format(pval)
-    text = " ".join([test_short_name, short_pval])
+        text += "p = {}".format(pvalue_format).format(pval)
     return text
 
 
@@ -221,7 +228,8 @@ def add_stat_annotation(ax,
             testResultList.append({'pvalue':pval, 'testShortName':testShortName,
                                    'formattedOutput':formattedOutput, 'box1':box1, 'box2':box2
                                   })
-            if verbose >= 1: print ("{} v.s. {}: {}".format(label1, label2, formattedOutput))
+            if verbose >= 1:
+                print("{} v.s. {}: {}".format(label1, label2, formattedOutput))
 
             if textFormat == 'full':
                 text = "{} p = {}".format('{}', pvalueFormatString).format(testShortName, pval)
