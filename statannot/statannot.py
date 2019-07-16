@@ -214,7 +214,20 @@ def add_stat_annotation(ax,
                 text = None
             elif textFormat is 'star':
                 text = pvalAnnotation_text(pval, pvalueThresholds)
-
+            elif textFormat is 'simple':
+                short_pval = "p "
+                if pval <= 0.00001:
+                    short_pval += "≤ 10e-5"
+                elif pval <= 0.0001:
+                    short_pval += "≤ 10e-4"
+                elif pval <= 0.001:
+                    short_pval += "≤ 0.001"
+                elif pval <= 0.01:
+                    short_pval += "≤ 0.01"
+                else:
+                    short_pval = "= {}".format("{:.2}").format(pval)
+                text = "{} {}".format(testShortName, short_pval)
+                print(text)
             if loc == 'inside':
                 yRef = max(ymax1, ymax2)
             elif loc == 'outside':
