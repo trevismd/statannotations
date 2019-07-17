@@ -16,7 +16,11 @@ DEFAULT = object()
 def stat_test(box_data1, box_data2, test):
     testShortName = ''
     formattedOutput = None
-    if test == 'Mann-Whitney':
+    if test == 'Levene':
+        stat, pval = stats.levene(a=box_data1, b=box_data2)
+        testShortName = 'levene'
+        formattedOutput = "Levene test of variance, P_val={:.3e} stat={:.3e}".format(pval, stat)
+    elif test == 'Mann-Whitney':
         u_stat, pval = stats.mannwhitneyu(box_data1, box_data2, alternative='two-sided')
         testShortName = 'M.W.W.'
         formattedOutput = ("Mann-Whitney-Wilcoxon test two-sided P_val={:.3e} U_stat={:.3e}"
@@ -33,15 +37,6 @@ def stat_test(box_data1, box_data2, test):
         stat, pval = stats.ttest_rel(a=box_data1, b=box_data2)
         testShortName = 't-test_rel'
         formattedOutput = "t-test paired samples, P_val={:.3e} stat={:.3e}".format(pval, stat)
-    elif test == 'levene ':
-        stat, pval = stats.levene(a=box_data1, b=box_data2)
-        testShortName = 'levene'
-        formattedOutput = "Levene test of variance, P_val={:.3e} stat={:.3e}".format(pval, stat)
-    else:
-        raise NotImplemented('Implemented test options are '
-                             '"Mann-Whitney", "t-test_ind", '
-                             '"t-test_welch", "t-test_paired", '
-                             '"levene"')
     return pval, formattedOutput, testShortName
 
 
@@ -181,7 +176,7 @@ def add_stat_annotation(ax,
     validList = ['inside', 'outside']
     if loc not in validList:
         raise ValueError("loc value should be one of the following: {}.".format(', '.join(validList)))
-    validList = ['t-test_ind', 't-test_welch', 't-test_paired', 'Mann-Whitney']
+    validList = ['t-test_ind', 't-test_welch', 't-test_paired', 'Mann-Whitney', 'Levene']
     if test not in validList:
         raise ValueError("test value should be one of the following: {}.".format(', '.join(validList)))
 
@@ -278,8 +273,6 @@ def add_stat_annotation(ax,
                 yRef = max(ymax1, ymax2)
             elif loc == 'outside':
                 yRef = ylim[1]
-            else:
-                raise ValueError('loc parameter must be "inside" or "outside"')
 
             if stack:
                 if len(yStack) > 0:
