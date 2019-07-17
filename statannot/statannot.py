@@ -16,11 +16,7 @@ DEFAULT = object()
 def stat_test(box_data1, box_data2, test):
     testShortName = ''
     formattedOutput = None
-    if test == 'Levene':
-        stat, pval = stats.levene(box_data1, box_data2)
-        testShortName = 'levene'
-        formattedOutput = "Levene test of variance, P_val={:.3e} stat={:.3e}".format(pval, stat)
-    elif test == 'Mann-Whitney':
+    if test == 'Mann-Whitney':
         u_stat, pval = stats.mannwhitneyu(box_data1, box_data2, alternative='two-sided')
         testShortName = 'M.W.W.'
         formattedOutput = ("Mann-Whitney-Wilcoxon test two-sided P_val={:.3e} U_stat={:.3e}"
@@ -176,7 +172,7 @@ def add_stat_annotation(ax,
     validList = ['inside', 'outside']
     if loc not in validList:
         raise ValueError("loc value should be one of the following: {}.".format(', '.join(validList)))
-    validList = ['t-test_ind', 't-test_welch', 't-test_paired', 'Mann-Whitney', 'Levene']
+    validList = ['t-test_ind', 't-test_welch', 't-test_paired', 'Mann-Whitney']
     if test not in validList:
         raise ValueError("test value should be one of the following: {}.".format(', '.join(validList)))
 
