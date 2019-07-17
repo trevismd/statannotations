@@ -17,7 +17,7 @@ def stat_test(box_data1, box_data2, test):
     testShortName = ''
     formattedOutput = None
     if test == 'Levene':
-        stat, pval = stats.levene(a=box_data1, b=box_data2)
+        stat, pval = stats.levene(box_data1, box_data2)
         testShortName = 'levene'
         formattedOutput = "Levene test of variance, P_val={:.3e} stat={:.3e}".format(pval, stat)
     elif test == 'Mann-Whitney':
