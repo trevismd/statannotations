@@ -8,7 +8,8 @@ Python package to add statistical annotations on an existing boxplot generated b
 - Integrated statistical tests: Mann-Whitney, t-test (independent and paired), Welch's t-test.
 - Proper layout of multiple annotations with correct y offsets.
 - Annotations can be located inside or outside the plot.
-- Format of the statistical test annotation can be customized: star annotation, or explicit pvalue.
+- Format of the statistical test annotation can be customized: star annotation, simplified pvalue,
+  or explicit pvalue.
 
 ![Example 1](/example/example1.png "")
 
