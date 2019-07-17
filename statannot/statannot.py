@@ -33,10 +33,15 @@ def stat_test(box_data1, box_data2, test):
         stat, pval = stats.ttest_rel(a=box_data1, b=box_data2)
         testShortName = 't-test_rel'
         formattedOutput = "t-test paired samples, P_val={:.3e} stat={:.3e}".format(pval, stat)
+    elif test == 'levene ':
+        stat, pval = stats.levene(a=box_data1, b=box_data2)
+        testShortName = 'levene'
+        formattedOutput = "Levene test of variance, P_val={:.3e} stat={:.3e}".format(pval, stat)
     else:
         raise NotImplemented('Implemented test options are '
                              '"Mann-Whitney", "t-test_ind", '
-                             '"t-test_welch", "t-test_paired"')
+                             '"t-test_welch", "t-test_paired", '
+                             '"levene"')
     return pval, formattedOutput, testShortName
 
 
