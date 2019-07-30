@@ -10,6 +10,8 @@ from seaborn.utils import remove_na
 
 from scipy import stats
 
+DEFAULT = object()
+
 
 def stat_test(box_data1, box_data2, test):
     testShortName = ''
@@ -31,9 +33,7 @@ def stat_test(box_data1, box_data2, test):
         stat, pval = stats.ttest_rel(a=box_data1, b=box_data2)
         testShortName = 't-test_rel'
         formattedOutput = "t-test paired samples, P_val={:.3e} stat={:.3e}".format(pval, stat)
-
     return pval, formattedOutput, testShortName
-
 
 
 def pvalAnnotation_text(x, pvalueThresholds):
@@ -57,12 +57,36 @@ def pvalAnnotation_text(x, pvalueThresholds):
     return xAnnot if not singleValue else xAnnot.iloc[0]
 
 
+def simple_text(pval, pvalue_format, pvalue_thresholds, test_short_name=None):
+    """
+    Generates simple text for test name and pvalue
+    :param pval: pvalue
+    :param pvalue_format: format string for pvalue
+    :param test_short_name: Short name of test to show
+    :param pvalue_thresholds: String to display per pvalue range
+    :return: simple annotation
+    """
+    # Sort thresholds
+    thresholds = sorted(pvalue_thresholds, key=lambda x: x[0])
+
+    # Test name if passed
+    text = test_short_name and test_short_name + " " or ""
+
+    for threshold in thresholds:
+        if pval < threshold[0]:
+            pval_text = "p ≤ {}".format(threshold[1])
+            break
+    else:
+        pval_text = "p = {}".format(pvalue_format).format(pval)
+
+    return text + pval_text
+
+
 def add_stat_annotation(ax,
                         data=None, x=None, y=None, hue=None, order=None, hue_order=None,
                         boxPairList=None,
-                        test='t-test_welch', textFormat='star', pvalueFormatString='{:.3e}',
-                        loc='inside',
-                        pvalueThresholds=[[1,"ns"], [0.05,"*"], [1e-2,"**"], [1e-3,"***"], [1e-4,"****"]],
+                        test='t-test_welch', textFormat='star', pvalueFormatString=DEFAULT,
+                        loc='inside', showTestName=True, pvalueThresholds=DEFAULT,
                         useFixedOffset=False, lineOffsetToBox=None, lineOffset=None,
                         lineHeight=0.02, textOffset=1, stack=True,
                         color='0.2', linewidth=1.5, fontsize='medium', verbose=1):
@@ -75,6 +99,13 @@ def add_stat_annotation(ax,
     boxPairList can be of either form:
     For non-grouped boxplot: [(cat1, cat2), (cat3, cat4)]
     For boxplot grouped by hue: [((cat1, hue1), (cat2, hue2)), ((cat3, hue3), (cat4, hue4))]
+
+    Default pvalueFormatString is "{.3e}".
+    pvalueThresholds is a list of lists or tuples. Default is:
+    For "star" textFormat:
+        [[1e-4, "****"], [1e-3, "***"], [1e-2, "**"], [0.05, "*"], [1, "ns"]]
+    For "simple" textFormat :
+        [[1e-5, "1e-5"], [1e-4, "1e-4"], [1e-3, "0.001"], [1e-2, "0.01"]]
     """
 
     def find_x_position_box(boxPlotter, boxName):
@@ -121,6 +152,21 @@ def add_stat_annotation(ax,
 
         return box_data
 
+    # Set default values if necessary
+    if pvalueFormatString is DEFAULT:
+        pvalueFormatString = '{:.3e}'
+        simpleFormatString = '{:.2f}'
+    else:
+        simpleFormatString = pvalueFormatString
+
+    if pvalueThresholds is DEFAULT:
+        if textFormat == "star":
+            pvalueThresholds = [[1e-4, "****"], [1e-3, "***"],
+                                [1e-2, "**"], [0.05, "*"], [1, "ns"]]
+        else:
+            pvalueThresholds = [[1e-5, "1e-5"], [1e-4, "1e-4"],
+                                [1e-3, "0.001"], [1e-2, "0.01"]]
+    
     fig = plt.gcf()
 
     validList = ['inside', 'outside']
@@ -192,7 +238,6 @@ def add_stat_annotation(ax,
             label2 = '{}_{}'.format(cat2, hue2)
             valid = cat1 in groupNames and cat2 in groupNames and hue1 in hueNames and hue2 in hueNames
 
-
         if valid:
             # Get position of boxes
             x1 = find_x_position_box(boxPlotter, box1)
@@ -206,7 +251,8 @@ def add_stat_annotation(ax,
             testResultList.append({'pvalue':pval, 'testShortName':testShortName,
                                    'formattedOutput':formattedOutput, 'box1':box1, 'box2':box2
                                   })
-            if verbose >= 1: print ("{} v.s. {}: {}".format(label1, label2, formattedOutput))
+            if verbose >= 1:
+                print("{} v.s. {}: {}".format(label1, label2, formattedOutput))
 
             if textFormat == 'full':
                 text = "{} p = {}".format('{}', pvalueFormatString).format(testShortName, pval)
@@ -214,6 +260,10 @@ def add_stat_annotation(ax,
                 text = None
             elif textFormat is 'star':
                 text = pvalAnnotation_text(pval, pvalueThresholds)
+            elif textFormat is 'simple':
+                test_short_name = showTestName and testShortName or ""
+                text = simple_text(pval, simpleFormatString, pvalueThresholds,
+                                   test_short_name)
 
             if loc == 'inside':
                 yRef = max(ymax1, ymax2)
@@ -278,7 +328,6 @@ def add_stat_annotation(ax,
         else:
             raise ValueError("boxPairList contains an unvalid box pair.")
             pass
-
 
     yStackMax = max(yStack)
     if loc == 'inside':
