@@ -21,6 +21,16 @@ def stat_test(box_data1, box_data2, test):
         test_short_name = 'M.W.W.'
         formatted_output = ("Mann-Whitney-Wilcoxon test two-sided P_val={:.3e} U_stat={:.3e}"
                            .format(pval, u_stat))
+    elif test == 'Mann-Whitney-gt':
+        u_stat, pval = stats.mannwhitneyu(box_data1, box_data2, alternative='greater')
+        test_short_name = 'M.W.W.'
+        formatted_output = ("Mann-Whitney-Wilcoxon test greater P_val={:.3e} U_stat={:.3e}"
+                           .format(pval, u_stat))
+    elif test == 'Mann-Whitney-ls':
+        u_stat, pval = stats.mannwhitneyu(box_data1, box_data2, alternative='less')
+        test_short_name = 'M.W.W.'
+        formatted_output = ("Mann-Whitney-Wilcoxon test smaller P_val={:.3e} U_stat={:.3e}"
+                           .format(pval, u_stat))
     elif test == 't-test_ind':
         stat, pval = stats.ttest_ind(a=box_data1, b=box_data2)
         test_short_name = 't-test_ind'
@@ -166,13 +176,13 @@ def add_stat_annotation(ax,
         else:
             pvalue_thresholds = [[1e-5, "1e-5"], [1e-4, "1e-4"],
                                  [1e-3, "0.001"], [1e-2, "0.01"]]
-    
+
     fig = plt.gcf()
 
     valid_list = ['inside', 'outside']
     if loc not in valid_list:
         raise ValueError("loc value should be one of the following: {}.".format(', '.join(valid_list)))
-    valid_list = ['t-test_ind', 't-test_welch', 't-test_paired', 'Mann-Whitney']
+    valid_list = ['t-test_ind', 't-test_welch', 't-test_paired', 'Mann-Whitney', 'Mann-Whitney-gt', 'Mann-Whitney-ls']
     if test not in valid_list:
         raise ValueError("test value should be one of the following: {}.".format(', '.join(valid_list)))
 
