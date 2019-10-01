@@ -201,7 +201,8 @@ def add_stat_annotation(ax,
                 line_offset_to_box = 0.06
         elif loc == 'outside':
             line_offset = 0.03
-            line_offset_to_box = line_offset
+            if line_offset_to_box is None:
+                line_offset_to_box = line_offset
     else:
         if loc == 'inside':
             if line_offset_to_box is None:
