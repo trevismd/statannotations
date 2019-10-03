@@ -79,13 +79,11 @@ def pval_annotation_text(x, pvalue_thresholds):
         x1 = np.array([x])
         single_value = True
     # Sort the threshold array
-    pvalue_thresholds = pd.DataFrame(
-        pvalue_thresholds).sort_values(by=0, ascending=False).values
+    pvalue_thresholds = pd.DataFrame(pvalue_thresholds).sort_values(by=0, ascending=False).values
     x_annot = pd.Series(["" for _ in range(len(x1))])
     for i in range(0, len(pvalue_thresholds)):
         if i < len(pvalue_thresholds)-1:
-            condition = (x1 <= pvalue_thresholds[i][0]) & \
-                        (pvalue_thresholds[i+1][0] < x1)
+            condition = (x1 <= pvalue_thresholds[i][0]) & (pvalue_thresholds[i+1][0] < x1)
             x_annot[condition] = pvalue_thresholds[i][1]
         else:
             condition = x1 < pvalue_thresholds[i][0]
@@ -208,34 +206,29 @@ def add_stat_annotation(ax,
 
     valid_list = ['inside', 'outside']
     if loc not in valid_list:
-        raise ValueError(
-            "loc value should be one of the following: {}.".format(
-                ', '.join(valid_list)))
+        raise ValueError("loc value should be one of the following: {}."
+                         .format(', '.join(valid_list)))
     valid_list = ['full', 'simple', 'star']
     if text_format not in valid_list:
-        raise ValueError(
-            "text_format value should be one of the following: {}.".format(
-                ', '.join(valid_list)))
+        raise ValueError("text_format value should be one of the following: {}."
+                         .format(', '.join(valid_list)))
     valid_list = ['t-test_ind', 't-test_welch', 't-test_paired',
                   'Mann-Whitney', 'Mann-Whitney-gt', 'Mann-Whitney-ls',
                   'Levene', 'Wilcoxon']
     if test not in valid_list:
-        raise ValueError(
-            "test value should be one of the following: {}.".format(
-                ', '.join(valid_list)))
+        raise ValueError("test value should be one of the following: {}."
+                         .format(', '.join(valid_list)))
 
     if verbose >= 1 and text_format == 'star':
         print("pvalue annotation legend:")
-        pvalue_thresholds = pd.DataFrame(pvalue_thresholds).sort_values(
-            by=0, ascending=False).values
+        pvalue_thresholds = pd.DataFrame(pvalue_thresholds).sort_values(by=0, ascending=False).values
         for i in range(0, len(pvalue_thresholds)):
             if i < len(pvalue_thresholds)-1:
-                print('{}: {:.2e} < p <= {:.2e}'.format(
-                    pvalue_thresholds[i][1], pvalue_thresholds[i+1][0],
-                    pvalue_thresholds[i][0]))
+                print('{}: {:.2e} < p <= {:.2e}'.format(pvalue_thresholds[i][1],
+                                                        pvalue_thresholds[i+1][0],
+                                                        pvalue_thresholds[i][0]))
             else:
-                print('{}: p <= {:.2e}'.format(
-                    pvalue_thresholds[i][1], pvalue_thresholds[i][0]))
+                print('{}: p <= {:.2e}'.format(pvalue_thresholds[i][1], pvalue_thresholds[i][0]))
         print()
 
     # Create the same BoxPlotter object as seaborn's boxplot
@@ -286,8 +279,8 @@ def add_stat_annotation(ax,
             hue2 = box2[1]
             label1 = '{}_{}'.format(cat1, hue1)
             label2 = '{}_{}'.format(cat2, hue2)
-            valid = cat1 in group_names and cat2 in group_names and \
-                hue1 in hue_names and hue2 in hue_names
+            valid = (cat1 in group_names and cat2 in group_names and
+                     hue1 in hue_names and hue2 in hue_names)
 
         if valid:
             # Get position of boxes
@@ -299,17 +292,14 @@ def add_stat_annotation(ax,
             ymax2 = box_data2.max()
 
             pval, formatted_output, test_short_name = stat_test(box_data1, box_data2, test, **stats_params)
-            test_result_list.append(
-                {'pvalue': pval, 'test_short_name': test_short_name,
-                 'formatted_output': formatted_output, 'box1': box1,
-                 'box2': box2})
+            test_result_list.append({'pvalue': pval, 'test_short_name': test_short_name,
+                                     'formatted_output': formatted_output, 'box1': box1,
+                                     'box2': box2})
             if verbose >= 1:
-                print("{} v.s. {}: {}".format(
-                    label1, label2, formatted_output))
+                print("{} v.s. {}: {}".format(label1, label2, formatted_output))
 
             if text_format == 'full':
-                text = "{} p = {}".format('{}', pvalue_format_string).format(
-                    test_short_name, pval)
+                text = "{} p = {}".format('{}', pvalue_format_string).format(test_short_name, pval)
             elif text_format is None:
                 text = None
             elif text_format is 'star':
@@ -317,9 +307,7 @@ def add_stat_annotation(ax,
             # 'simple', see valid_list
             else:
                 test_short_name = show_test_name and test_short_name or ""
-                text = simple_text(
-                    pval, simple_format_string, pvalue_thresholds,
-                    test_short_name)
+                text = simple_text(pval, simple_format_string, pvalue_thresholds, test_short_name)
 
             if loc == 'inside':
                 yref = max(ymax1, ymax2)
@@ -379,14 +367,12 @@ def add_stat_annotation(ax,
                               "Layout may be not optimal.")
                     # We will apply a fixed offset in points, 
                     # based on the font size of the annotation.
-                    fontsize_points = FontProperties(
-                        size='medium').get_size_in_points()
+                    fontsize_points = FontProperties(size='medium').get_size_in_points()
                     offset_trans = mtransforms.offset_copy(
                         ax.transData, fig=fig, x=0,
                         y=1.0*fontsize_points + text_offset, units='points')
                     y_top_display = offset_trans.transform((0, y + h))
-                    y_top_annot = ax.transData.inverted().transform(
-                        y_top_display)[1]
+                    y_top_annot = ax.transData.inverted().transform(y_top_display)[1]
             else:
                 y_top_annot = y + h
 
