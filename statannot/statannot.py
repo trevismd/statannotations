@@ -20,42 +20,42 @@ def stat_test(box_data1, box_data2, test, **stats_params):
     if test == 'Levene':
         stat, pval = stats.levene(box_data1, box_data2, **stats_params)
         test_short_name = 'levene'
-        formatted_output = "Levene test of variance, " \
-                           "P_val={:.3e} stat={:.3e}".format(pval, stat)
+        formatted_output = ("Levene test of variance, "
+                            "P_val={:.3e} stat={:.3e}").format(pval, stat)
     elif test == 'Mann-Whitney':
         u_stat, pval = stats.mannwhitneyu(
             box_data1, box_data2, alternative='two-sided', **stats_params)
         test_short_name = 'M.W.W.'
-        formatted_output = "Mann-Whitney-Wilcoxon test two-sided " \
-                           "P_val={:.3e} U_stat={:.3e}".format(pval, u_stat)
+        formatted_output = ("Mann-Whitney-Wilcoxon test two-sided "
+                            "P_val={:.3e} U_stat={:.3e}").format(pval, u_stat)
     elif test == 'Mann-Whitney-gt':
         u_stat, pval = stats.mannwhitneyu(
             box_data1, box_data2, alternative='greater', **stats_params)
         test_short_name = 'M.W.W.'
-        formatted_output = "Mann-Whitney-Wilcoxon test greater " \
-                           "P_val={:.3e} U_stat={:.3e}".format(pval, u_stat)
+        formatted_output = ("Mann-Whitney-Wilcoxon test greater "
+                            "P_val={:.3e} U_stat={:.3e}").format(pval, u_stat)
     elif test == 'Mann-Whitney-ls':
         u_stat, pval = stats.mannwhitneyu(
             box_data1, box_data2, alternative='less', **stats_params)
         test_short_name = 'M.W.W.'
-        formatted_output = "Mann-Whitney-Wilcoxon test smaller " \
-                           "P_val={:.3e} U_stat={:.3e}".format(pval, u_stat)
+        formatted_output = ("Mann-Whitney-Wilcoxon test smaller "
+                            "P_val={:.3e} U_stat={:.3e}").format(pval, u_stat)
     elif test == 't-test_ind':
         stat, pval = stats.ttest_ind(a=box_data1, b=box_data2, **stats_params)
         test_short_name = 't-test_ind'
-        formatted_output = "t-test independent samples, " \
-                           "P_val={:.3e} stat={:.3e}".format(pval, stat)
+        formatted_output = ("t-test independent samples, "
+                            "P_val={:.3e} stat={:.3e}").format(pval, stat)
     elif test == 't-test_welch':
         stat, pval = stats.ttest_ind(
             a=box_data1, b=box_data2, equal_var=False, **stats_params)
         test_short_name = 't-test_welch'
-        formatted_output = "Welch's t-test independent samples, " \
-                           "P_val={:.3e} stat={:.3e}".format(pval, stat)
+        formatted_output = ("Welch's t-test independent samples, "
+                            "P_val={:.3e} stat={:.3e}").format(pval, stat)
     elif test == 't-test_paired':
         stat, pval = stats.ttest_rel(a=box_data1, b=box_data2, **stats_params)
         test_short_name = 't-test_rel'
-        formatted_output = "t-test paired samples, " \
-                           "P_val={:.3e} stat={:.3e}".format(pval, stat)
+        formatted_output = ("t-test paired samples, "
+                            "P_val={:.3e} stat={:.3e}").format(pval, stat)
     elif test == 'Wilcoxon':
         if "zero_method" in stats_params.keys():
             zero_method = stats_params["zero_method"]
@@ -66,8 +66,8 @@ def stat_test(box_data1, box_data2, test, **stats_params):
         stat, pval = stats.wilcoxon(
             box_data1, box_data2, zero_method=zero_method, **stats_params)
         test_short_name = 'Wilcoxon'
-        formatted_output = "Wilcoxon test (paired samples), " \
-                           "P_val={:.3e} stat={:.3e}".format(pval, stat)
+        formatted_output = ("Wilcoxon test (paired samples), "
+                            "P_val={:.3e} stat={:.3e}").format(pval, stat)
     return pval, formatted_output, test_short_name
 
 
@@ -130,15 +130,16 @@ def add_stat_annotation(ax,
                         stack=True, color='0.2', linewidth=1.5,
                         fontsize='medium', verbose=1):
     """
-    User should use the same argument for the data, x, y, hue, order, hue_order
-    as the seaborn boxplot function.
+    User should use the same argument for the data, x, y, hue, order,
+    hue_order as the seaborn boxplot function.
 
     line_height is in axes fraction coordinates.
     text_offset is in points.
 
     box_pairs can be of either form:
     For non-grouped boxplot: [(cat1, cat2), (cat3, cat4)]
-    For boxplot grouped by hue: [((cat1, hue1), (cat2, hue2)), ((cat3, hue3), (cat4, hue4))]
+    For boxplot grouped by hue:
+    [((cat1, hue1), (cat2, hue2)), ((cat3, hue3), (cat4, hue4))]
 
     Default pvalue_format_string is "{.3e}".
     pvalue_thresholds is a list of lists or tuples. Default is:
@@ -158,7 +159,8 @@ def add_stat_annotation(ax,
         else:
             cat = boxName[0]
             hue = boxName[1]
-            hue_offset = box_plotter.hue_offsets[box_plotter.hue_names.index(hue)]
+            hue_offset = box_plotter.hue_offsets[
+                box_plotter.hue_names.index(hue)]
 
         group_pos = box_plotter.group_names.index(cat)
         box_pos = group_pos + hue_offset
@@ -214,8 +216,9 @@ def add_stat_annotation(ax,
         raise ValueError(
             "text_format value should be one of the following: {}.".format(
                 ', '.join(valid_list)))
-    valid_list = ['t-test_ind', 't-test_welch', 't-test_paired', 'Mann-Whitney',
-                  'Mann-Whitney-gt', 'Mann-Whitney-ls', 'Levene', 'Wilcoxon']
+    valid_list = ['t-test_ind', 't-test_welch', 't-test_paired',
+                  'Mann-Whitney', 'Mann-Whitney-gt', 'Mann-Whitney-ls',
+                  'Levene', 'Wilcoxon']
     if test not in valid_list:
         raise ValueError(
             "test value should be one of the following: {}.".format(
@@ -236,11 +239,9 @@ def add_stat_annotation(ax,
         print()
 
     # Create the same BoxPlotter object as seaborn's boxplot
-    box_plotter = sns.categorical._BoxPlotter(x, y, hue, data, order, hue_order,
-                                              orient=None, width=.8, color=None,
-                                              palette=None, saturation=.75,
-                                              dodge=True, fliersize=5,
-                                              linewidth=None)
+    box_plotter = sns.categorical._BoxPlotter(
+        x, y, hue, data, order, hue_order, orient=None, width=.8, color=None,
+        palette=None, saturation=.75, dodge=True, fliersize=5, linewidth=None)
 
     ylim = ax.get_ylim()
     yrange = ylim[1] - ylim[0]
@@ -304,7 +305,8 @@ def add_stat_annotation(ax,
                  'formatted_output': formatted_output, 'box1': box1,
                  'box2': box2})
             if verbose >= 1:
-                print("{} v.s. {}: {}".format(label1, label2, formatted_output))
+                print("{} v.s. {}: {}".format(
+                    label1, label2, formatted_output))
 
             if text_format == 'full':
                 text = "{} p = {}".format('{}', pvalue_format_string).format(
@@ -345,7 +347,8 @@ def add_stat_annotation(ax,
             # 'outside', see valid_list
             else:
                 line = lines.Line2D(
-                    line_x, line_y, lw=linewidth, c=color, transform=ax.transData)
+                    line_x, line_y, lw=linewidth, c=color,
+                    transform=ax.transData)
                 line.set_clip_on(False)
                 ax.add_line(line)
 
