@@ -16,6 +16,10 @@ DEFAULT = object()
 def stat_test(box_data1, box_data2, test):
     test_short_name = ''
     formatted_output = None
+    if test == 'Levene':
+        stat, pval = stats.levene(box_data1, box_data2)
+        testShortName = 'levene'
+        formattedOutput = "Levene test of variance, P_val={:.3e} stat={:.3e}".format(pval, stat)
     if test == 'Mann-Whitney':
         u_stat, pval = stats.mannwhitneyu(box_data1, box_data2, alternative='two-sided')
         test_short_name = 'M.W.W.'
@@ -43,6 +47,12 @@ def stat_test(box_data1, box_data2, test):
         stat, pval = stats.ttest_rel(a=box_data1, b=box_data2)
         test_short_name = 't-test_rel'
         formatted_output = "t-test paired samples, P_val={:.3e} stat={:.3e}".format(pval, stat)
+    elif test == 'Wilcoxon':
+        zero_method = len(box_data1) <= 20 and "pratt" or "wilcox"
+        print(zero_method)
+        stat, pval = stats.wilcoxon(box_data1, box_data2, zero_method=zero_method)
+        testShortName = 'Wilcoxon'
+        formattedOutput = "Wilcoxon test (paired samples), P_val={:.3e} stat={:.3e}".format(pval, stat)
     return pval, formatted_output, test_short_name
 
 
