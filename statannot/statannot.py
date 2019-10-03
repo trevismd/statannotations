@@ -18,9 +18,9 @@ def stat_test(box_data1, box_data2, test):
     formatted_output = None
     if test == 'Levene':
         stat, pval = stats.levene(box_data1, box_data2)
-        testShortName = 'levene'
-        formattedOutput = "Levene test of variance, P_val={:.3e} stat={:.3e}".format(pval, stat)
-    if test == 'Mann-Whitney':
+        test_short_name = 'levene'
+        formatted_output = "Levene test of variance, P_val={:.3e} stat={:.3e}".format(pval, stat)
+    elif test == 'Mann-Whitney':
         u_stat, pval = stats.mannwhitneyu(box_data1, box_data2, alternative='two-sided')
         test_short_name = 'M.W.W.'
         formatted_output = ("Mann-Whitney-Wilcoxon test two-sided P_val={:.3e} U_stat={:.3e}"
@@ -49,10 +49,10 @@ def stat_test(box_data1, box_data2, test):
         formatted_output = "t-test paired samples, P_val={:.3e} stat={:.3e}".format(pval, stat)
     elif test == 'Wilcoxon':
         zero_method = len(box_data1) <= 20 and "pratt" or "wilcox"
-        print(zero_method)
+        print("Using zero_method ", zero_method)
         stat, pval = stats.wilcoxon(box_data1, box_data2, zero_method=zero_method)
-        testShortName = 'Wilcoxon'
-        formattedOutput = "Wilcoxon test (paired samples), P_val={:.3e} stat={:.3e}".format(pval, stat)
+        test_short_name = 'Wilcoxon'
+        formatted_output = "Wilcoxon test (paired samples), P_val={:.3e} stat={:.3e}".format(pval, stat)
     return pval, formatted_output, test_short_name
 
 
