@@ -57,7 +57,11 @@ def stat_test(box_data1, box_data2, test, **stats_params):
         formatted_output = "t-test paired samples, " \
                            "P_val={:.3e} stat={:.3e}".format(pval, stat)
     elif test == 'Wilcoxon':
-        zero_method = len(box_data1) <= 20 and "pratt" or "wilcox"
+        if "zero_method" in stats_params.keys():
+            zero_method = stats_params["zero_method"]
+            del stats_params["zero_method"]
+        else:
+            zero_method = len(box_data1) <= 20 and "pratt" or "wilcox"
         print("Using zero_method ", zero_method)
         stat, pval = stats.wilcoxon(
             box_data1, box_data2, zero_method=zero_method, **stats_params)
