@@ -124,7 +124,7 @@ def add_stat_annotation(ax,
                         hue_order=None, box_pairs=None, test='t-test_welch',
                         text_format='star', pvalue_format_string=DEFAULT,
                         loc='inside', show_test_name=True,
-                        pvalue_thresholds=DEFAULT, stats_params: dict = None,
+                        pvalue_thresholds=DEFAULT, stats_params=dict(),
                         use_fixed_offset=False, line_offset_to_box=None,
                         line_offset=None, line_height=0.02, text_offset=1,
                         stack=True, color='0.2', linewidth=1.5,
@@ -298,8 +298,7 @@ def add_stat_annotation(ax,
             ymax1 = box_data1.max()
             ymax2 = box_data2.max()
 
-            pval, formatted_output, test_short_name = stat_test(
-                box_data1, box_data2, test, **stats_params)
+            pval, formatted_output, test_short_name = stat_test(box_data1, box_data2, test, **stats_params)
             test_result_list.append(
                 {'pvalue': pval, 'test_short_name': test_short_name,
                  'formatted_output': formatted_output, 'box1': box1,
