@@ -121,6 +121,7 @@ def add_stat_annotation(ax,
                         data=None, x=None, y=None, hue=None, order=None,
                         hue_order=None, box_pairs=None, test='t-test_welch',
                         text_format='star', pvalue_format_string=DEFAULT,
+                        text_annot_custom=None,
                         loc='inside', show_test_name=True,
                         pvalue_thresholds=DEFAULT, stats_params=dict(),
                         use_fixed_offset=False, line_offset_to_box=None,
@@ -128,23 +129,15 @@ def add_stat_annotation(ax,
                         stack=True, color='0.2', linewidth=1.5,
                         fontsize='medium', verbose=1):
     """
-    User should use the same argument for the data, x, y, hue, order,
-    hue_order as the seaborn boxplot function.
+    Computes statistical test between pairs of data series and add statistical annotation on top
+    of the boxes. Uses the same exact arguments `data`, `x`, `y`, `hue`, `order`,
+    `hue_order` as the seaborn boxplot function.
 
-    line_height is in axes fraction coordinates.
-    text_offset is in points.
-
-    box_pairs can be of either form:
-    For non-grouped boxplot: [(cat1, cat2), (cat3, cat4)]
-    For boxplot grouped by hue:
-    [((cat1, hue1), (cat2, hue2)), ((cat3, hue3), (cat4, hue4))]
-
-    Default pvalue_format_string is "{.3e}".
-    pvalue_thresholds is a list of lists or tuples. Default is:
-    For "star" text_format:
-        [[1e-4, "****"], [1e-3, "***"], [1e-2, "**"], [0.05, "*"], [1, "ns"]]
-    For "simple" text_format :
-        [[1e-5, "1e-5"], [1e-4, "1e-4"], [1e-3, "0.001"], [1e-2, "0.01"]]
+    :param line_height: in axes fraction coordinates
+    :param text_offset: in points
+    :param box_pairs: can be of either form: For non-grouped boxplot: `[(cat1, cat2), (cat3, cat4)]`. For boxplot grouped by hue: `[((cat1, hue1), (cat2, hue2)), ((cat3, hue3), (cat4, hue4))]`
+    :param pvalue_format_string: defaults to `"{.3e}"`
+    :param pvalue_thresholds: list of lists, or tuples. Default is: For "star" text_format: `[[1e-4, "****"], [1e-3, "***"], [1e-2, "**"], [0.05, "*"], [1, "ns"]]`. For "simple" text_format : `[[1e-5, "1e-5"], [1e-4, "1e-4"], [1e-3, "0.001"], [1e-2, "0.01"]]`
     """
 
     def find_x_position_box(box_plotter, boxName):
