@@ -68,6 +68,11 @@ def stat_test(box_data1, box_data2, test, **stats_params):
         test_short_name = 'Wilcoxon'
         formatted_output = ("Wilcoxon test (paired samples), "
                             "P_val={:.3e} stat={:.3e}").format(pval, stat)
+    elif test == 'Kruskal':
+        stat, pval = stats.kruskal(box_data1, box_data2, **stats_params)
+        test_short_name = 'Kruskal'
+        formatted_output = ("Kruskal-Wallis paired samples, "
+                            "P_val={:.3e} stat={:.3e}").format(pval, stat)
     return pval, formatted_output, test_short_name
 
 
@@ -207,7 +212,7 @@ def add_stat_annotation(ax,
                          .format(', '.join(valid_list)))
     valid_list = ['t-test_ind', 't-test_welch', 't-test_paired',
                   'Mann-Whitney', 'Mann-Whitney-gt', 'Mann-Whitney-ls',
-                  'Levene', 'Wilcoxon']
+                  'Levene', 'Wilcoxon', 'Kruskal']
     if test not in valid_list:
         raise ValueError("test value should be one of the following: {}."
                          .format(', '.join(valid_list)))
@@ -358,7 +363,7 @@ def add_stat_annotation(ax,
                         print("Warning: cannot get the text bounding box. "
                               "Falling back to a fixed y offset. "
                               "Layout may be not optimal.")
-                    # We will apply a fixed offset in points, 
+                    # We will apply a fixed offset in points,
                     # based on the font size of the annotation.
                     fontsize_points = FontProperties(size='medium').get_size_in_points()
                     offset_trans = mtransforms.offset_copy(
