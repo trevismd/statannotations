@@ -124,8 +124,10 @@ def simple_text(pval, pvalue_format, pvalue_thresholds, test_short_name=None):
 
 def add_stat_annotation(ax,
                         data=None, x=None, y=None, hue=None, order=None,
-                        hue_order=None, box_pairs=None, test='t-test_welch',
-                        text_format='star', pvalue_format_string=DEFAULT,
+                        hue_order=None, box_pairs=None,
+                        perform_stat_test=True,
+                        pvalues=None, test_short_name=None,
+                        test=None, text_format='star', pvalue_format_string=DEFAULT,
                         text_annot_custom=None,
                         loc='inside', show_test_name=True,
                         pvalue_thresholds=DEFAULT, stats_params=dict(),
@@ -134,15 +136,22 @@ def add_stat_annotation(ax,
                         stack=True, color='0.2', linewidth=1.5,
                         fontsize='medium', verbose=1):
     """
-    Computes statistical test between pairs of data series and add statistical annotation on top
+    Optionally computes statistical test between pairs of data series, and add statistical annotation on top
     of the boxes. Uses the same exact arguments `data`, `x`, `y`, `hue`, `order`,
     `hue_order` as the seaborn boxplot function.
+
+    This function works in one of the two following modes:
+    a) `perform_stat_test` is True: statistical test is performed as given by argument `test` is performed.
+    b) `perform_stat_test` is False: no statistical test is performed, list of custom p-values `pvalues` are
+       used for each pair of boxes. The `test_short_name` argument is then used as the name of the
+       custom statistical test.
 
     :param line_height: in axes fraction coordinates
     :param text_offset: in points
     :param box_pairs: can be of either form: For non-grouped boxplot: `[(cat1, cat2), (cat3, cat4)]`. For boxplot grouped by hue: `[((cat1, hue1), (cat2, hue2)), ((cat3, hue3), (cat4, hue4))]`
     :param pvalue_format_string: defaults to `"{.3e}"`
     :param pvalue_thresholds: list of lists, or tuples. Default is: For "star" text_format: `[[1e-4, "****"], [1e-3, "***"], [1e-2, "**"], [0.05, "*"], [1, "ns"]]`. For "simple" text_format : `[[1e-5, "1e-5"], [1e-4, "1e-4"], [1e-3, "0.001"], [1e-2, "0.01"]]`
+    :param pvalues: list of p-values for each box pair comparison. If different from `None`, no statistical test will be performed and the input pvalues will be used.
     """
 
     def find_x_position_box(box_plotter, boxName):
@@ -202,6 +211,25 @@ def add_stat_annotation(ax,
 
     fig = plt.gcf()
 
+    if perform_stat_test:
+        if test is None:
+            raise ValueError("If `perform_stat_test` is True, `test` must be specified.")
+        if pvalues is not None or test_short_name is not None:
+            raise ValueError("If `perform_stat_test` is True, custom `pvalues` "
+                             "or `test_short_name` must be `None`.")
+        valid_list = ['t-test_ind', 't-test_welch', 't-test_paired',
+                      'Mann-Whitney', 'Mann-Whitney-gt', 'Mann-Whitney-ls',
+                      'Levene', 'Wilcoxon', 'Kruskal']
+        if test not in valid_list:
+            raise ValueError("test value should be one of the following: {}."
+                             .format(', '.join(valid_list)))
+    else:
+        if pvalues is None:
+            raise ValueError("If `perform_stat_test` is False, custom `pvalues` must be specified.")
+        if test is not None:
+            raise ValueError("If `perform_stat_test` is False, `test` must be None.")
+        if len(pvalues) != len(box_pairs):
+            raise ValueError("`pvalues` should be of the same length as `box_pairs`.")
     valid_list = ['inside', 'outside']
     if loc not in valid_list:
         raise ValueError("loc value should be one of the following: {}."
@@ -209,12 +237,6 @@ def add_stat_annotation(ax,
     valid_list = ['full', 'simple', 'star']
     if text_format not in valid_list:
         raise ValueError("text_format value should be one of the following: {}."
-                         .format(', '.join(valid_list)))
-    valid_list = ['t-test_ind', 't-test_welch', 't-test_paired',
-                  'Mann-Whitney', 'Mann-Whitney-gt', 'Mann-Whitney-ls',
-                  'Levene', 'Wilcoxon', 'Kruskal']
-    if test not in valid_list:
-        raise ValueError("test value should be one of the following: {}."
                          .format(', '.join(valid_list)))
 
     if verbose >= 1 and text_format == 'star':
@@ -261,7 +283,7 @@ def add_stat_annotation(ax,
     ann_list = []
     test_result_list = []
 
-    for box1, box2 in box_pairs:
+    for i_pair, (box1, box2) in enumerate(box_pairs):
         group_names = box_plotter.group_names
         hue_names = box_plotter.hue_names
         if box_plotter.plot_hues is None:
@@ -289,7 +311,14 @@ def add_stat_annotation(ax,
             ymax1 = box_data1.max()
             ymax2 = box_data2.max()
 
-            pval, formatted_output, test_short_name = stat_test(box_data1, box_data2, test, **stats_params)
+            if perform_stat_test:
+                pval, formatted_output, test_short_name = stat_test(box_data1, box_data2, test, **stats_params)
+            else:
+                test_short_name = test_short_name if test_short_name is not None else ''
+                pval = pvalues[i_pair]
+                formatted_output = ("Custom statistical test, {}, P_val={:.3e}"
+                                    .format(test_short_name, pval))
+
             test_result_list.append({'pvalue': pval, 'test_short_name': test_short_name,
                                      'formatted_output': formatted_output, 'box1': box1,
                                      'box2': box2})
