@@ -350,7 +350,6 @@ def add_stat_annotation(ax,
             yref = ylim[1]
 
         yref2 = yref
-        print("yref2", yref2)
 
         # Choose the best offset depending on wether there is an annotation below
         # at the x position where the stack is the highest
