@@ -141,7 +141,7 @@ def add_stat_annotation(ax,
     `hue_order` as the seaborn boxplot function.
 
     This function works in one of the two following modes:
-    a) `perform_stat_test` is True: statistical test is performed as given by argument `test` is performed.
+    a) `perform_stat_test` is True: statistical test as given by argument `test` is performed.
     b) `perform_stat_test` is False: no statistical test is performed, list of custom p-values `pvalues` are
        used for each pair of boxes. The `test_short_name` argument is then used as the name of the
        custom statistical test.
@@ -151,7 +151,7 @@ def add_stat_annotation(ax,
     :param box_pairs: can be of either form: For non-grouped boxplot: `[(cat1, cat2), (cat3, cat4)]`. For boxplot grouped by hue: `[((cat1, hue1), (cat2, hue2)), ((cat3, hue3), (cat4, hue4))]`
     :param pvalue_format_string: defaults to `"{.3e}"`
     :param pvalue_thresholds: list of lists, or tuples. Default is: For "star" text_format: `[[1e-4, "****"], [1e-3, "***"], [1e-2, "**"], [0.05, "*"], [1, "ns"]]`. For "simple" text_format : `[[1e-5, "1e-5"], [1e-4, "1e-4"], [1e-3, "0.001"], [1e-2, "0.01"]]`
-    :param pvalues: list of p-values for each box pair comparison. If different from `None`, no statistical test will be performed and the input pvalues will be used.
+    :param pvalues: list of p-values for each box pair comparison.
     """
 
     def find_x_position_box(box_plotter, boxName):
