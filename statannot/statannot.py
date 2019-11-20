@@ -242,7 +242,7 @@ def add_stat_annotation(ax,
                          .format(', '.join(valid_list)))
 
     if verbose >= 1 and text_format == 'star':
-        print("pvalue annotation legend:")
+        print("p-value annotation legend:")
         pvalue_thresholds = pd.DataFrame(pvalue_thresholds).sort_values(by=0, ascending=False).values
         for i in range(0, len(pvalue_thresholds)):
             if i < len(pvalue_thresholds)-1:
@@ -270,8 +270,7 @@ def add_stat_annotation(ax,
         if loc == 'inside':
             if line_offset_to_box is None:
                 line_offset_to_box = 0.06
-        # 'outside', see valid_list
-        else:
+        elif loc == 'outside':
             line_offset_to_box = line_offset
     y_offset = line_offset*yrange
     y_offset_to_box = line_offset_to_box*yrange
@@ -295,35 +294,44 @@ def add_stat_annotation(ax,
                     'label':labels[i],
                     'x':find_x_position_box(box_plotter, box_names[i]),
                     'box_data':get_box_data(box_plotter, box_names[i]),
-                    'ymax':max(get_box_data(box_plotter, box_names[i]))}
+                    'ymax':np.amax(get_box_data(box_plotter, box_names[i])) if
+                           len(get_box_data(box_plotter, box_names[i])) > 0 else np.nan}
                    for i in range(len(box_names))]
+    # Sort the box data structures by position along the x axis
     box_structs = sorted(box_structs, key=lambda x: x['x'])
     # Add the index position in the list of boxes along the x axis
     box_structs = [dict(box_struct, xi=i) for i, box_struct in enumerate(box_structs)]
+    # Same data structure list with access key by box name
     box_structs_dic = {box_struct['box']:box_struct for box_struct in box_structs}
 
     # Build the list of box data structure pairs
     box_struct_pairs = []
-    for box1, box2 in box_pairs:
-
+    for i_box_pair, (box1, box2) in enumerate(box_pairs):
         valid = box1 in box_names and box2 in box_names
         if not valid:
             raise ValueError("box_pairs contains an invalid box pair.")
             pass
-        box_struct1 = box_structs_dic[box1]
-        box_struct2 = box_structs_dic[box2]
-        box_struct_pairs.append((box_struct1, box_struct2))
+        # i_box_pair will keep track of the original order of the box pairs.
+        box_struct1 = dict(box_structs_dic[box1], i_box_pair=i_box_pair)
+        box_struct2 = dict(box_structs_dic[box2], i_box_pair=i_box_pair)
+        if box_struct1['x'] <= box_struct2['x']:
+            pair = (box_struct1, box_struct2)
+        else:
+            pair = (box_struct2, box_struct1)
+        box_struct_pairs.append(pair)
 
-    # First draw the annotation for the shortest x distance, in order to reduce overlapping
-    # between annotations
+    # Draw first the annotations with the shortest between-boxes distance, in order to reduce
+    # overlapping between annotations.
     box_struct_pairs = sorted(box_struct_pairs, key=lambda x: abs(x[1]['x'] - x[0]['x']))
 
-    # Build array that contains the x and y_max position of the highest annotation at
+    # Build array that contains the x and y_max position of the highest annotation or box data at
     # a given x position, and also keeps track of the number of stacked annotations.
     # This array will be updated when a new annotation is drawn.
     y_stack_arr = np.array([[box_struct['x'] for box_struct in box_structs],
                             [box_struct['ymax'] for box_struct in box_structs],
                             [0 for i in range(len(box_structs))]])
+    if loc == 'outside':
+        y_stack_arr[1, :] = ylim[1]
     ann_list = []
     test_result_list = []
     ymaxs = []
@@ -343,17 +351,18 @@ def add_stat_annotation(ax,
         xi2 = box_struct2['xi']
         ymax1 = box_struct1['ymax']
         ymax2 = box_struct2['ymax']
+        i_box_pair = box_struct1['i_box_pair']
+
         # Find y maximum for all the y_stacks *in between* the box1 and the box2
-        i_ymax_in_range_x1_x2 = xi1 + np.argmax(y_stack_arr[1, np.where((x1 <= y_stack_arr[0, :]) &
-                                                                        (y_stack_arr[0, :] <= x2))])
+        i_ymax_in_range_x1_x2 = xi1 + np.nanargmax(y_stack_arr[1, np.where((x1 <= y_stack_arr[0, :]) &
+                                                                           (y_stack_arr[0, :] <= x2))])
         ymax_in_range_x1_x2 = y_stack_arr[1, i_ymax_in_range_x1_x2]
 
         if perform_stat_test:
             pval, formatted_output, test_short_name = stat_test(box_data1, box_data2, test, **stats_params)
         else:
             test_short_name = test_short_name if test_short_name is not None else ''
-            ######### WE HAVE HERE TO CORRECT FOR THE ORDER OF THE PAIRS!!!!!
-            pval = pvalues[i_pair]
+            pval = pvalues[i_box_pair]
             formatted_output = ("Custom statistical test, {}, P_val={:.3e}"
                                 .format(test_short_name, pval))
         
@@ -369,21 +378,15 @@ def add_stat_annotation(ax,
             text = None
         elif text_format is 'star':
             text = pval_annotation_text(pval, pvalue_thresholds)
-        # 'simple', see valid_list
-        else:
+        elif text_format is 'simple':
             test_short_name = show_test_name and test_short_name or ""
             text = simple_text(pval, simple_format_string, pvalue_thresholds, test_short_name)
 
-        if loc == 'inside':
-            yref = ymax_in_range_x1_x2
-        # 'outside', see valid_list
-        else:
-            yref = ylim[1]
-
+        yref = ymax_in_range_x1_x2
         yref2 = yref
 
         # Choose the best offset depending on wether there is an annotation below
-        # at the x position where the stack is the highest
+        # at the x position in the range [x1, x2] where the stack is the highest
         if y_stack_arr[2, i_ymax_in_range_x1_x2] == 0:
             # there is only a box below
             offset = y_offset_to_box
@@ -396,13 +399,12 @@ def add_stat_annotation(ax,
         if loc == 'inside':
             ax.plot(line_x, line_y, lw=linewidth, c=color)
         elif loc == 'outside':
-            line = lines.Line2D(
-                line_x, line_y, lw=linewidth, c=color,
-                transform=ax.transData)
+            line = lines.Line2D(line_x, line_y, lw=linewidth, c=color, transform=ax.transData)
             line.set_clip_on(False)
             ax.add_line(line)
 
-        ax.set_ylim((ylim[0], 1.1*(y + h)))
+        # why should we change here the ylim if at the very end we set it to the correct range????
+        # ax.set_ylim((ylim[0], 1.1*(y + h)))
 
         if text is not None:
             ann = ax.annotate(
@@ -425,9 +427,8 @@ def add_stat_annotation(ax,
 
             if use_fixed_offset or got_mpl_error:
                 if verbose >= 1:
-                    print("Warning: cannot get the text bounding box. "
-                          "Falling back to a fixed y offset. "
-                          "Layout may be not optimal.")
+                    print("Warning: cannot get the text bounding box. Falling back to a fixed"
+                          " y offset. Layout may be not optimal.")
                 # We will apply a fixed offset in points,
                 # based on the font size of the annotation.
                 fontsize_points = FontProperties(size='medium').get_size_in_points()
@@ -439,12 +440,12 @@ def add_stat_annotation(ax,
         else:
             y_top_annot = y + h
 
-        y_stack.append(y_top_annot)
+        y_stack.append(y_top_annot)    # remark: y_stack is not really necessary if we have the stack_array
         ymaxs.append(max(y_stack))
         # Fill the highest y position of the annotation into the y_stack array
         # for all positions in the range x1 to x2
         y_stack_arr[1, (x1 <= y_stack_arr[0, :]) & (y_stack_arr[0, :] <= x2)] = y_top_annot
-        # Add 1 to the counter of annotations in the y_stack array
+        # Increment the counter of annotations in the y_stack array
         y_stack_arr[2, xi1:xi2 + 1] = y_stack_arr[2, xi1:xi2 + 1] + 1
 
     y_stack_max = max(ymaxs)
