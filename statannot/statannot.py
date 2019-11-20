@@ -133,7 +133,7 @@ def add_stat_annotation(ax,
                         pvalue_thresholds=DEFAULT, stats_params=dict(),
                         use_fixed_offset=False, line_offset_to_box=None,
                         line_offset=None, line_height=0.02, text_offset=1,
-                        stack=True, color='0.2', linewidth=1.5,
+                        color='0.2', linewidth=1.5,
                         fontsize='medium', verbose=1):
     """
     Optionally computes statistical test between pairs of data series, and add statistical annotation on top
