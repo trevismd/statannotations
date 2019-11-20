@@ -231,6 +231,9 @@ def add_stat_annotation(ax,
             raise ValueError("If `perform_stat_test` is False, `test` must be None.")
         if len(pvalues) != len(box_pairs):
             raise ValueError("`pvalues` should be of the same length as `box_pairs`.")
+
+    if text_annot_custom is not None and len(text_annot_custom) != len(box_pairs):
+        raise ValueError("`text_annot_custom` should be of same length as `box_pairs`.")
     
     valid_list = ['inside', 'outside']
     if loc not in valid_list:
@@ -372,15 +375,18 @@ def add_stat_annotation(ax,
         if verbose >= 1:
             print("{} v.s. {}: {}".format(label1, label2, formatted_output))
 
-        if text_format == 'full':
-            text = "{} p = {}".format('{}', pvalue_format_string).format(test_short_name, pval)
-        elif text_format is None:
-            text = None
-        elif text_format is 'star':
-            text = pval_annotation_text(pval, pvalue_thresholds)
-        elif text_format is 'simple':
-            test_short_name = show_test_name and test_short_name or ""
-            text = simple_text(pval, simple_format_string, pvalue_thresholds, test_short_name)
+        if text_annot_custom is not None:
+            text = text_annot_custom[i_box_pair]
+        else:
+            if text_format == 'full':
+                text = "{} p = {}".format('{}', pvalue_format_string).format(test_short_name, pval)
+            elif text_format is None:
+                text = None
+            elif text_format is 'star':
+                text = pval_annotation_text(pval, pvalue_thresholds)
+            elif text_format is 'simple':
+                test_short_name = show_test_name and test_short_name or ""
+                text = simple_text(pval, simple_format_string, pvalue_thresholds, test_short_name)
 
         yref = ymax_in_range_x1_x2
         yref2 = yref
