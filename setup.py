@@ -4,7 +4,7 @@ from setuptools import find_packages
 
 setup(
     name="statannot",
-    version="0.1.0",
+    version="0.2.0",
     packages=find_packages(),
     install_requires=open("requirements.txt").readlines(),
     python_requires='>=3.5',
