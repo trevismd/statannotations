@@ -124,7 +124,7 @@ def simple_text(pval, pvalue_format, pvalue_thresholds, test_short_name=None):
 
 def add_stat_annotation(ax,
                         data=None, x=None, y=None, hue=None, order=None,
-                        hue_order=None, box_pairs=None,
+                        hue_order=None, box_pairs=None, width=0.8,
                         perform_stat_test=True,
                         pvalues=None, test_short_name=None,
                         test=None, text_format='star', pvalue_format_string=DEFAULT,
@@ -280,7 +280,7 @@ def add_stat_annotation(ax,
 
     # Create the same BoxPlotter object as seaborn's boxplot
     box_plotter = sns.categorical._BoxPlotter(
-        x, y, hue, data, order, hue_order, orient=None, width=.8, color=None,
+        x, y, hue, data, order, hue_order, orient=None, width=width, color=None,
         palette=None, saturation=.75, dodge=True, fliersize=5, linewidth=None)
 
     # Build the list of box data structures with the x and ymax positions
