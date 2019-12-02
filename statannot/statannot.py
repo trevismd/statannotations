@@ -151,7 +151,7 @@ def add_stat_annotation(ax,
     :param box_pairs: can be of either form: For non-grouped boxplot: `[(cat1, cat2), (cat3, cat4)]`. For boxplot grouped by hue: `[((cat1, hue1), (cat2, hue2)), ((cat3, hue3), (cat4, hue4))]`
     :param pvalue_format_string: defaults to `"{.3e}"`
     :param pvalue_thresholds: list of lists, or tuples. Default is: For "star" text_format: `[[1e-4, "****"], [1e-3, "***"], [1e-2, "**"], [0.05, "*"], [1, "ns"]]`. For "simple" text_format : `[[1e-5, "1e-5"], [1e-4, "1e-4"], [1e-3, "0.001"], [1e-2, "0.01"]]`
-    :param pvalues: list of p-values for each box pair comparison.
+    :param pvalues: list or array of p-values for each box pair comparison.
     """
 
     def find_x_position_box(box_plotter, boxName):
