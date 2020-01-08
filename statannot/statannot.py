@@ -456,7 +456,7 @@ def add_stat_annotation(ax,
 
     y_stack_max = max(ymaxs)
     if loc == 'inside':
-        ax.set_ylim((ylim[0], 1.03*y_stack_max))
+        ax.set_ylim((ylim[0], max(1.03*y_stack_max, ylim[1])))
     elif loc == 'outside':
         ax.set_ylim((ylim[0], ylim[1]))
 
