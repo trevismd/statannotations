@@ -122,8 +122,8 @@ def simple_text(pval, pvalue_format, pvalue_thresholds, test_short_name=None):
     return text + pval_text
 
 
-def add_stat_annotation(ax,
-                        data=None, x=None, y=None, hue=None, order=None,
+def add_stat_annotation(ax, plot='boxplot',
+                        data=None, x=None, y=None, hue=None, units=None, order=None,
                         hue_order=None, box_pairs=None, width=0.8,
                         perform_stat_test=True,
                         pvalues=None, test_short_name=None,
@@ -137,8 +137,8 @@ def add_stat_annotation(ax,
                         fontsize='medium', verbose=1):
     """
     Optionally computes statistical test between pairs of data series, and add statistical annotation on top
-    of the boxes. Uses the same exact arguments `data`, `x`, `y`, `hue`, `order`,
-    `hue_order` as the seaborn boxplot function.
+    of the boxes/bars. The same exact arguments `data`, `x`, `y`, `hue`, `order`, `width`,
+    `hue_order` (and `units`) as in the seaborn boxplot/barplot function must be passed to this function.
 
     This function works in one of the two following modes:
     a) `perform_stat_test` is True: statistical test as given by argument `test` is performed.
@@ -146,6 +146,7 @@ def add_stat_annotation(ax,
        used for each pair of boxes. The `test_short_name` argument is then used as the name of the
        custom statistical test.
 
+    :param plot: type of the plot, one of 'boxplot' or 'barplot'.
     :param line_height: in axes fraction coordinates
     :param text_offset: in points
     :param box_pairs: can be of either form: For non-grouped boxplot: `[(cat1, cat2), (cat3, cat4)]`. For boxplot grouped by hue: `[((cat1, hue1), (cat2, hue2)), ((cat3, hue3), (cat4, hue4))]`
@@ -278,10 +279,18 @@ def add_stat_annotation(ax,
     y_offset = line_offset*yrange
     y_offset_to_box = line_offset_to_box*yrange
 
-    # Create the same BoxPlotter object as seaborn's boxplot
-    box_plotter = sns.categorical._BoxPlotter(
-        x, y, hue, data, order, hue_order, orient=None, width=width, color=None,
-        palette=None, saturation=.75, dodge=True, fliersize=5, linewidth=None)
+    if plot == 'boxplot':
+        # Create the same plotter object as seaborn's boxplot
+        box_plotter = sns.categorical._BoxPlotter(
+            x, y, hue, data, order, hue_order, orient=None, width=width, color=None,
+            palette=None, saturation=.75, dodge=True, fliersize=5, linewidth=None)
+    elif plot == 'barplot':
+        # Create the same plotter object as seaborn's barplot
+        box_plotter = sns.categorical._BarPlotter(
+            x, y, hue, data, order, hue_order,
+            estimator=np.mean, ci=95, n_boot=1000, units=None,
+            orient=None, color=None, palette=None, saturation=.75,
+            errcolor=".26", errwidth=None, capsize=None, dodge=True)
 
     # Build the list of box data structures with the x and ymax positions
     group_names = box_plotter.group_names
