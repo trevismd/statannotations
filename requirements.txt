@@ -1,5 +1,5 @@
 numpy
-seaborn
+seaborn>=0.9.0
 matplotlib
 pandas
-scipy
+scipy>=1.1.0
