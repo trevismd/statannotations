@@ -14,12 +14,48 @@ Python package to optionnally compute statistical test and add statistical annot
     - Kruskal-Wallis test
 - Smart layout of multiple annotations with correct y offsets.
 - Annotations can be located inside or outside the plot.
-- Format of the statistical test annotation can be customized: star annotation, simplified pvalue, or explicit p-value.
-- Optionally, custom p-values can be given as input. In this case, no statistical test is performed in the function.
+- Format of the statistical test annotation can be customized: star annotation, simplified p-value, or explicit p-value.
+- Optionally, custom p-values can be given as input. In this case, no statistical test is performed.
+
+## Installation
+
+The latest stable release can be installed from PyPI:
+
+```python
+pip install statannot
+```
+You may instead want to use the development version from Github:
+
+```python
+pip install git+https://github.com/webermarcolivier/statannot.git
+```
 
 ## Documentation
 
-See example jupyter notebook.
+See example jupyter notebook `example/example.ipynb`.
+
+## Usage
+
+Here is a minimal example:
+
+```python
+import seaborn as sns
+from statannot import add_stat_annotation
+
+df = sns.load_dataset("tips")
+x = "day"
+y = "total_bill"
+order = ['Sun', 'Thur', 'Fri', 'Sat']
+ax = sns.boxplot(data=df, x=x, y=y, order=order)
+test_results = add_stat_annotation(ax, data=df, x=x, y=y, order=order,
+                                   box_pairs=[("Thur", "Fri"), ("Thur", "Sat"), ("Fri", "Sun")],
+                                   test='Mann-Whitney', text_format='star',
+                                   loc='outside', verbose=2)
+test_results
+```
+
+More examples are available in the jupyter notebook `example/example.ipynb`.
+
 
 ## Examples
 
