@@ -1,4 +1,5 @@
-# from matplotlib.text import Text
+import warnings
+
 import matplotlib.pyplot as plt
 from matplotlib import lines
 import matplotlib.transforms as mtransforms
@@ -7,6 +8,8 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from seaborn.utils import remove_na
+
+from .utils import raise_expected_got
 
 from scipy import stats
 
@@ -74,6 +77,70 @@ def stat_test(box_data1, box_data2, test, **stats_params):
         formatted_output = ("Kruskal-Wallis paired samples, "
                             "P_val={:.3e} stat={:.3e}").format(pval, stat)
     return pval, formatted_output, test_short_name
+
+
+def bonferroni(p_values, num_comparisons='auto'):
+    """Apply Bonferroni correction for multiple comparisons.
+
+    The Bonferroni correction is defined as
+        p_corrected = min(num_comparisons * p, 1.0).
+
+    Arguments
+    ---------
+    p_values: scalar or list-like
+        One or more p_values to correct.
+    num_comparisons: int or `auto`
+        Number of comparisons. Use `auto` to infer the number of comparisons
+        from the length of the `p_values` list.
+
+    Returns
+    -------
+    Scalar or numpy array of corrected p-values.
+
+    """
+    # Input checks.
+    if np.ndim(p_values) > 1:
+        raise_expected_got(
+            'Scalar or list-like', 'argument `p_values`', p_values
+        )
+    if num_comparisons != 'auto':
+        try:
+            # Raise a TypeError if num_comparisons is not numeric, and raise
+            # an AssertionError if it isn't int-like.
+            assert np.ceil(num_comparisons) == num_comparisons
+        except (AssertionError, TypeError) as e:
+            raise_expected_got(
+                'Int or `auto`', 'argument `num_comparisons`', num_comparisons
+            )
+
+    # Coerce p_values to numpy array.
+    p_values_array = np.atleast_1d(p_values)
+
+    if num_comparisons == 'auto':
+        # Infer number of comparisons
+        num_comparisons = len(p_values_array)
+    elif len(p_values_array) > 1 and num_comparisons != len(p_values_array):
+        # Warn if multiple p_values have been passed and num_comparisons is
+        # set manually.
+        warnings.warn(
+            'Manually-specified `num_comparisons={}` differs from number of '
+            'p_values to correct ({}).'.format(
+                num_comparisons, len(p_values_array)
+            )
+        )
+
+    # Apply correction by multiplying p_values and thresholding at p=1.0
+    p_values_array *= num_comparisons
+    p_values_array = np.min(
+        [p_values_array, np.ones_like(p_values_array)], axis=0
+    )
+
+    if len(p_values_array) == 1:
+        # Return a scalar if input was a scalar.
+        return p_values_array[0]
+    else:
+        return p_values_array
+
 
 
 def pval_annotation_text(x, pvalue_thresholds):
@@ -235,7 +302,7 @@ def add_stat_annotation(ax, plot='boxplot',
 
     if text_annot_custom is not None and len(text_annot_custom) != len(box_pairs):
         raise ValueError("`text_annot_custom` should be of same length as `box_pairs`.")
-    
+
     valid_list = ['inside', 'outside']
     if loc not in valid_list:
         raise ValueError("loc value should be one of the following: {}."
@@ -301,7 +368,7 @@ def add_stat_annotation(ax, plot='boxplot',
     else:
         box_names = [(group_name, hue_name) for group_name in group_names for hue_name in hue_names]
         labels = ['{}_{}'.format(group_name, hue_name) for (group_name, hue_name) in box_names]
-    
+
     box_structs = [{'box':box_names[i],
                     'label':labels[i],
                     'x':find_x_position_box(box_plotter, box_names[i]),
@@ -377,7 +444,7 @@ def add_stat_annotation(ax, plot='boxplot',
             pval = pvalues[i_box_pair]
             formatted_output = ("Custom statistical test, {}, P_val={:.3e}"
                                 .format(test_short_name, pval))
-        
+
         test_result_list.append({'pvalue': pval, 'test_short_name': test_short_name,
                                  'formatted_output': formatted_output, 'box1': box1,
                                  'box2': box2})
