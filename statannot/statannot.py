@@ -9,7 +9,7 @@ import pandas as pd
 import seaborn as sns
 from seaborn.utils import remove_na
 
-from .utils import raise_expected_got
+from .utils import raise_expected_got, assert_is_in
 
 from scipy import stats
 
@@ -303,14 +303,14 @@ def add_stat_annotation(ax, plot='boxplot',
     if text_annot_custom is not None and len(text_annot_custom) != len(box_pairs):
         raise ValueError("`text_annot_custom` should be of same length as `box_pairs`.")
 
-    valid_list = ['inside', 'outside']
-    if loc not in valid_list:
-        raise ValueError("loc value should be one of the following: {}."
-                         .format(', '.join(valid_list)))
-    valid_list = ['full', 'simple', 'star']
-    if text_format not in valid_list:
-        raise ValueError("text_format value should be one of the following: {}."
-                         .format(', '.join(valid_list)))
+    assert_is_in(
+        loc, ['inside', 'outside'], label='argument `loc`'
+    )
+    assert_is_in(
+        text_format,
+        ['full', 'simple', 'star'],
+        label='argument `text_format`'
+    )
 
     if verbose >= 1 and text_format == 'star':
         print("p-value annotation legend:")
