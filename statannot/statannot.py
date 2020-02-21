@@ -122,11 +122,8 @@ def stat_test(
             't-test paired samples', 't-test_rel', 'stat', stat, pval
         )
     elif test == 'Wilcoxon':
-        if "zero_method" in stats_params.keys():
-            zero_method = stats_params["zero_method"]
-            del stats_params["zero_method"]
-        else:
-            zero_method = len(box_data1) <= 20 and "pratt" or "wilcox"
+        zero_method_default = len(box_data1) <= 20 and "pratt" or "wilcox"
+        zero_method = stats_params.get('zero_method', zero_method_default)
         print("Using zero_method ", zero_method)
         stat, pval = stats.wilcoxon(
             box_data1, box_data2, zero_method=zero_method, **stats_params
@@ -141,7 +138,7 @@ def stat_test(
             'Kruskal-Wallis paired samples', 'Kruskal', 'stat', stat, pval
         )
     else:
-        result = StatResult(None, '', '', '', None)
+        result = StatResult(None, '', None, None, np.nan)
 
     # Optionally, run multiple comparisons correction.
     if comparisons_correction == 'bonferroni':
@@ -533,7 +530,13 @@ def add_stat_annotation(ax, plot='boxplot',
             )
         else:
             test_short_name = test_short_name if test_short_name is not None else ''
-            result = StatResult('Custom statistical test', test_short_name, None, None, pvalues[i_box_pair])
+            result = StatResult(
+                'Custom statistical test',
+                test_short_name,
+                None,
+                None,
+                pvalues[i_box_pair]
+            )
 
         result.box1 = box1
         result.box2 = box2
