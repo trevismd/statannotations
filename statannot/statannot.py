@@ -198,6 +198,7 @@ def add_stat_annotation(ax, plot='boxplot',
                         text_annot_custom=None,
                         loc='inside', show_test_name=True,
                         pvalue_thresholds=DEFAULT, stats_params=dict(),
+                        comparisons_correction='bonferroni',
                         use_fixed_offset=False, line_offset_to_box=None,
                         line_offset=None, line_height=0.02, text_offset=1,
                         color='0.2', linewidth=1.5,
@@ -220,6 +221,7 @@ def add_stat_annotation(ax, plot='boxplot',
     :param pvalue_format_string: defaults to `"{.3e}"`
     :param pvalue_thresholds: list of lists, or tuples. Default is: For "star" text_format: `[[1e-4, "****"], [1e-3, "***"], [1e-2, "**"], [0.05, "*"], [1, "ns"]]`. For "simple" text_format : `[[1e-5, "1e-5"], [1e-4, "1e-4"], [1e-3, "0.001"], [1e-2, "0.01"]]`
     :param pvalues: list or array of p-values for each box pair comparison.
+    :param comparisons_correction: Method for multiple comparisons correction. `bonferroni` or None.
     """
 
     def find_x_position_box(box_plotter, boxName):
@@ -310,6 +312,11 @@ def add_stat_annotation(ax, plot='boxplot',
         text_format,
         ['full', 'simple', 'star'],
         label='argument `text_format`'
+    )
+    assert_is_in(
+        comparisons_correction,
+        ['bonferroni', None],
+        label='argument `comparisons_correction`'
     )
 
     if verbose >= 1 and text_format == 'star':
