@@ -1,4 +1,5 @@
-# from matplotlib.text import Text
+import warnings
+
 import matplotlib.pyplot as plt
 from matplotlib import lines
 import matplotlib.transforms as mtransforms
@@ -8,72 +9,213 @@ import pandas as pd
 import seaborn as sns
 from seaborn.utils import remove_na
 
+from .utils import raise_expected_got, assert_is_in
+from .StatResult import StatResult
+
 from scipy import stats
 
 DEFAULT = object()
 
 
-def stat_test(box_data1, box_data2, test, **stats_params):
-    test_short_name = ''
-    pval = None
-    formatted_output = None
+def stat_test(
+    box_data1,
+    box_data2,
+    test,
+    comparisons_correction=None,
+    num_comparisons=1,
+    **stats_params
+):
+    """Get formatted result of two sample statistical test.
+
+    Arguments
+    ---------
+    bbox_data1, bbox_data2
+    test: str
+        Statistical test to run. Must be one of:
+        - `Levene`
+        - `Mann-Whitney`
+        - `Mann-Whitney-gt`
+        - `Mann-Whitney-ls`
+        - `t-test_ind`
+        - `t-test_welch`
+        - `t-test_paired`
+        - `Wilcoxon`
+        - `Kruskal`
+    comparisons_correction: str or None, default None
+        Method to use for multiple comparisons correction. Currently only the
+        Bonferroni correction is implemented.
+    num_comparisons: int, default 1
+        Number of comparisons to use for multiple comparisons correction.
+    stats_params
+        Additional keyword arguments to pass to scipy stats functions.
+
+    Returns
+    -------
+    StatResult object with formatted result of test.
+
+    """
+    # Check arguments.
+    assert_is_in(
+        comparisons_correction,
+        ['bonferroni', None],
+        label='argument `comparisons_correction`',
+    )
+
+    # Switch to run scipy.stats hypothesis test.
     if test == 'Levene':
         stat, pval = stats.levene(box_data1, box_data2, **stats_params)
-        test_short_name = 'levene'
-        formatted_output = ("Levene test of variance, "
-                            "P_val={:.3e} stat={:.3e}").format(pval, stat)
+        result = StatResult(
+            'Levene test of variance', 'levene', 'stat', stat, pval
+        )
     elif test == 'Mann-Whitney':
         u_stat, pval = stats.mannwhitneyu(
-            box_data1, box_data2, alternative='two-sided', **stats_params)
-        test_short_name = 'M.W.W.'
-        formatted_output = ("Mann-Whitney-Wilcoxon test two-sided "
-                            "P_val={:.3e} U_stat={:.3e}").format(pval, u_stat)
+            box_data1, box_data2, alternative='two-sided', **stats_params
+        )
+        result = StatResult(
+            'Mann-Whitney-Wilcoxon test two-sided',
+            'M.W.W.',
+            'U_stat',
+            u_stat,
+            pval,
+        )
     elif test == 'Mann-Whitney-gt':
         u_stat, pval = stats.mannwhitneyu(
-            box_data1, box_data2, alternative='greater', **stats_params)
-        test_short_name = 'M.W.W.'
-        formatted_output = ("Mann-Whitney-Wilcoxon test greater "
-                            "P_val={:.3e} U_stat={:.3e}").format(pval, u_stat)
+            box_data1, box_data2, alternative='greater', **stats_params
+        )
+        result = StatResult(
+            'Mann-Whitney-Wilcoxon test greater',
+            'M.W.W.',
+            'U_stat',
+            u_stat,
+            pval,
+        )
     elif test == 'Mann-Whitney-ls':
         u_stat, pval = stats.mannwhitneyu(
-            box_data1, box_data2, alternative='less', **stats_params)
-        test_short_name = 'M.W.W.'
-        formatted_output = ("Mann-Whitney-Wilcoxon test smaller "
-                            "P_val={:.3e} U_stat={:.3e}").format(pval, u_stat)
+            box_data1, box_data2, alternative='less', **stats_params
+        )
+        result = StatResult(
+            'Mann-Whitney-Wilcoxon test smaller',
+            'M.W.W.',
+            'U_stat',
+            u_stat,
+            pval,
+        )
     elif test == 't-test_ind':
         stat, pval = stats.ttest_ind(a=box_data1, b=box_data2, **stats_params)
-        test_short_name = 't-test_ind'
-        formatted_output = ("t-test independent samples, "
-                            "P_val={:.3e} stat={:.3e}").format(pval, stat)
+        result = StatResult(
+            't-test independent samples', 't-test_ind', 'stat', stat, pval
+        )
     elif test == 't-test_welch':
         stat, pval = stats.ttest_ind(
-            a=box_data1, b=box_data2, equal_var=False, **stats_params)
-        test_short_name = 't-test_welch'
-        formatted_output = ("Welch's t-test independent samples, "
-                            "P_val={:.3e} stat={:.3e}").format(pval, stat)
+            a=box_data1, b=box_data2, equal_var=False, **stats_params
+        )
+        result = StatResult(
+            'Welch\'s t-test independent samples',
+            't-test_welch',
+            'stat',
+            stat,
+            pval,
+        )
     elif test == 't-test_paired':
         stat, pval = stats.ttest_rel(a=box_data1, b=box_data2, **stats_params)
-        test_short_name = 't-test_rel'
-        formatted_output = ("t-test paired samples, "
-                            "P_val={:.3e} stat={:.3e}").format(pval, stat)
+        result = StatResult(
+            't-test paired samples', 't-test_rel', 'stat', stat, pval
+        )
     elif test == 'Wilcoxon':
-        if "zero_method" in stats_params.keys():
-            zero_method = stats_params["zero_method"]
-            del stats_params["zero_method"]
-        else:
-            zero_method = len(box_data1) <= 20 and "pratt" or "wilcox"
+        zero_method_default = len(box_data1) <= 20 and "pratt" or "wilcox"
+        zero_method = stats_params.get('zero_method', zero_method_default)
         print("Using zero_method ", zero_method)
         stat, pval = stats.wilcoxon(
-            box_data1, box_data2, zero_method=zero_method, **stats_params)
-        test_short_name = 'Wilcoxon'
-        formatted_output = ("Wilcoxon test (paired samples), "
-                            "P_val={:.3e} stat={:.3e}").format(pval, stat)
+            box_data1, box_data2, zero_method=zero_method, **stats_params
+        )
+        result = StatResult(
+            'Wilcoxon test (paired samples)', 'Wilcoxon', 'stat', stat, pval
+        )
     elif test == 'Kruskal':
         stat, pval = stats.kruskal(box_data1, box_data2, **stats_params)
         test_short_name = 'Kruskal'
-        formatted_output = ("Kruskal-Wallis paired samples, "
-                            "P_val={:.3e} stat={:.3e}").format(pval, stat)
-    return pval, formatted_output, test_short_name
+        result = StatResult(
+            'Kruskal-Wallis paired samples', 'Kruskal', 'stat', stat, pval
+        )
+    else:
+        result = StatResult(None, '', None, None, np.nan)
+
+    # Optionally, run multiple comparisons correction.
+    if comparisons_correction == 'bonferroni':
+        result.pval = bonferroni(result.pval, num_comparisons)
+        result.test_str = result.test_str + ' with Bonferroni correction'
+    elif comparisons_correction is None:
+        pass
+    else:
+        # This should never be reached because `comparisons_correction` must
+        # be a valid correction method or None.
+        raise RuntimeError('Unexpectedly reached end of switch.')
+
+    return result
+
+
+def bonferroni(p_values, num_comparisons='auto'):
+    """Apply Bonferroni correction for multiple comparisons.
+
+    The Bonferroni correction is defined as
+        p_corrected = min(num_comparisons * p, 1.0).
+
+    Arguments
+    ---------
+    p_values: scalar or list-like
+        One or more p_values to correct.
+    num_comparisons: int or `auto`
+        Number of comparisons. Use `auto` to infer the number of comparisons
+        from the length of the `p_values` list.
+
+    Returns
+    -------
+    Scalar or numpy array of corrected p-values.
+
+    """
+    # Input checks.
+    if np.ndim(p_values) > 1:
+        raise_expected_got(
+            'Scalar or list-like', 'argument `p_values`', p_values
+        )
+    if num_comparisons != 'auto':
+        try:
+            # Raise a TypeError if num_comparisons is not numeric, and raise
+            # an AssertionError if it isn't int-like.
+            assert np.ceil(num_comparisons) == num_comparisons
+        except (AssertionError, TypeError) as e:
+            raise_expected_got(
+                'Int or `auto`', 'argument `num_comparisons`', num_comparisons
+            )
+
+    # Coerce p_values to numpy array.
+    p_values_array = np.atleast_1d(p_values)
+
+    if num_comparisons == 'auto':
+        # Infer number of comparisons
+        num_comparisons = len(p_values_array)
+    elif len(p_values_array) > 1 and num_comparisons != len(p_values_array):
+        # Warn if multiple p_values have been passed and num_comparisons is
+        # set manually.
+        warnings.warn(
+            'Manually-specified `num_comparisons={}` differs from number of '
+            'p_values to correct ({}).'.format(
+                num_comparisons, len(p_values_array)
+            )
+        )
+
+    # Apply correction by multiplying p_values and thresholding at p=1.0
+    p_values_array *= num_comparisons
+    p_values_array = np.min(
+        [p_values_array, np.ones_like(p_values_array)], axis=0
+    )
+
+    if len(p_values_array) == 1:
+        # Return a scalar if input was a scalar.
+        return p_values_array[0]
+    else:
+        return p_values_array
+
 
 
 def pval_annotation_text(x, pvalue_thresholds):
@@ -131,6 +273,7 @@ def add_stat_annotation(ax, plot='boxplot',
                         text_annot_custom=None,
                         loc='inside', show_test_name=True,
                         pvalue_thresholds=DEFAULT, stats_params=dict(),
+                        comparisons_correction='bonferroni',
                         use_fixed_offset=False, line_offset_to_box=None,
                         line_offset=None, line_height=0.02, text_offset=1,
                         color='0.2', linewidth=1.5,
@@ -153,6 +296,7 @@ def add_stat_annotation(ax, plot='boxplot',
     :param pvalue_format_string: defaults to `"{.3e}"`
     :param pvalue_thresholds: list of lists, or tuples. Default is: For "star" text_format: `[[1e-4, "****"], [1e-3, "***"], [1e-2, "**"], [0.05, "*"], [1, "ns"]]`. For "simple" text_format : `[[1e-5, "1e-5"], [1e-4, "1e-4"], [1e-3, "0.001"], [1e-2, "0.01"]]`
     :param pvalues: list or array of p-values for each box pair comparison.
+    :param comparisons_correction: Method for multiple comparisons correction. `bonferroni` or None.
     """
 
     def find_x_position_box(box_plotter, boxName):
@@ -235,15 +379,20 @@ def add_stat_annotation(ax, plot='boxplot',
 
     if text_annot_custom is not None and len(text_annot_custom) != len(box_pairs):
         raise ValueError("`text_annot_custom` should be of same length as `box_pairs`.")
-    
-    valid_list = ['inside', 'outside']
-    if loc not in valid_list:
-        raise ValueError("loc value should be one of the following: {}."
-                         .format(', '.join(valid_list)))
-    valid_list = ['full', 'simple', 'star']
-    if text_format not in valid_list:
-        raise ValueError("text_format value should be one of the following: {}."
-                         .format(', '.join(valid_list)))
+
+    assert_is_in(
+        loc, ['inside', 'outside'], label='argument `loc`'
+    )
+    assert_is_in(
+        text_format,
+        ['full', 'simple', 'star'],
+        label='argument `text_format`'
+    )
+    assert_is_in(
+        comparisons_correction,
+        ['bonferroni', None],
+        label='argument `comparisons_correction`'
+    )
 
     if verbose >= 1 and text_format == 'star':
         print("p-value annotation legend:")
@@ -301,7 +450,7 @@ def add_stat_annotation(ax, plot='boxplot',
     else:
         box_names = [(group_name, hue_name) for group_name in group_names for hue_name in hue_names]
         labels = ['{}_{}'.format(group_name, hue_name) for (group_name, hue_name) in box_names]
-    
+
     box_structs = [{'box':box_names[i],
                     'label':labels[i],
                     'x':find_x_position_box(box_plotter, box_names[i]),
@@ -371,31 +520,43 @@ def add_stat_annotation(ax, plot='boxplot',
         ymax_in_range_x1_x2 = y_stack_arr[1, i_ymax_in_range_x1_x2]
 
         if perform_stat_test:
-            pval, formatted_output, test_short_name = stat_test(box_data1, box_data2, test, **stats_params)
+            result = stat_test(
+                box_data1,
+                box_data2,
+                test,
+                comparisons_correction,
+                len(box_struct_pairs),
+                **stats_params
+            )
         else:
             test_short_name = test_short_name if test_short_name is not None else ''
-            pval = pvalues[i_box_pair]
-            formatted_output = ("Custom statistical test, {}, P_val={:.3e}"
-                                .format(test_short_name, pval))
-        
-        test_result_list.append({'pvalue': pval, 'test_short_name': test_short_name,
-                                 'formatted_output': formatted_output, 'box1': box1,
-                                 'box2': box2})
+            result = StatResult(
+                'Custom statistical test',
+                test_short_name,
+                None,
+                None,
+                pvalues[i_box_pair]
+            )
+
+        result.box1 = box1
+        result.box2 = box2
+        test_result_list.append(result)
+
         if verbose >= 1:
-            print("{} v.s. {}: {}".format(label1, label2, formatted_output))
+            print("{} v.s. {}: {}".format(label1, label2, result.formatted_output))
 
         if text_annot_custom is not None:
             text = text_annot_custom[i_box_pair]
         else:
             if text_format == 'full':
-                text = "{} p = {}".format('{}', pvalue_format_string).format(test_short_name, pval)
+                text = "{} p = {}".format('{}', pvalue_format_string).format(result.test_short_name, result.pval)
             elif text_format is None:
                 text = None
             elif text_format is 'star':
-                text = pval_annotation_text(pval, pvalue_thresholds)
+                text = pval_annotation_text(result.pval, pvalue_thresholds)
             elif text_format is 'simple':
                 test_short_name = show_test_name and test_short_name or ""
-                text = simple_text(pval, simple_format_string, pvalue_thresholds, test_short_name)
+                text = simple_text(result.pval, simple_format_string, pvalue_thresholds, test_short_name)
 
         yref = ymax_in_range_x1_x2
         yref2 = yref
