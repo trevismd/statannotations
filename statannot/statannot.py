@@ -1,28 +1,34 @@
-import warnings
+from typing import Union, List
 
 import matplotlib.pyplot as plt
-from matplotlib import lines
 import matplotlib.transforms as mtransforms
-from matplotlib.font_manager import FontProperties
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from matplotlib import lines
+from matplotlib.font_manager import FontProperties
+from scipy import stats
 from seaborn.utils import remove_na
 
-from .utils import raise_expected_got, assert_is_in
+from .ComparisonsCorrection import ComparisonsCorrection, IMPLEMENTED_METHODS, get_correction_method
 from .StatResult import StatResult
-
-from scipy import stats
+from .utils import assert_is_in
 
 DEFAULT = object()
+
+
+def assert_valid_correction_name(name):
+    assert_is_in(name, IMPLEMENTED_METHODS + [None],
+                 label='argument `comparisons_correction`')
 
 
 def stat_test(
     box_data1,
     box_data2,
-    test,
+    test_name,
     comparisons_correction=None,
     num_comparisons=1,
+    verbose=1,
     **stats_params
 ):
     """Get formatted result of two sample statistical test.
@@ -30,7 +36,7 @@ def stat_test(
     Arguments
     ---------
     bbox_data1, bbox_data2
-    test: str
+    test_name: str
         Statistical test to run. Must be one of:
         - `Levene`
         - `Mann-Whitney`
@@ -41,11 +47,13 @@ def stat_test(
         - `t-test_paired`
         - `Wilcoxon`
         - `Kruskal`
-    comparisons_correction: str or None, default None
+    comparisons_correction: str or or ComparisonCorrection or None, default None
         Method to use for multiple comparisons correction. Currently only the
-        Bonferroni correction is implemented.
+        Bonferroni correction is implemented to be applied on per-test basis.
     num_comparisons: int, default 1
         Number of comparisons to use for multiple comparisons correction.
+    verbose: int
+        Verbosity parameter, see add_stat_annotation
     stats_params
         Additional keyword arguments to pass to scipy stats functions.
 
@@ -55,19 +63,19 @@ def stat_test(
 
     """
     # Check arguments.
-    assert_is_in(
-        comparisons_correction,
-        ['bonferroni', None],
-        label='argument `comparisons_correction`',
-    )
+    if isinstance(comparisons_correction, ComparisonsCorrection):
+        pass
+    else:
+        assert_valid_correction_name(comparisons_correction)
+        comparisons_correction = get_correction_method(comparisons_correction)
 
-    # Switch to run scipy.stats hypothesis test.
-    if test == 'Levene':
+    # Switch to run scipy.stats hypothesis test_name.
+    if test_name == 'Levene':
         stat, pval = stats.levene(box_data1, box_data2, **stats_params)
         result = StatResult(
-            'Levene test of variance', 'levene', 'stat', stat, pval
+            'Levene test of variance', 'levene', 'stat_value', stat, pval
         )
-    elif test == 'Mann-Whitney':
+    elif test_name == 'Mann-Whitney':
         u_stat, pval = stats.mannwhitneyu(
             box_data1, box_data2, alternative='two-sided', **stats_params
         )
@@ -78,7 +86,7 @@ def stat_test(
             u_stat,
             pval,
         )
-    elif test == 'Mann-Whitney-gt':
+    elif test_name == 'Mann-Whitney-gt':
         u_stat, pval = stats.mannwhitneyu(
             box_data1, box_data2, alternative='greater', **stats_params
         )
@@ -89,7 +97,7 @@ def stat_test(
             u_stat,
             pval,
         )
-    elif test == 'Mann-Whitney-ls':
+    elif test_name == 'Mann-Whitney-ls':
         u_stat, pval = stats.mannwhitneyu(
             box_data1, box_data2, alternative='less', **stats_params
         )
@@ -100,149 +108,89 @@ def stat_test(
             u_stat,
             pval,
         )
-    elif test == 't-test_ind':
+    elif test_name == 't-test_ind':
         stat, pval = stats.ttest_ind(a=box_data1, b=box_data2, **stats_params)
         result = StatResult(
-            't-test independent samples', 't-test_ind', 'stat', stat, pval
+            't-test independent samples', 't-test_ind', 'stat_value', stat, pval
         )
-    elif test == 't-test_welch':
+    elif test_name == 't-test_welch':
         stat, pval = stats.ttest_ind(
             a=box_data1, b=box_data2, equal_var=False, **stats_params
         )
         result = StatResult(
             'Welch\'s t-test independent samples',
             't-test_welch',
-            'stat',
+            'stat_value',
             stat,
             pval,
         )
-    elif test == 't-test_paired':
+    elif test_name == 't-test_paired':
         stat, pval = stats.ttest_rel(a=box_data1, b=box_data2, **stats_params)
         result = StatResult(
-            't-test paired samples', 't-test_rel', 'stat', stat, pval
+            't-test paired samples', 't-test_rel', 'stat_value', stat, pval
         )
-    elif test == 'Wilcoxon':
+    elif test_name == 'Wilcoxon':
         zero_method_default = len(box_data1) <= 20 and "pratt" or "wilcox"
         zero_method = stats_params.get('zero_method', zero_method_default)
-        print("Using zero_method ", zero_method)
+        if verbose >= 1:
+            print("Using zero_method ", zero_method)
         stat, pval = stats.wilcoxon(
             box_data1, box_data2, zero_method=zero_method, **stats_params
         )
         result = StatResult(
-            'Wilcoxon test (paired samples)', 'Wilcoxon', 'stat', stat, pval
+            'Wilcoxon test (paired samples)', 'Wilcoxon', 'stat_value', stat, pval
         )
-    elif test == 'Kruskal':
+    elif test_name == 'Kruskal':
         stat, pval = stats.kruskal(box_data1, box_data2, **stats_params)
-        test_short_name = 'Kruskal'
         result = StatResult(
-            'Kruskal-Wallis paired samples', 'Kruskal', 'stat', stat, pval
+            'Kruskal-Wallis paired samples', 'Kruskal', 'stat_value', stat, pval
         )
     else:
         result = StatResult(None, '', None, None, np.nan)
 
     # Optionally, run multiple comparisons correction.
-    if comparisons_correction == 'bonferroni':
-        result.pval = bonferroni(result.pval, num_comparisons)
-        result.test_str = result.test_str + ' with Bonferroni correction'
-    elif comparisons_correction is None:
-        pass
-    else:
-        # This should never be reached because `comparisons_correction` must
-        # be a valid correction method or None.
-        raise RuntimeError('Unexpectedly reached end of switch.')
+    if comparisons_correction.type == 0:  # Correction can separately be applied to each pval
+        result.pval = comparisons_correction(result.pval, num_comparisons)
+        result.correction_method = comparisons_correction.name
 
     return result
 
 
-def bonferroni(p_values, num_comparisons='auto'):
-    """Apply Bonferroni correction for multiple comparisons.
+def pval_annotation_text(result: Union[List[StatResult], StatResult], pvalue_thresholds):
 
-    The Bonferroni correction is defined as
-        p_corrected = min(num_comparisons * p, 1.0).
-
-    Arguments
-    ---------
-    p_values: scalar or list-like
-        One or more p_values to correct.
-    num_comparisons: int or `auto`
-        Number of comparisons. Use `auto` to infer the number of comparisons
-        from the length of the `p_values` list.
-
-    Returns
-    -------
-    Scalar or numpy array of corrected p-values.
-
-    """
-    # Input checks.
-    if np.ndim(p_values) > 1:
-        raise_expected_got(
-            'Scalar or list-like', 'argument `p_values`', p_values
-        )
-    if num_comparisons != 'auto':
-        try:
-            # Raise a TypeError if num_comparisons is not numeric, and raise
-            # an AssertionError if it isn't int-like.
-            assert np.ceil(num_comparisons) == num_comparisons
-        except (AssertionError, TypeError) as e:
-            raise_expected_got(
-                'Int or `auto`', 'argument `num_comparisons`', num_comparisons
-            )
-
-    # Coerce p_values to numpy array.
-    p_values_array = np.atleast_1d(p_values)
-
-    if num_comparisons == 'auto':
-        # Infer number of comparisons
-        num_comparisons = len(p_values_array)
-    elif len(p_values_array) > 1 and num_comparisons != len(p_values_array):
-        # Warn if multiple p_values have been passed and num_comparisons is
-        # set manually.
-        warnings.warn(
-            'Manually-specified `num_comparisons={}` differs from number of '
-            'p_values to correct ({}).'.format(
-                num_comparisons, len(p_values_array)
-            )
-        )
-
-    # Apply correction by multiplying p_values and thresholding at p=1.0
-    p_values_array *= num_comparisons
-    p_values_array = np.min(
-        [p_values_array, np.ones_like(p_values_array)], axis=0
-    )
-
-    if len(p_values_array) == 1:
-        # Return a scalar if input was a scalar.
-        return p_values_array[0]
-    else:
-        return p_values_array
-
-
-
-def pval_annotation_text(x, pvalue_thresholds):
     single_value = False
-    if type(x) is np.array:
-        x1 = x
+
+    if isinstance(result, list):
+        x1_pval = np.array([res.pval for res in result])
+        x1_signif_suff = [res.significance_suffix for res in result]
     else:
-        x1 = np.array([x])
+        x1_pval = np.array([result.pval])
+        x1_signif_suff = [result.significance_suffix]
         single_value = True
+
     # Sort the threshold array
     pvalue_thresholds = pd.DataFrame(pvalue_thresholds).sort_values(by=0, ascending=False).values
-    x_annot = pd.Series(["" for _ in range(len(x1))])
+    x_annot = pd.Series(["" for _ in range(len(x1_pval))])
+
     for i in range(0, len(pvalue_thresholds)):
+
         if i < len(pvalue_thresholds)-1:
-            condition = (x1 <= pvalue_thresholds[i][0]) & (pvalue_thresholds[i+1][0] < x1)
+            condition = (x1_pval <= pvalue_thresholds[i][0]) & (pvalue_thresholds[i+1][0] < x1_pval)
             x_annot[condition] = pvalue_thresholds[i][1]
+
         else:
-            condition = x1 < pvalue_thresholds[i][0]
+            condition = x1_pval < pvalue_thresholds[i][0]
             x_annot[condition] = pvalue_thresholds[i][1]
+
+    x_annot = pd.Series([f"{star}{signif}" for star, signif in zip(x_annot, x1_signif_suff)])
 
     return x_annot if not single_value else x_annot.iloc[0]
 
 
-def simple_text(pval, pvalue_format, pvalue_thresholds, test_short_name=None):
+def simple_text(result: StatResult, pvalue_format, pvalue_thresholds, test_short_name=None):
     """
     Generates simple text for test name and pvalue
-    :param pval: pvalue
+    :param result: StatResult instance
     :param pvalue_format: format string for pvalue
     :param test_short_name: Short name of test to show
     :param pvalue_thresholds: String to display per pvalue range
@@ -255,13 +203,13 @@ def simple_text(pval, pvalue_format, pvalue_thresholds, test_short_name=None):
     text = test_short_name and test_short_name + " " or ""
 
     for threshold in thresholds:
-        if pval < threshold[0]:
+        if result.pval < threshold[0]:
             pval_text = "p ≤ {}".format(threshold[1])
             break
     else:
-        pval_text = "p = {}".format(pvalue_format).format(pval)
+        pval_text = "p = {}".format(pvalue_format).format(result.pval)
 
-    return text + pval_text
+    return text + pval_text + result.significance_suffix
 
 
 def add_stat_annotation(ax, plot='boxplot',
@@ -272,7 +220,7 @@ def add_stat_annotation(ax, plot='boxplot',
                         test=None, text_format='star', pvalue_format_string=DEFAULT,
                         text_annot_custom=None,
                         loc='inside', show_test_name=True,
-                        pvalue_thresholds=DEFAULT, stats_params=dict(),
+                        pvalue_thresholds=DEFAULT, stats_params: dict = None,
                         comparisons_correction='bonferroni',
                         use_fixed_offset=False, line_offset_to_box=None,
                         line_offset=None, line_height=0.02, text_offset=1,
@@ -296,7 +244,9 @@ def add_stat_annotation(ax, plot='boxplot',
     :param pvalue_format_string: defaults to `"{.3e}"`
     :param pvalue_thresholds: list of lists, or tuples. Default is: For "star" text_format: `[[1e-4, "****"], [1e-3, "***"], [1e-2, "**"], [0.05, "*"], [1, "ns"]]`. For "simple" text_format : `[[1e-5, "1e-5"], [1e-4, "1e-4"], [1e-3, "0.001"], [1e-2, "0.01"]]`
     :param pvalues: list or array of p-values for each box pair comparison.
-    :param comparisons_correction: Method for multiple comparisons correction. `bonferroni` or None.
+    :param stats_params: Parameters for statistical test functions.
+    :param comparisons_correction: Method for multiple comparisons correction.
+        One of `bonferroni`, `holm-bonferroni` (`HB`), `benjamin-hochberg` (`BH`), or None.
     """
 
     def find_x_position_box(box_plotter, boxName):
@@ -308,9 +258,9 @@ def add_stat_annotation(ax, plot='boxplot',
             hue_offset = 0
         else:
             cat = boxName[0]
-            hue = boxName[1]
+            box_hue = boxName[1]
             hue_offset = box_plotter.hue_offsets[
-                box_plotter.hue_names.index(hue)]
+                box_plotter.hue_names.index(box_hue)]
 
         group_pos = box_plotter.group_names.index(cat)
         box_pos = group_pos + hue_offset
@@ -354,6 +304,9 @@ def add_stat_annotation(ax, plot='boxplot',
             pvalue_thresholds = [[1e-5, "1e-5"], [1e-4, "1e-4"],
                                  [1e-3, "0.001"], [1e-2, "0.01"]]
 
+    if stats_params is None:
+        stats_params = dict()
+
     fig = plt.gcf()
 
     # Validate arguments
@@ -388,11 +341,10 @@ def add_stat_annotation(ax, plot='boxplot',
         ['full', 'simple', 'star'],
         label='argument `text_format`'
     )
-    assert_is_in(
-        comparisons_correction,
-        ['bonferroni', None],
-        label='argument `comparisons_correction`'
-    )
+
+    # Comparisons correction
+    assert_valid_correction_name(comparisons_correction)
+    comparisons_correction = get_correction_method(comparisons_correction)
 
     if verbose >= 1 and text_format == 'star':
         print("p-value annotation legend:")
@@ -451,13 +403,16 @@ def add_stat_annotation(ax, plot='boxplot',
         box_names = [(group_name, hue_name) for group_name in group_names for hue_name in hue_names]
         labels = ['{}_{}'.format(group_name, hue_name) for (group_name, hue_name) in box_names]
 
-    box_structs = [{'box':box_names[i],
-                    'label':labels[i],
-                    'x':find_x_position_box(box_plotter, box_names[i]),
-                    'box_data':get_box_data(box_plotter, box_names[i]),
-                    'ymax':np.amax(get_box_data(box_plotter, box_names[i])) if
-                           len(get_box_data(box_plotter, box_names[i])) > 0 else np.nan}
-                   for i in range(len(box_names))]
+    box_structs = [
+        {
+            'box': box_names[i],
+            'label': labels[i],
+            'x': find_x_position_box(box_plotter, box_names[i]),
+            'box_data': get_box_data(box_plotter, box_names[i]),
+            'ymax': np.amax(get_box_data(box_plotter, box_names[i])) if
+                    len(get_box_data(box_plotter, box_names[i])) > 0 else np.nan
+        } for i in range(len(box_names))]
+
     # Sort the box data structures by position along the x axis
     box_structs = sorted(box_structs, key=lambda x: x['x'])
     # Add the index position in the list of boxes along the x axis
@@ -483,14 +438,14 @@ def add_stat_annotation(ax, plot='boxplot',
 
     # Draw first the annotations with the shortest between-boxes distance, in order to reduce
     # overlapping between annotations.
-    box_struct_pairs = sorted(box_struct_pairs, key=lambda x: abs(x[1]['x'] - x[0]['x']))
+    box_struct_pairs = sorted(box_struct_pairs, key=lambda a: abs(a[1]['x'] - a[0]['x']))
 
     # Build array that contains the x and y_max position of the highest annotation or box data at
     # a given x position, and also keeps track of the number of stacked annotations.
     # This array will be updated when a new annotation is drawn.
     y_stack_arr = np.array([[box_struct['x'] for box_struct in box_structs],
                             [box_struct['ymax'] for box_struct in box_structs],
-                            [0 for i in range(len(box_structs))]])
+                            [0 for _ in range(len(box_structs))]])
     if loc == 'outside':
         y_stack_arr[1, :] = ylim[1]
     ann_list = []
@@ -498,26 +453,13 @@ def add_stat_annotation(ax, plot='boxplot',
     ymaxs = []
     y_stack = []
 
+    # fetch results of all tests
     for box_struct1, box_struct2 in box_struct_pairs:
-
         box1 = box_struct1['box']
         box2 = box_struct2['box']
-        label1 = box_struct1['label']
-        label2 = box_struct2['label']
         box_data1 = box_struct1['box_data']
         box_data2 = box_struct2['box_data']
-        x1 = box_struct1['x']
-        x2 = box_struct2['x']
-        xi1 = box_struct1['xi']
-        xi2 = box_struct2['xi']
-        ymax1 = box_struct1['ymax']
-        ymax2 = box_struct2['ymax']
         i_box_pair = box_struct1['i_box_pair']
-
-        # Find y maximum for all the y_stacks *in between* the box1 and the box2
-        i_ymax_in_range_x1_x2 = xi1 + np.nanargmax(y_stack_arr[1, np.where((x1 <= y_stack_arr[0, :]) &
-                                                                           (y_stack_arr[0, :] <= x2))])
-        ymax_in_range_x1_x2 = y_stack_arr[1, i_ymax_in_range_x1_x2]
 
         if perform_stat_test:
             result = stat_test(
@@ -526,6 +468,7 @@ def add_stat_annotation(ax, plot='boxplot',
                 test,
                 comparisons_correction,
                 len(box_struct_pairs),
+                verbose,
                 **stats_params
             )
         else:
@@ -537,11 +480,34 @@ def add_stat_annotation(ax, plot='boxplot',
                 None,
                 pvalues[i_box_pair]
             )
-
         result.box1 = box1
         result.box2 = box2
+
         test_result_list.append(result)
 
+    # Perform other types of correction methods for multiple testing
+    if comparisons_correction.type == 1:  # Correction is applied to a set of pvalues
+
+        alpha = stats_params.get("alpha", 0.05)
+        original_pvalues = [result.pval for result in test_result_list]
+
+        significant_pvalues = comparisons_correction(original_pvalues, alpha=alpha)
+
+        for is_significant, result in zip(significant_pvalues, test_result_list):
+            result.correction_method = comparisons_correction.name
+            result.corrected_significance = is_significant
+
+    # Then annotate
+    for box_structs, result in zip(box_struct_pairs, test_result_list):
+        x1 = box_structs[0]['x']
+        x2 = box_structs[1]['x']
+        xi1 = box_structs[0]['xi']
+        xi2 = box_structs[1]['xi']
+        label1 = box_structs[0]['label']
+        label2 = box_structs[1]['label']
+        # ymax1 = box_structs[0]['ymax']  # Not used, so do not assign them
+        # ymax2 = box_structs[1]['ymax']
+        i_box_pair = box_structs[0]['i_box_pair']
         if verbose >= 1:
             print("{} v.s. {}: {}".format(label1, label2, result.formatted_output))
 
@@ -549,19 +515,26 @@ def add_stat_annotation(ax, plot='boxplot',
             text = text_annot_custom[i_box_pair]
         else:
             if text_format == 'full':
-                text = "{} p = {}".format('{}', pvalue_format_string).format(result.test_short_name, result.pval)
+                text = "{} p = {}{}".format('{}', pvalue_format_string, '{}').format(
+                    result.test_short_name, result.pval, result.significance_suffix)
             elif text_format is None:
                 text = None
             elif text_format is 'star':
-                text = pval_annotation_text(result.pval, pvalue_thresholds)
+                text = pval_annotation_text(result, pvalue_thresholds)
             elif text_format is 'simple':
                 test_short_name = show_test_name and test_short_name or ""
-                text = simple_text(result.pval, simple_format_string, pvalue_thresholds, test_short_name)
+                text = simple_text(result, simple_format_string, pvalue_thresholds, test_short_name)
+
+        # Find y maximum for all the y_stacks *in between* the box1 and the box2
+        i_ymax_in_range_x1_x2 = xi1 + np.nanargmax(
+            y_stack_arr[1, np.where((x1 <= y_stack_arr[0, :])
+                                    & (y_stack_arr[0, :] <= x2))])
+        ymax_in_range_x1_x2 = y_stack_arr[1, i_ymax_in_range_x1_x2]
 
         yref = ymax_in_range_x1_x2
         yref2 = yref
 
-        # Choose the best offset depending on wether there is an annotation below
+        # Choose the best offset depending on whether there is an annotation below
         # at the x position in the range [x1, x2] where the stack is the highest
         if y_stack_arr[2, i_ymax_in_range_x1_x2] == 0:
             # there is only a box below
