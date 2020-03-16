@@ -23,19 +23,19 @@ def assert_valid_correction_name(name):
 
 
 def stat_test(
-    box_data1,
-    box_data2,
-    test_name,
-    comparisons_correction=None,
-    num_comparisons=1,
-    verbose=1,
-    **stats_params
+        box_data1,
+        box_data2,
+        test_name,
+        comparisons_correction=None,
+        num_comparisons=1,
+        verbose=1,
+        **stats_params
 ):
     """Get formatted result of two sample statistical test.
 
     Arguments
     ---------
-    bbox_data1, bbox_data2
+    box_data1, box_data2
     test_name: str
         Statistical test to run. Must be one of:
         - `Levene`
@@ -157,7 +157,6 @@ def stat_test(
 
 
 def pval_annotation_text(result: Union[List[StatResult], StatResult], pvalue_thresholds):
-
     single_value = False
 
     if isinstance(result, list):
@@ -174,8 +173,8 @@ def pval_annotation_text(result: Union[List[StatResult], StatResult], pvalue_thr
 
     for i in range(0, len(pvalue_thresholds)):
 
-        if i < len(pvalue_thresholds)-1:
-            condition = (x1_pval <= pvalue_thresholds[i][0]) & (pvalue_thresholds[i+1][0] < x1_pval)
+        if i < len(pvalue_thresholds) - 1:
+            condition = (x1_pval <= pvalue_thresholds[i][0]) & (pvalue_thresholds[i + 1][0] < x1_pval)
             x_annot[condition] = pvalue_thresholds[i][1]
 
         else:
@@ -249,42 +248,42 @@ def add_stat_annotation(ax, plot='boxplot',
         One of `bonferroni`, `holm-bonferroni` (`HB`), `benjamin-hochberg` (`BH`), or None.
     """
 
-    def find_x_position_box(box_plotter, boxName):
+    def find_x_position_box(b_plotter, boxName):
         """
         boxName can be either a name "cat" or a tuple ("cat", "hue")
         """
-        if box_plotter.plot_hues is None:
+        if b_plotter.plot_hues is None:
             cat = boxName
             hue_offset = 0
         else:
             cat = boxName[0]
-            box_hue = boxName[1]
-            hue_offset = box_plotter.hue_offsets[
-                box_plotter.hue_names.index(box_hue)]
+            hue_level = boxName[1]
+            hue_offset = b_plotter.hue_offsets[
+                b_plotter.hue_names.index(hue_level)]
 
-        group_pos = box_plotter.group_names.index(cat)
+        group_pos = b_plotter.group_names.index(cat)
         box_pos = group_pos + hue_offset
         return box_pos
 
-    def get_box_data(box_plotter, boxName):
+    def get_box_data(b_plotter, boxName):
         """
         boxName can be either a name "cat" or a tuple ("cat", "hue")
 
         Here we really have to duplicate seaborn code, because there is not
         direct access to the box_data in the BoxPlotter class.
         """
-        cat = box_plotter.plot_hues is None and boxName or boxName[0]
+        cat = b_plotter.plot_hues is None and boxName or boxName[0]
 
-        index = box_plotter.group_names.index(cat)
-        group_data = box_plotter.plot_data[index]
+        index = b_plotter.group_names.index(cat)
+        group_data = b_plotter.plot_data[index]
 
-        if box_plotter.plot_hues is None:
+        if b_plotter.plot_hues is None:
             # Draw a single box or a set of boxes
             # with a single level of grouping
             box_data = remove_na(group_data)
         else:
             hue_level = boxName[1]
-            hue_mask = box_plotter.plot_hues[index] == hue_level
+            hue_mask = b_plotter.plot_hues[index] == hue_level
             box_data = remove_na(group_data[hue_mask])
 
         return box_data
@@ -350,9 +349,9 @@ def add_stat_annotation(ax, plot='boxplot',
         print("p-value annotation legend:")
         pvalue_thresholds = pd.DataFrame(pvalue_thresholds).sort_values(by=0, ascending=False).values
         for i in range(0, len(pvalue_thresholds)):
-            if i < len(pvalue_thresholds)-1:
+            if i < len(pvalue_thresholds) - 1:
                 print('{}: {:.2e} < p <= {:.2e}'.format(pvalue_thresholds[i][1],
-                                                        pvalue_thresholds[i+1][0],
+                                                        pvalue_thresholds[i + 1][0],
                                                         pvalue_thresholds[i][0]))
             else:
                 print('{}: p <= {:.2e}'.format(pvalue_thresholds[i][1], pvalue_thresholds[i][0]))
@@ -377,14 +376,15 @@ def add_stat_annotation(ax, plot='boxplot',
                 line_offset_to_box = 0.06
         elif loc == 'outside':
             line_offset_to_box = line_offset
-    y_offset = line_offset*yrange
-    y_offset_to_box = line_offset_to_box*yrange
+    y_offset = line_offset * yrange
+    y_offset_to_box = line_offset_to_box * yrange
 
     if plot == 'boxplot':
         # Create the same plotter object as seaborn's boxplot
         box_plotter = sns.categorical._BoxPlotter(
             x, y, hue, data, order, hue_order, orient=None, width=width, color=None,
             palette=None, saturation=.75, dodge=True, fliersize=5, linewidth=None)
+
     elif plot == 'barplot':
         # Create the same plotter object as seaborn's barplot
         box_plotter = sns.categorical._BarPlotter(
@@ -405,20 +405,21 @@ def add_stat_annotation(ax, plot='boxplot',
 
     box_structs = [
         {
-            'box': box_names[i],
-            'label': labels[i],
-            'x': find_x_position_box(box_plotter, box_names[i]),
+            'box':      box_names[i],
+            'label':    labels[i],
+            'x':        find_x_position_box(box_plotter, box_names[i]),
             'box_data': get_box_data(box_plotter, box_names[i]),
-            'ymax': np.amax(get_box_data(box_plotter, box_names[i])) if
-                    len(get_box_data(box_plotter, box_names[i])) > 0 else np.nan
+            'ymax':     (np.amax(get_box_data(box_plotter, box_names[i]))
+                         if len(get_box_data(box_plotter, box_names[i])) > 0
+                         else np.nan)
         } for i in range(len(box_names))]
 
     # Sort the box data structures by position along the x axis
-    box_structs = sorted(box_structs, key=lambda x: x['x'])
+    box_structs = sorted(box_structs, key=lambda a: a['x'])
     # Add the index position in the list of boxes along the x axis
     box_structs = [dict(box_struct, xi=i) for i, box_struct in enumerate(box_structs)]
     # Same data structure list with access key by box name
-    box_structs_dic = {box_struct['box']:box_struct for box_struct in box_structs}
+    box_structs_dic = {box_struct['box']: box_struct for box_struct in box_structs}
 
     # Build the list of box data structure pairs
     box_struct_pairs = []
@@ -543,7 +544,7 @@ def add_stat_annotation(ax, plot='boxplot',
             # there is an annotation below
             offset = y_offset
         y = yref2 + offset
-        h = line_height*yrange
+        h = line_height * yrange
         line_x, line_y = [x1, x1, x2, x2], [y, y + h, y + h, y]
         if loc == 'inside':
             ax.plot(line_x, line_y, lw=linewidth, c=color)
@@ -583,13 +584,13 @@ def add_stat_annotation(ax, plot='boxplot',
                 fontsize_points = FontProperties(size='medium').get_size_in_points()
                 offset_trans = mtransforms.offset_copy(
                     ax.transData, fig=fig, x=0,
-                    y=1.0*fontsize_points + text_offset, units='points')
+                    y=1.0 * fontsize_points + text_offset, units='points')
                 y_top_display = offset_trans.transform((0, y + h))
                 y_top_annot = ax.transData.inverted().transform(y_top_display)[1]
         else:
             y_top_annot = y + h
 
-        y_stack.append(y_top_annot)    # remark: y_stack is not really necessary if we have the stack_array
+        y_stack.append(y_top_annot)  # remark: y_stack is not really necessary if we have the stack_array
         ymaxs.append(max(y_stack))
         # Fill the highest y position of the annotation into the y_stack array
         # for all positions in the range x1 to x2
@@ -599,7 +600,7 @@ def add_stat_annotation(ax, plot='boxplot',
 
     y_stack_max = max(ymaxs)
     if loc == 'inside':
-        ax.set_ylim((ylim[0], max(1.03*y_stack_max, ylim[1])))
+        ax.set_ylim((ylim[0], max(1.03 * y_stack_max, ylim[1])))
     elif loc == 'outside':
         ax.set_ylim((ylim[0], ylim[1]))
 
