@@ -1,50 +1,7 @@
-import warnings
-
 import numpy as np
 
-from .utils import raise_expected_got
-
-
-def check_pval_correction_input_values(p_values, num_comparisons):
-    if np.ndim(p_values) > 1:
-        raise_expected_got(
-            'Scalar or list-like', 'argument `p_values`', p_values
-        )
-
-    if num_comparisons != 'auto':
-        try:
-            # Raise a TypeError if num_comparisons is not numeric, and raise
-            # an AssertionError if it isn't int-like.
-            assert np.ceil(num_comparisons) == num_comparisons
-        except (AssertionError, TypeError):
-            raise_expected_got(
-                'Int or `auto`', 'argument `num_comparisons`', num_comparisons
-            )
-
-
-def get_num_comparisons(p_values_array, num_comparisons):
-    if num_comparisons == 'auto':
-        # Infer number of comparisons
-        num_comparisons = len(p_values_array)
-
-    elif 1 < len(p_values_array) != num_comparisons:
-        # Warn if multiple p_values have been passed and num_comparisons is
-        # set manually.
-        warnings.warn(
-            'Manually-specified `num_comparisons={}` differs from number of '
-            'p_values to correct ({}).'.format(
-                num_comparisons, len(p_values_array)
-            )
-        )
-    return num_comparisons
-
-
-def return_results(results_array):
-    if len(results_array) == 1:
-        # Return a scalar if input was a scalar.
-        return results_array[0]
-    else:
-        return results_array
+from statannot.comparisons_corrections.utils import check_pval_correction_input_values, return_results, \
+    get_num_comparisons
 
 
 def bonferroni(p_values, num_comparisons='auto'):
@@ -74,7 +31,7 @@ def bonferroni(p_values, num_comparisons='auto'):
 
     num_comparisons = get_num_comparisons(p_values_array, num_comparisons)
 
-    # Apply correction by multiplying p_values and thresholding at p=1.0
+    # Apply correction by multiplying p_values and using max p=1.0
     p_values_array *= num_comparisons
     p_values_array = np.min(
         [p_values_array, np.ones_like(p_values_array)], axis=0

@@ -10,8 +10,9 @@ from matplotlib.font_manager import FontProperties
 from scipy import stats
 from seaborn.utils import remove_na
 
-from .ComparisonsCorrection import ComparisonsCorrection, IMPLEMENTED_METHODS, get_correction_method
 from .StatResult import StatResult
+from .comparisons_corrections.ComparisonsCorrection import ComparisonsCorrection, IMPLEMENTED_METHODS, \
+    get_correction_method
 from .utils import assert_is_in
 
 DEFAULT = object()
