@@ -18,7 +18,7 @@ methods_data = {'Bonferroni':        [bonferroni, 0],
                 'Holm-Bonferroni':   [holm_bonferroni, 1],
                 'Benjamin-Hochberg': [benjamin_hochberg, 1]}
 
-IMPLEMENTED_METHODS = methods_names.keys()
+IMPLEMENTED_METHODS = [name for name in methods_names.keys()]
 
 
 def get_correction_method(name):

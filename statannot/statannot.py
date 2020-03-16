@@ -11,16 +11,11 @@ from scipy import stats
 from seaborn.utils import remove_na
 
 from .StatResult import StatResult
-from .comparisons_corrections.ComparisonsCorrection import ComparisonsCorrection, IMPLEMENTED_METHODS, \
-    get_correction_method
+from statannot.comparisons_corrections.ComparisonsCorrection import ComparisonsCorrection, get_correction_method
+from statannot.comparisons_corrections.utils import assert_valid_correction_name
 from .utils import assert_is_in
 
 DEFAULT = object()
-
-
-def assert_valid_correction_name(name):
-    assert_is_in(name, IMPLEMENTED_METHODS + [None],
-                 label='argument `comparisons_correction`')
 
 
 def stat_test(
