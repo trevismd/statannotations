@@ -65,7 +65,7 @@ def stat_test(
         assert_valid_correction_name(comparisons_correction)
         comparisons_correction = get_correction_method(comparisons_correction)
 
-    # Switch to run scipy.stats hypothesis test_name.
+    # Switch to run scipy.stats hypothesis test.
     if test_name == 'Levene':
         stat, pval = stats.levene(box_data1, box_data2, **stats_params)
         result = StatResult(
