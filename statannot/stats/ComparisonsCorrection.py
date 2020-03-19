@@ -1,4 +1,4 @@
-from statannot.comparisons_corrections.funcs import bonferroni, holm_bonferroni, benjamin_hochberg
+from statannot.stats.funcs import bonferroni, holm_bonferroni, benjamin_hochberg
 
 methods_names = {'bonferroni':        'Bonferroni',
                  'bonf':              'Bonferroni',

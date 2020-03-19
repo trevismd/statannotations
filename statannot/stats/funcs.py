@@ -1,6 +1,6 @@
 import numpy as np
 
-from statannot.comparisons_corrections.utils import check_pval_correction_input_values, return_results, \
+from statannot.stats.utils import check_pval_correction_input_values, return_results, \
     get_num_comparisons
 
 

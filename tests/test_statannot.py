@@ -3,7 +3,7 @@ import warnings
 
 import numpy.testing as npt
 
-from statannot.comparisons_corrections.funcs import bonferroni, holm_bonferroni, benjamin_hochberg
+from statannot.stats.funcs import bonferroni, holm_bonferroni, benjamin_hochberg
 
 
 class TestBonferroni(unittest.TestCase):

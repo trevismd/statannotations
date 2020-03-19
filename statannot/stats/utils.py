@@ -2,7 +2,7 @@ import warnings
 
 import numpy as np
 
-import statannot.comparisons_corrections.ComparisonsCorrection as CompCorr
+import statannot.stats.ComparisonsCorrection as CompCorr
 from statannot.utils import raise_expected_got, assert_is_in
 
 
