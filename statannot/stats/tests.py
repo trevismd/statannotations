@@ -137,8 +137,8 @@ def stat_test(
     else:
         result = StatResult(None, '', None, None, np.nan)
 
-    # Optionally, run multiple comparisons correction.
-    if comparisons_correction.type == 0:  # Correction can separately be applied to each pval
+    # Optionally, run multiple comparisons correction that can separately be applied to each pval
+    if comparisons_correction is not None and comparisons_correction.type == 0:
         result.pval = comparisons_correction(result.pval, num_comparisons)
         result.correction_method = comparisons_correction.name
 
