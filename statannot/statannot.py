@@ -144,8 +144,8 @@ def stat_test(
     else:
         result = StatResult(None, '', None, None, np.nan)
 
-    # Optionally, run multiple comparisons correction.
-    if comparisons_correction.type == 0:  # Correction can separately be applied to each pval
+    # Optionally, run multiple comparisons correction that can separately be applied to each pval
+    if comparisons_correction is not None and comparisons_correction.type == 0:
         result.pval = comparisons_correction(result.pval, num_comparisons)
         result.correction_method = comparisons_correction.name
 
@@ -216,7 +216,7 @@ def add_stat_annotation(ax, plot='boxplot',
                         text_annot_custom=None,
                         loc='inside', show_test_name=True,
                         pvalue_thresholds=DEFAULT, stats_params: dict = None,
-                        comparisons_correction='bonferroni',
+                        comparisons_correction='bonferroni', num_comparisons='auto',
                         use_fixed_offset=False, line_offset_to_box=None,
                         line_offset=None, line_height=0.02, text_offset=1,
                         color='0.2', linewidth=1.5,
@@ -242,6 +242,7 @@ def add_stat_annotation(ax, plot='boxplot',
     :param stats_params: Parameters for statistical test functions.
     :param comparisons_correction: Method for multiple comparisons correction.
         One of `bonferroni`, `holm-bonferroni` (`HB`), `benjamin-hochberg` (`BH`), or None.
+    :param num_comparisons: Override number of comparisons otherwise calculated with number of box_pairs
     """
 
     def find_x_position_box(b_plotter, boxName):
@@ -464,7 +465,7 @@ def add_stat_annotation(ax, plot='boxplot',
                 box_data2,
                 test,
                 comparisons_correction,
-                len(box_struct_pairs),
+                num_comparisons != "auto" and num_comparisons or len(box_struct_pairs),
                 verbose,
                 **stats_params
             )
@@ -483,7 +484,7 @@ def add_stat_annotation(ax, plot='boxplot',
         test_result_list.append(result)
 
     # Perform other types of correction methods for multiple testing
-    if comparisons_correction.type == 1:  # Correction is applied to a set of pvalues
+    if comparisons_correction is not None and comparisons_correction.type == 1:  # Correction is applied to a set of pvalues
 
         alpha = stats_params.get("alpha", 0.05)
         original_pvalues = [result.pval for result in test_result_list]
