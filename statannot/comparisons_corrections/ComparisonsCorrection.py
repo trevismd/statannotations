@@ -40,6 +40,15 @@ class ComparisonsCorrection:
         self.name = name
         self.func = func
         self.type = method_type
-
+        self.__doc__ = f"ComparisonCorrection wrapper for the function " \
+                       f"{func.__name__}, providing the attributes\n" \
+                       f"    `name`: {self.name}\n" \
+                       f"    `type`: {self.type} \n" \
+                       f"With\n" \
+                       f"    type 0 function: Per-pvalue correction with modification\n" \
+                       f"    type 1 function: Correction of interpretation of set of (ordered) pvalues\n" \
+                       f"------ Original function documentation ------ \n" \
+                       f"{func.__doc__}"
+               
     def __call__(self, *args, **kwargs):
         return self.func(*args, **kwargs)
