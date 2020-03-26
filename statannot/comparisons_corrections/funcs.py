@@ -83,10 +83,8 @@ def holm_bonferroni(p_values, num_comparisons='auto', alpha=0.05):
 
     # Set to False non-rejected hypotheses (pval is to high even if below alpha)
     else:
-        counter = last_index_to_reject
-        while counter < len(p_values_array):
-            output_p_values[ordered_p_val_idx[counter]] = False
-            counter += 1
+        for idx in ordered_p_val_idx[last_index_to_reject:]:
+            output_p_values[idx] = False
 
     return return_results(output_p_values)
 
@@ -102,9 +100,11 @@ def benjamin_hochberg(p_values, num_comparisons='auto', alpha=0.05):
         One or more p_values to correct.
     num_comparisons: int or `auto`
         Number of comparisons. Use `auto` to infer the number of comparisons
-        from the length of the `p_values` list.
+        from the length of the `p_values` list. If this number is specified,
+        the missing p-values will be considered higher, and the specified
+        p-values compared to the remaining smallest BH critical values.
     alpha: float
-        Significance level (accepted type I error rate)
+        False discovery rate (Q)
     Returns
     -------
     Scalar or numpy array of boolean representing significance of p-values
@@ -121,22 +121,20 @@ def benjamin_hochberg(p_values, num_comparisons='auto', alpha=0.05):
     # Order p_values
     ordered_p_val_idx = np.argsort(p_values_array)
 
-    last_index_to_reject = 0
+    last_index_to_reject = len(p_values_array) - 1
     output_p_values = np.zeros_like(p_values_array)
 
-    # Set to True rejected hypotheses (pval is sufficiently low)
-    while (p_values_array[ordered_p_val_idx[last_index_to_reject]] <=
+    # Set to False non-rejected hypotheses (pval is too high vs critical value)
+    while (p_values_array[ordered_p_val_idx[last_index_to_reject]] >
            (last_index_to_reject + 1) * alpha / num_comparisons):
-        output_p_values[ordered_p_val_idx[last_index_to_reject]] = True
-        last_index_to_reject += 1
-        if last_index_to_reject == len(p_values_array):
+        output_p_values[ordered_p_val_idx[last_index_to_reject]] = False
+        last_index_to_reject -= 1
+        if last_index_to_reject < 0:
             break
 
-    # Set to False non-rejected hypotheses (pval is to high even if below alpha)
+    # Set to True to reject the rest of the hypotheses
     else:
-        counter = last_index_to_reject
-        while counter < len(p_values_array):
-            output_p_values[ordered_p_val_idx[counter]] = False
-            counter += 1
+        for idx in ordered_p_val_idx[:last_index_to_reject + 1]:
+            output_p_values[idx] = True
 
     return return_results(output_p_values)

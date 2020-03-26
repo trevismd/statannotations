@@ -146,10 +146,28 @@ class TestBenjaminHochberg(unittest.TestCase):
         observed = benjamin_hochberg(raw_p_values)
         npt.assert_allclose(observed, expected)
 
-    def test_returns_correct_one_true_value_bis(self):
-        raw_p_values = [0.05, 0.01, 0.03]
+    def test_returns_correct_three_true_values_with_alpha_005_and_more_comparisons(self):
+        raw_p_values = [0.03, 0.03, 0.03]
         expected = [True, True, True]
-        observed = benjamin_hochberg(raw_p_values)
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            observed = benjamin_hochberg(raw_p_values, 5.0)
+        npt.assert_allclose(observed, expected)
+
+    def test_returns_correct_three_true_one_false_values_with_alpha_005_and_more_comparisons(self):
+        raw_p_values = [0.03, 0.03, 0.03, 0.041]
+        expected = [True, True, True, False]
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            observed = benjamin_hochberg(raw_p_values, 5)
+        npt.assert_allclose(observed, expected)
+
+    def test_returns_correct_three_false_values_with_alpha_006_and_more_comparisons(self):
+        raw_p_values = [0.03, 0.03, 0.04]
+        expected = [False, False, False]
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            observed = benjamin_hochberg(raw_p_values, 5, alpha=0.06)
         npt.assert_allclose(observed, expected)
 
     def test_returns_correct_three_true_value_with_alpha_006(self):
