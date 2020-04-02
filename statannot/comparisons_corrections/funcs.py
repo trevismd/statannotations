@@ -71,12 +71,12 @@ def holm_bonferroni(p_values, num_comparisons='auto', alpha=0.05):
     # Order p_values
     ordered_p_val_idx = np.argsort(p_values_array)
     last_index_to_reject = 0
-    output_p_values = np.zeros_like(p_values_array)
+    significant_comparisons = np.zeros_like(p_values_array, dtype=np.bool)
 
     # Set to True rejected hypotheses (pval is sufficiently low)
     while (p_values_array[ordered_p_val_idx[last_index_to_reject]] <=
            alpha / (num_comparisons - last_index_to_reject)):
-        output_p_values[ordered_p_val_idx[last_index_to_reject]] = True
+        significant_comparisons[ordered_p_val_idx[last_index_to_reject]] = True
         last_index_to_reject += 1
         if last_index_to_reject == len(p_values_array):
             break
@@ -84,9 +84,9 @@ def holm_bonferroni(p_values, num_comparisons='auto', alpha=0.05):
     # Set to False non-rejected hypotheses (pval is to high even if below alpha)
     else:
         for idx in ordered_p_val_idx[last_index_to_reject:]:
-            output_p_values[idx] = False
+            significant_comparisons[idx] = False
 
-    return return_results(output_p_values)
+    return return_results(significant_comparisons)
 
 
 def benjamin_hochberg(p_values, num_comparisons='auto', alpha=0.05):
@@ -122,12 +122,12 @@ def benjamin_hochberg(p_values, num_comparisons='auto', alpha=0.05):
     ordered_p_val_idx = np.argsort(p_values_array)
 
     last_index_to_reject = len(p_values_array) - 1
-    output_p_values = np.zeros_like(p_values_array)
+    significant_comparisons = np.zeros_like(p_values_array, dtype=np.bool)
 
     # Set to False non-rejected hypotheses (pval is too high vs critical value)
     while (p_values_array[ordered_p_val_idx[last_index_to_reject]] >
            (last_index_to_reject + 1) * alpha / num_comparisons):
-        output_p_values[ordered_p_val_idx[last_index_to_reject]] = False
+        significant_comparisons[ordered_p_val_idx[last_index_to_reject]] = False
         last_index_to_reject -= 1
         if last_index_to_reject < 0:
             break
@@ -135,6 +135,6 @@ def benjamin_hochberg(p_values, num_comparisons='auto', alpha=0.05):
     # Set to True to reject the rest of the hypotheses
     else:
         for idx in ordered_p_val_idx[:last_index_to_reject + 1]:
-            output_p_values[idx] = True
+            significant_comparisons[idx] = True
 
-    return return_results(output_p_values)
+    return return_results(significant_comparisons)
