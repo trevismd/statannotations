@@ -45,9 +45,17 @@ def add_stat_annotation(ax, plot='boxplot',
     :param plot: type of the plot, one of 'boxplot' or 'barplot'.
     :param line_height: in axes fraction coordinates
     :param text_offset: in points
-    :param box_pairs: can be of either form: For non-grouped boxplot: `[(cat1, cat2), (cat3, cat4)]`. For boxplot grouped by hue: `[((cat1, hue1), (cat2, hue2)), ((cat3, hue3), (cat4, hue4))]`
+    :param box_pairs: can be of either form:
+        For non-grouped boxplot: `[(cat1, cat2), (cat3, cat4)]`.
+        For boxplot grouped by hue: `[((cat1, hue1), (cat2, hue2)), ((cat3, hue3), (cat4, hue4))]`
+    :param test_short_name:
+        How the test name should show on the plot, if show_test_name is True
+        (default). Default is the full test name
     :param pvalue_format_string: defaults to `"{.3e}"`
-    :param pvalue_thresholds: list of lists, or tuples. Default is: For "star" text_format: `[[1e-4, "****"], [1e-3, "***"], [1e-2, "**"], [0.05, "*"], [1, "ns"]]`. For "simple" text_format : `[[1e-5, "1e-5"], [1e-4, "1e-4"], [1e-3, "0.001"], [1e-2, "0.01"]]`
+    :param pvalue_thresholds: list of lists, or tuples.
+        Default is:
+        For "star" text_format: `[[1e-4, "****"], [1e-3, "***"], [1e-2, "**"], [0.05, "*"], [1, "ns"]]`.
+        For "simple" text_format : `[[1e-5, "1e-5"], [1e-4, "1e-4"], [1e-3, "0.001"], [1e-2, "0.01"]]`
     :param pvalues: list or array of p-values for each box pair comparison.
     :param stats_params: Parameters for statistical test functions.
     :param comparisons_correction: Method for multiple comparisons correction.
@@ -327,8 +335,12 @@ def add_stat_annotation(ax, plot='boxplot',
             elif text_format is 'star':
                 text = pval_annotation_text(result, pvalue_thresholds)
             elif text_format is 'simple':
-                test_short_name = show_test_name and test_short_name or ""
-                text = simple_text(result, simple_format_string, pvalue_thresholds, test_short_name)
+                if show_test_name:
+                    test_short_name = show_test_name and test_short_name or test
+                else:
+                    test_short_name = ""
+                text = simple_text(result, simple_format_string,
+                                   pvalue_thresholds, test_short_name)
 
         # Find y maximum for all the y_stacks *in between* the box1 and the box2
         i_ymax_in_range_x1_x2 = xi1 + np.nanargmax(
