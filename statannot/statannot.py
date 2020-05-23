@@ -157,10 +157,10 @@ def pval_annotation_text(result: Union[List[StatResult], StatResult], pvalue_thr
 
     if isinstance(result, list):
         x1_pval = np.array([res.pval for res in result])
-        x1_signif_suff = [res.significance_suffix for res in result]
+        x1_corr_signif = [res.corrected_significance for res in result]
     else:
         x1_pval = np.array([result.pval])
-        x1_signif_suff = [result.significance_suffix]
+        x1_corr_signif = [result.corrected_significance]
         single_value = True
 
     # Sort the threshold array
@@ -177,7 +177,8 @@ def pval_annotation_text(result: Union[List[StatResult], StatResult], pvalue_thr
             condition = x1_pval < pvalue_thresholds[i][0]
             x_annot[condition] = pvalue_thresholds[i][1]
 
-    x_annot = pd.Series([f"{star}{signif}" for star, signif in zip(x_annot, x1_signif_suff)])
+    x_annot = pd.Series(["ns" if corr_signif is False else star
+                         for star, corr_signif in zip(x_annot, x1_corr_signif)])
 
     return x_annot if not single_value else x_annot.iloc[0]
 
@@ -228,6 +229,7 @@ def add_stat_annotation(ax, plot='boxplot',
 
     This function works in one of the two following modes:
     a) `perform_stat_test` is True: statistical test as given by argument `test` is performed.
+       The `test_short_name` argument can be used to customize what appears before the pvalues
     b) `perform_stat_test` is False: no statistical test is performed, list of custom p-values `pvalues` are
        used for each pair of boxes. The `test_short_name` argument is then used as the name of the
        custom statistical test.
@@ -484,16 +486,24 @@ def add_stat_annotation(ax, plot='boxplot',
         test_result_list.append(result)
 
     # Perform other types of correction methods for multiple testing
-    if comparisons_correction is not None and comparisons_correction.type == 1:  # Correction is applied to a set of pvalues
-
+    if comparisons_correction is not None:
         alpha = stats_params.get("alpha", 0.05)
-        original_pvalues = [result.pval for result in test_result_list]
 
-        significant_pvalues = comparisons_correction(original_pvalues, alpha=alpha)
+        # If correction is applied to a set of pvalues
+        if comparisons_correction.type == 1:
+            original_pvalues = [result.pval for result in test_result_list]
 
-        for is_significant, result in zip(significant_pvalues, test_result_list):
-            result.correction_method = comparisons_correction.name
-            result.corrected_significance = is_significant
+            significant_pvalues = comparisons_correction(original_pvalues, alpha=alpha)
+
+            for is_significant, result in zip(significant_pvalues, test_result_list):
+                result.correction_method = comparisons_correction.name
+                result.corrected_significance = is_significant
+
+        # If correction is applied per pvalue, just compare with alpha
+        else:
+            for result in test_result_list:
+                result.correction_method = comparisons_correction.name
+                result.corrected_significance = result.pval < alpha
 
     # Then annotate
     for box_structs, result in zip(box_struct_pairs, test_result_list):

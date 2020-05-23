@@ -26,7 +26,7 @@ def get_correction_method(name):
         return None
 
     if name not in IMPLEMENTED_METHODS:
-        raise NotImplementedError(f"Comparison {str(name)} not implemented.")
+        raise NotImplementedError(f"Correction method {str(name)} is not implemented.")
 
     correction_method = methods_names[name]
 

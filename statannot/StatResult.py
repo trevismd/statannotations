@@ -44,8 +44,9 @@ class StatResult:
 
     @property
     def significance_suffix(self):
-        if self._correction_method is not None and self.corrected_significance is False:
-            return ' (NS)'
+        # will add this only if a correction method is specified
+        if self._corrected_significance is False:
+            return ' (ns)'
         return ""
 
     def __str__(self):
