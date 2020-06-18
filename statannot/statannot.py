@@ -11,9 +11,9 @@ from scipy import stats
 from seaborn.utils import remove_na
 
 from .StatResult import StatResult
-from statannot.comparisons_corrections.ComparisonsCorrection import ComparisonsCorrection, get_correction_method
+from statannot.comparisons_corrections.ComparisonsCorrection import ComparisonsCorrection
 from statannot.comparisons_corrections.utils import assert_valid_correction_name
-from .utils import assert_is_in
+from statannot.utils import assert_is_in
 
 DEFAULT = object()
 
@@ -43,9 +43,8 @@ def stat_test(
         - `t-test_paired`
         - `Wilcoxon`
         - `Kruskal`
-    comparisons_correction: str or or ComparisonCorrection or None, default None
-        Method to use for multiple comparisons correction. Currently only the
-        Bonferroni correction is implemented to be applied on per-test basis.
+    comparisons_correction: ComparisonCorrection (type 0) or None, default None
+        Method to use for multiple comparisons correction.
     num_comparisons: int, default 1
         Number of comparisons to use for multiple comparisons correction.
     verbose: int
@@ -59,11 +58,10 @@ def stat_test(
 
     """
     # Check arguments.
-    if isinstance(comparisons_correction, ComparisonsCorrection):
-        pass
-    else:
-        assert_valid_correction_name(comparisons_correction)
-        comparisons_correction = get_correction_method(comparisons_correction)
+    if comparisons_correction is not None:
+        if not isinstance(comparisons_correction, ComparisonsCorrection):
+            raise ValueError("comparisons_correction must be a "
+                             "ComparisonsCorrection instance")
 
     # Switch to run scipy.stats hypothesis test.
     if test_name == 'Levene':
@@ -144,7 +142,7 @@ def stat_test(
     else:
         result = StatResult(None, '', None, None, np.nan)
 
-    # Optionally, run multiple comparisons correction that can separately be applied to each pval
+    # Optionally, run multiple comparisons correction
     if comparisons_correction is not None and comparisons_correction.type == 0:
         result.pval = comparisons_correction(result.pval, num_comparisons)
         result.correction_method = comparisons_correction.name
@@ -243,7 +241,7 @@ def add_stat_annotation(ax, plot='boxplot',
     :param pvalues: list or array of p-values for each box pair comparison.
     :param stats_params: Parameters for statistical test functions.
     :param comparisons_correction: Method for multiple comparisons correction.
-        One of `bonferroni`, `holm-bonferroni` (`HB`), `benjamin-hochberg` (`BH`), or None.
+        One of `statsmodel` `multipletests` methods (w/ default FWER), or a ComparisonCorrection instance.
     :param num_comparisons: Override number of comparisons otherwise calculated with number of box_pairs
     """
 
@@ -341,8 +339,14 @@ def add_stat_annotation(ax, plot='boxplot',
     )
 
     # Comparisons correction
-    assert_valid_correction_name(comparisons_correction)
-    comparisons_correction = get_correction_method(comparisons_correction)
+    if comparisons_correction is None:
+        pass
+    elif isinstance(comparisons_correction, str):
+        assert_valid_correction_name(comparisons_correction)
+        comparisons_correction = ComparisonsCorrection(comparisons_correction)
+    elif not(isinstance(comparisons_correction, ComparisonsCorrection)):
+            raise ValueError("comparisons_correction must be a statmodels "
+                             "method name or a ComparisonCorrection instance")
 
     if verbose >= 1 and text_format == 'star':
         print("p-value annotation legend:")
@@ -487,22 +491,23 @@ def add_stat_annotation(ax, plot='boxplot',
 
     # Perform other types of correction methods for multiple testing
     if comparisons_correction is not None:
-        alpha = stats_params.get("alpha", 0.05)
+        corr_name = comparisons_correction.name
 
         # If correction is applied to a set of pvalues
         if comparisons_correction.type == 1:
             original_pvalues = [result.pval for result in test_result_list]
 
-            significant_pvalues = comparisons_correction(original_pvalues, alpha=alpha)
+            significant_pvalues = comparisons_correction(original_pvalues)
 
             for is_significant, result in zip(significant_pvalues, test_result_list):
-                result.correction_method = comparisons_correction.name
+                result.correction_method = corr_name
                 result.corrected_significance = is_significant
 
         # If correction is applied per pvalue, just compare with alpha
         else:
+            alpha = comparisons_correction.alpha
             for result in test_result_list:
-                result.correction_method = comparisons_correction.name
+                result.correction_method = corr_name
                 result.corrected_significance = result.pval < alpha
 
     # Then annotate

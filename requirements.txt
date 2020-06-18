@@ -3,3 +3,4 @@ seaborn>=0.9.0
 matplotlib
 pandas
 scipy>=1.1.0
+statsmodels

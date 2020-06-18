@@ -1,15 +1,25 @@
 import unittest
 import warnings
+from functools import partial
 
 import numpy.testing as npt
+from statsmodels.stats.multitest import multipletests
 
-from statannot.comparisons_corrections.funcs import bonferroni, holm_bonferroni, benjamin_hochberg
+from statannot.comparisons_corrections.ComparisonsCorrection import ComparisonsCorrection
 
 
 class TestBonferroni(unittest.TestCase):
-    """Test Bonferroni correction function."""
+    """Test Bonferroni correction implementation."""
+
+    def setUp(self) -> None:
+        self.bonferroni = ComparisonsCorrection("bonferroni")
+
+        self.bonferroni_manual = ComparisonsCorrection(
+            partial(multipletests, method="bonferroni"),
+            name="Bonferroni (manual)", method_type=0)
+
     def test_returns_scalar_with_scalar_input(self):
-        corrected = bonferroni(0.5)
+        corrected = self.bonferroni(0.5)
         with self.assertRaisesRegex(TypeError, 'has no len'):
             # If `corrected` is a scalar, calling `len` should raise an error.
             len(corrected)
@@ -17,7 +27,13 @@ class TestBonferroni(unittest.TestCase):
     def test_returns_correct_values_with_auto_num_comparisons(self):
         raw_p_values = [0.1, 0.05, 0.5]
         expected = [0.3, 0.15, 1.0]
-        observed = bonferroni(raw_p_values)
+        observed = self.bonferroni(raw_p_values)
+        npt.assert_allclose(observed, expected)
+
+    def test_returns_correct_values_with_auto_num_comparisons_man(self):
+        raw_p_values = [0.1, 0.05, 0.5]
+        expected = [0.3, 0.15, 1.0]
+        observed = self.bonferroni_manual(raw_p_values)
         npt.assert_allclose(observed, expected)
 
     def test_returns_correct_values_with_manual_num_comparisons_int(self):
@@ -25,7 +41,17 @@ class TestBonferroni(unittest.TestCase):
         expected = [0.5, 0.25, 1.0]
         with warnings.catch_warnings():
             warnings.simplefilter('ignore')
-            observed = bonferroni(raw_p_values, 5)
+            observed = self.bonferroni(raw_p_values, 5)
+
+        npt.assert_allclose(observed, expected)
+
+    def test_returns_correct_values_with_manual_num_comparisons_int_man(self):
+        raw_p_values = [0.1, 0.05, 0.5]
+        expected = [0.5, 0.25, 1.0]
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            observed = self.bonferroni_manual(raw_p_values, 5)
+
         npt.assert_allclose(observed, expected)
 
     def test_returns_correct_values_with_manual_num_comparisons_float(self):
@@ -33,14 +59,28 @@ class TestBonferroni(unittest.TestCase):
         expected = [0.5, 0.25, 1.0]
         with warnings.catch_warnings():
             warnings.simplefilter('ignore')
-            observed = bonferroni(raw_p_values, 5.0)
+            observed = self.bonferroni(raw_p_values, 5.0)
         npt.assert_allclose(observed, expected)
 
 
 class TestHolmBonferroni(unittest.TestCase):
-    """Test Holm-Bonferroni correction function."""
+    """Test Holm-Bonferroni correction implementation."""
+
+    def setUp(self) -> None:
+        self.holm_bonferroni = ComparisonsCorrection("holm")
+        self.holm_bonferroni_006 = ComparisonsCorrection("holm", alpha=0.06)
+
+        self.holm_bonferroni_006_manual = ComparisonsCorrection(
+            partial(multipletests, method="holm"),
+            name="Holm-Bonferroni (manual)", method_type=1,
+            corr_kwargs={"alpha": 0.06})
+
+        self.holm_bonferroni_006_manual_bis = ComparisonsCorrection(
+            partial(multipletests, method="holm", alpha=0.06),
+            name="Holm-Bonferroni (manual)", method_type=1)
+
     def test_returns_scalar_with_scalar_input(self):
-        corrected = holm_bonferroni(0.5)
+        corrected = self.holm_bonferroni(0.5)
         with self.assertRaisesRegex(TypeError, 'has no len'):
             # If `corrected` is a scalar, calling `len` should raise an error.
             len(corrected)
@@ -48,7 +88,7 @@ class TestHolmBonferroni(unittest.TestCase):
     def test_returns_correct_values_with_alpha_005_and_auto_num_comparisons(self):
         raw_p_values = [0.1, 0.05, 0.5]
         expected = [False, False, False]
-        observed = holm_bonferroni(raw_p_values)
+        observed = self.holm_bonferroni(raw_p_values)
         npt.assert_allclose(observed, expected)
 
     def test_returns_correct_values_with_alpha_005_and__manual_num_comparisons_int(self):
@@ -56,7 +96,7 @@ class TestHolmBonferroni(unittest.TestCase):
         expected = [False, False, False]
         with warnings.catch_warnings():
             warnings.simplefilter('ignore')
-            observed = holm_bonferroni(raw_p_values, 5)
+            observed = self.holm_bonferroni(raw_p_values, 5)
         npt.assert_allclose(observed, expected)
 
     def test_returns_correct_values_with_alpha_005_and__manual_num_comparisons_float(self):
@@ -64,44 +104,72 @@ class TestHolmBonferroni(unittest.TestCase):
         expected = [False, False, False]
         with warnings.catch_warnings():
             warnings.simplefilter('ignore')
-            observed = holm_bonferroni(raw_p_values, 5.0)
+            observed = self.holm_bonferroni(raw_p_values, 5.0)
         npt.assert_allclose(observed, expected)
 
     def test_returns_correct_one_true_value_with_alpha_005_and_auto_num_comparisons(self):
         raw_p_values = [0.1, 0.01, 0.5]
         expected = [False, True, False]
-        observed = holm_bonferroni(raw_p_values)
+        observed = self.holm_bonferroni(raw_p_values)
         npt.assert_allclose(observed, expected)
 
     def test_returns_correct_two_true_values_with_alpha_005_and_auto_num_comparisons(self):
         raw_p_values = [0.1, 0.01, 0.02]
         expected = [False, True, True]
-        observed = holm_bonferroni(raw_p_values)
+        observed = self.holm_bonferroni(raw_p_values)
         npt.assert_allclose(observed, expected)
 
     def test_returns_correct_three_true_values_with_alpha_005_and_auto_num_comparisons(self):
         raw_p_values = [0.05, 0.01, 0.02]
         expected = [True, True, True]
-        observed = holm_bonferroni(raw_p_values)
+        observed = self.holm_bonferroni(raw_p_values)
         npt.assert_allclose(observed, expected)
 
     def test_returns_correct_one_true_value_bis(self):
         raw_p_values = [0.05, 0.01, 0.03]
         expected = [False, True, False]
-        observed = holm_bonferroni(raw_p_values)
+        observed = self.holm_bonferroni(raw_p_values)
         npt.assert_allclose(observed, expected)
 
     def test_returns_correct_three_true_value_with_alpha_006(self):
         raw_p_values = [0.05, 0.01, 0.03]
         expected = [True, True, True]
-        observed = holm_bonferroni(raw_p_values, alpha=0.06)
+        observed = self.holm_bonferroni_006(raw_p_values)
+        npt.assert_allclose(observed, expected)
+
+    def test_returns_correct_three_true_value_with_alpha_006_man(self):
+        raw_p_values = [0.05, 0.01, 0.03]
+        expected = [True, True, True]
+        observed = self.holm_bonferroni_006_manual(raw_p_values)
+        npt.assert_allclose(observed, expected)
+
+    def test_returns_correct_three_true_value_with_alpha_006_man_bis(self):
+        raw_p_values = [0.05, 0.01, 0.03]
+        expected = [True, True, True]
+        observed = self.holm_bonferroni_006_manual_bis(raw_p_values)
         npt.assert_allclose(observed, expected)
 
 
-class TestBenjaminHochberg(unittest.TestCase):
-    """Test Benjamin-Hochberg correction function."""
+class TestBenjaminiHochberg(unittest.TestCase):
+    """Test Benjamini-Hochberg correction implementation."""
+
+    @staticmethod
+    def my_bh_from_sm(pvalues):
+        # This function directly returns an array of booleans, so it does not
+        # match statsmodels api of multipletests
+        return multipletests(pvalues, method="fdr_bh", alpha=0.06)[0]
+
+    def setUp(self) -> None:
+        self.benjamini_hochberg = ComparisonsCorrection("Benjamini-Hochberg")
+        self.benjamini_hochberg_006 = ComparisonsCorrection("Benjamini-Hochberg",
+                                                            alpha=0.06)
+
+        self.benjamini_hochberg_006_man_diff_api = ComparisonsCorrection(
+            self.my_bh_from_sm, name="Benjamini-Hochberg (manual)",
+            method_type=1, statsmodels_api=False)
+
     def test_returns_scalar_with_scalar_input(self):
-        corrected = benjamin_hochberg(0.5)
+        corrected = self.benjamini_hochberg(0.5)
         with self.assertRaisesRegex(TypeError, 'has no len'):
             # If `corrected` is a scalar, calling `len` should raise an error.
             len(corrected)
@@ -109,7 +177,7 @@ class TestBenjaminHochberg(unittest.TestCase):
     def test_returns_correct_values_with_alpha_005_and_auto_num_comparisons(self):
         raw_p_values = [0.1, 0.05, 0.5]
         expected = [False, False, False]
-        observed = benjamin_hochberg(raw_p_values)
+        observed = self.benjamini_hochberg(raw_p_values)
         npt.assert_allclose(observed, expected)
 
     def test_returns_correct_values_with_alpha_005_and__manual_num_comparisons_int(self):
@@ -117,7 +185,7 @@ class TestBenjaminHochberg(unittest.TestCase):
         expected = [False, False, False]
         with warnings.catch_warnings():
             warnings.simplefilter('ignore')
-            observed = benjamin_hochberg(raw_p_values, 5)
+            observed = self.benjamini_hochberg(raw_p_values, 5)
         npt.assert_allclose(observed, expected)
 
     def test_returns_correct_values_with_alpha_005_and__manual_num_comparisons_float(self):
@@ -125,25 +193,25 @@ class TestBenjaminHochberg(unittest.TestCase):
         expected = [False, False, False]
         with warnings.catch_warnings():
             warnings.simplefilter('ignore')
-            observed = benjamin_hochberg(raw_p_values, 5.0)
+            observed = self.benjamini_hochberg(raw_p_values, 5.0)
         npt.assert_allclose(observed, expected)
 
     def test_returns_correct_one_true_value_with_alpha_005_and_auto_num_comparisons(self):
         raw_p_values = [0.1, 0.01, 0.5]
         expected = [False, True, False]
-        observed = benjamin_hochberg(raw_p_values)
+        observed = self.benjamini_hochberg(raw_p_values)
         npt.assert_allclose(observed, expected)
 
     def test_returns_correct_two_true_values_with_alpha_005_and_auto_num_comparisons(self):
         raw_p_values = [0.1, 0.01, 0.02]
         expected = [False, True, True]
-        observed = benjamin_hochberg(raw_p_values)
+        observed = self.benjamini_hochberg(raw_p_values)
         npt.assert_allclose(observed, expected)
 
     def test_returns_correct_three_true_values_with_alpha_005_and_auto_num_comparisons(self):
         raw_p_values = [0.05, 0.01, 0.02]
         expected = [True, True, True]
-        observed = benjamin_hochberg(raw_p_values)
+        observed = self.benjamini_hochberg(raw_p_values)
         npt.assert_allclose(observed, expected)
 
     def test_returns_correct_three_true_values_with_alpha_005_and_more_comparisons(self):
@@ -151,7 +219,7 @@ class TestBenjaminHochberg(unittest.TestCase):
         expected = [True, True, True]
         with warnings.catch_warnings():
             warnings.simplefilter('ignore')
-            observed = benjamin_hochberg(raw_p_values, 5.0)
+            observed = self.benjamini_hochberg(raw_p_values, 5.0)
         npt.assert_allclose(observed, expected)
 
     def test_returns_correct_three_true_one_false_values_with_alpha_005_and_more_comparisons(self):
@@ -159,7 +227,7 @@ class TestBenjaminHochberg(unittest.TestCase):
         expected = [True, True, True, False]
         with warnings.catch_warnings():
             warnings.simplefilter('ignore')
-            observed = benjamin_hochberg(raw_p_values, 5)
+            observed = self.benjamini_hochberg(raw_p_values, 5)
         npt.assert_allclose(observed, expected)
 
     def test_returns_correct_three_false_values_with_alpha_006_and_more_comparisons(self):
@@ -167,11 +235,17 @@ class TestBenjaminHochberg(unittest.TestCase):
         expected = [False, False, False]
         with warnings.catch_warnings():
             warnings.simplefilter('ignore')
-            observed = benjamin_hochberg(raw_p_values, 5, alpha=0.06)
+            observed = self.benjamini_hochberg_006(raw_p_values, 5)
         npt.assert_allclose(observed, expected)
 
     def test_returns_correct_three_true_value_with_alpha_006(self):
         raw_p_values = [0.06, 0.01, 0.04]
         expected = [True, True, True]
-        observed = benjamin_hochberg(raw_p_values, alpha=0.06)
+        observed = self.benjamini_hochberg_006(raw_p_values)
+        npt.assert_allclose(observed, expected)
+
+    def test_returns_correct_three_true_value_with_alpha_006_man_diff_api(self):
+        raw_p_values = [0.06, 0.01, 0.04]
+        expected = [True, True, True]
+        observed = self.benjamini_hochberg_006_man_diff_api(raw_p_values)
         npt.assert_allclose(observed, expected)
