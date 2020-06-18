@@ -2,12 +2,12 @@ import warnings
 
 import numpy as np
 
-import statannot.comparisons_corrections.ComparisonsCorrection as CompCorr
+import statannot.comparisons_corrections.ComparisonsCorrection as ComparisonsCorrection
 from statannot.utils import raise_expected_got, assert_is_in
 
 
 def assert_valid_correction_name(name):
-    assert_is_in(name, CompCorr.IMPLEMENTED_METHODS + [None],
+    assert_is_in(name, ComparisonsCorrection.IMPLEMENTED_METHODS + [None],
                  label='argument `comparisons_correction`')
 
 

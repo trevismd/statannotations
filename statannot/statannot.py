@@ -10,7 +10,7 @@ from matplotlib.font_manager import FontProperties
 from scipy import stats
 from seaborn.utils import remove_na
 
-from .StatResult import StatResult
+from statannot.StatResult import StatResult
 from statannot.comparisons_corrections.ComparisonsCorrection import ComparisonsCorrection
 from statannot.comparisons_corrections.utils import assert_valid_correction_name
 from statannot.utils import assert_is_in
