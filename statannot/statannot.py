@@ -38,6 +38,7 @@ def stat_test(
         - `Mann-Whitney`
         - `Mann-Whitney-gt`
         - `Mann-Whitney-ls`
+        - `stat_func` - Which means a function is passed in stats_params
         - `t-test_ind`
         - `t-test_welch`
         - `t-test_paired`
@@ -51,6 +52,9 @@ def stat_test(
         Verbosity parameter, see add_stat_annotation
     stats_params
         Additional keyword arguments to pass to scipy stats functions.
+        A keyword "stat_func" is expected to be a callable with interface
+         (X1, X2, **stats_params) and return a stat and a pvalue,
+          a keyword "test_long_name" and "test_short_name" are also expected.
 
     Returns
     -------
@@ -66,42 +70,28 @@ def stat_test(
     # Switch to run scipy.stats hypothesis test.
     if test_name == 'Levene':
         stat, pval = stats.levene(box_data1, box_data2, **stats_params)
-        result = StatResult(
-            'Levene test of variance', 'levene', 'stat_value', stat, pval
-        )
+        result = StatResult('Levene test of variance', 'levene',
+                            'stat_value', stat, pval)
     elif test_name == 'Mann-Whitney':
-        u_stat, pval = stats.mannwhitneyu(
-            box_data1, box_data2, alternative='two-sided', **stats_params
-        )
-        result = StatResult(
-            'Mann-Whitney-Wilcoxon test two-sided',
-            'M.W.W.',
-            'U_stat',
-            u_stat,
-            pval,
-        )
+        u_stat, pval = stats.mannwhitneyu(box_data1, box_data2,
+                                          alternative='two-sided',
+                                          **stats_params)
+
+        result = StatResult('Mann-Whitney-Wilcoxon test two-sided', 'M.W.W.',
+                            'U_stat', u_stat, pval)
+
     elif test_name == 'Mann-Whitney-gt':
         u_stat, pval = stats.mannwhitneyu(
-            box_data1, box_data2, alternative='greater', **stats_params
-        )
-        result = StatResult(
-            'Mann-Whitney-Wilcoxon test greater',
-            'M.W.W.',
-            'U_stat',
-            u_stat,
-            pval,
-        )
+            box_data1, box_data2, alternative='greater', **stats_params)
+        result = StatResult('Mann-Whitney-Wilcoxon test greater', 'M.W.W.',
+                            'U_stat', u_stat, pval)
+
     elif test_name == 'Mann-Whitney-ls':
-        u_stat, pval = stats.mannwhitneyu(
-            box_data1, box_data2, alternative='less', **stats_params
-        )
-        result = StatResult(
-            'Mann-Whitney-Wilcoxon test smaller',
-            'M.W.W.',
-            'U_stat',
-            u_stat,
-            pval,
-        )
+        u_stat, pval = stats.mannwhitneyu(box_data1, box_data2,
+                                          alternative='less', **stats_params)
+        result = StatResult('Mann-Whitney-Wilcoxon test smaller', 'M.W.W.',
+                            'U_stat', u_stat, pval)
+
     elif test_name == 't-test_ind':
         stat, pval = stats.ttest_ind(a=box_data1, b=box_data2, **stats_params)
         result = StatResult(
@@ -118,29 +108,44 @@ def stat_test(
             stat,
             pval,
         )
+
     elif test_name == 't-test_paired':
         stat, pval = stats.ttest_rel(a=box_data1, b=box_data2, **stats_params)
         result = StatResult(
             't-test paired samples', 't-test_rel', 'stat_value', stat, pval
         )
+
     elif test_name == 'Wilcoxon':
         zero_method_default = len(box_data1) <= 20 and "pratt" or "wilcox"
         zero_method = stats_params.get('zero_method', zero_method_default)
         if verbose >= 1:
             print("Using zero_method ", zero_method)
         stat, pval = stats.wilcoxon(
-            box_data1, box_data2, zero_method=zero_method, **stats_params
-        )
-        result = StatResult(
-            'Wilcoxon test (paired samples)', 'Wilcoxon', 'stat_value', stat, pval
-        )
+            box_data1, box_data2, zero_method=zero_method, **stats_params)
+        result = StatResult('Wilcoxon test (paired samples)', 'Wilcoxon',
+                            'stat_value', stat, pval)
+
     elif test_name == 'Kruskal':
         stat, pval = stats.kruskal(box_data1, box_data2, **stats_params)
         result = StatResult(
             'Kruskal-Wallis paired samples', 'Kruskal', 'stat_value', stat, pval
         )
     else:
-        result = StatResult(None, '', None, None, np.nan)
+        if test_name == "stat_func":
+            try:
+                test_short_name = stats_params.pop("test_short_name")
+                test_long_name = stats_params.pop("test_long_name")
+                stat_func = stats_params.pop("stat_func")
+
+            except KeyError:
+                raise KeyError("All expected values were not found in "
+                               "stats_params")
+
+            stat, pval = stat_func(box_data1, box_data2, **stats_params)
+            result = StatResult(test_long_name, test_short_name,
+                                'stat_value', stat, pval)
+        else:
+            result = StatResult(None, '', None, None, np.nan)
 
     # Optionally, run multiple comparisons correction
     if comparisons_correction is not None and comparisons_correction.type == 0:
@@ -314,7 +319,7 @@ def add_stat_annotation(ax, plot='boxplot',
                              "or `test_short_name` must be `None`.")
         valid_list = ['t-test_ind', 't-test_welch', 't-test_paired',
                       'Mann-Whitney', 'Mann-Whitney-gt', 'Mann-Whitney-ls',
-                      'Levene', 'Wilcoxon', 'Kruskal']
+                      'Levene', 'Wilcoxon', 'Kruskal', 'stat_func']
         if test not in valid_list:
             raise ValueError("test value should be one of the following: {}."
                              .format(', '.join(valid_list)))
