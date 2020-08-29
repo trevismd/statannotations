@@ -116,8 +116,9 @@ def stat_test(
         )
 
     elif test_name == 'Wilcoxon':
-        zero_method_default = len(box_data1) <= 20 and "pratt" or "wilcox"
-        zero_method = stats_params.get('zero_method', zero_method_default)
+        zero_method = stats_params.pop('zero_method', None)
+        if zero_method is None:
+            zero_method_default = len(box_data1) <= 20 and "pratt" or "wilcox"
         if verbose >= 1:
             print("Using zero_method ", zero_method)
         stat, pval = stats.wilcoxon(
