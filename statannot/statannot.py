@@ -63,7 +63,7 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
     :param pvalue_thresholds: list of lists, or tuples.
         Default is:
         For "star" text_format: `[[1e-4, "****"], [1e-3, "***"], [1e-2, "**"], [0.05, "*"], [1, "ns"]]`.
-        For "simple" text_format : `[[1e-5, "1e-5"], [1e-4, "1e-4"], [1e-3, "0.001"], [1e-2, "0.01"]]`
+        For "simple" text_format : `[[1e-5, "1e-5"], [1e-4, "1e-4"], [1e-3, "0.001"], [1e-2, "0.01"], [5e-2, "0.05"]]`
     :param pvalues: list or array of p-values for each box pair comparison.
     :param stats_params: Parameters for statistical test functions.
     :param comparisons_correction: Method for multiple comparisons correction.
@@ -124,7 +124,8 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
                                  [1e-2, "**"], [0.05, "*"], [1, "ns"]]
         else:
             pvalue_thresholds = [[1e-5, "1e-5"], [1e-4, "1e-4"],
-                                 [1e-3, "0.001"], [1e-2, "0.01"]]
+                                 [1e-3, "0.001"], [1e-2, "0.01"],
+                                 [5e-2, "0.05"], [1, "ns"]]
 
     if stats_params is None:
         stats_params = dict()
