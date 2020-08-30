@@ -56,7 +56,8 @@ def stat_test(
 
     """
     # Check arguments.
-    if isinstance(comparisons_correction, ComparisonsCorrection):
+    if (isinstance(comparisons_correction, ComparisonsCorrection)
+            or comparisons_correction is None):
         pass
     else:
         assert_valid_correction_name(comparisons_correction)

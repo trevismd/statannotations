@@ -16,6 +16,7 @@ from statannot.utils import assert_is_in, remove_null
 DEFAULT = object()
 
 
+# noinspection PyProtectedMember
 def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
                         hue=None, units=None, order=None, hue_order=None,
                         box_pairs=None, width=0.8, perform_stat_test=True,
@@ -43,6 +44,13 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
        custom statistical test.
 
     :param plot: type of the plot, one of 'boxplot' or 'barplot'.
+    :param data: seaborn  plot's data
+    :param x: seaborn plot's x
+    :param y: seaborn plot's y
+    :param hue: seaborn plot's hue
+    :param order: seaborn plot's order
+    :param hue_order: seaborn plot's hue_order
+    :param width: seaborn plot's width
     :param line_height: in axes fraction coordinates
     :param text_offset: in points
     :param box_pairs: can be of either form:
