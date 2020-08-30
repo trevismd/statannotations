@@ -8,7 +8,7 @@ from statannot.stats.utils import assert_valid_correction_name
 
 IMPLEMENTED_TESTS = ['t-test_ind', 't-test_welch', 't-test_paired',
                      'Mann-Whitney', 'Mann-Whitney-gt', 'Mann-Whitney-ls',
-                     'Levene', 'Wilcoxon', 'Kruskal']
+                     'Levene', 'Wilcoxon', 'Kruskal', 'stat_func']
 
 
 def stat_test(
