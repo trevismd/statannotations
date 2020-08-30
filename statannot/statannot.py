@@ -8,12 +8,11 @@ import seaborn as sns
 from matplotlib import lines
 from matplotlib.font_manager import FontProperties
 from scipy import stats
-from seaborn.utils import remove_na
 
 from statannot.StatResult import StatResult
 from statannot.comparisons_corrections.ComparisonsCorrection import ComparisonsCorrection
 from statannot.comparisons_corrections.utils import assert_valid_correction_name
-from statannot.utils import assert_is_in
+from statannot.utils import assert_is_in, remove_null
 
 DEFAULT = object()
 
@@ -104,9 +103,9 @@ def stat_test(
         )
     elif test_name == 't-test_ind':
         stat, pval = stats.ttest_ind(a=box_data1, b=box_data2, **stats_params)
-        result = StatResult(
-            't-test independent samples', 't-test_ind', 'stat_value', stat, pval
-        )
+        result = StatResult('t-test independent samples', 't-test_ind',
+                            'stat_value', stat, pval)
+
     elif test_name == 't-test_welch':
         stat, pval = stats.ttest_ind(
             a=box_data1, b=box_data2, equal_var=False, **stats_params
@@ -120,24 +119,21 @@ def stat_test(
         )
     elif test_name == 't-test_paired':
         stat, pval = stats.ttest_rel(a=box_data1, b=box_data2, **stats_params)
-        result = StatResult(
-            't-test paired samples', 't-test_rel', 'stat_value', stat, pval
-        )
+        result = StatResult('t-test paired samples', 't-test_rel',
+                            'stat_value', stat, pval)
     elif test_name == 'Wilcoxon':
         zero_method_default = len(box_data1) <= 20 and "pratt" or "wilcox"
         zero_method = stats_params.get('zero_method', zero_method_default)
         if verbose >= 1:
             print("Using zero_method ", zero_method)
-        stat, pval = stats.wilcoxon(
-            box_data1, box_data2, zero_method=zero_method, **stats_params
-        )
-        result = StatResult(
-            'Wilcoxon test (paired samples)', 'Wilcoxon', 'stat_value', stat, pval
-        )
+        stat, pval = stats.wilcoxon(box_data1, box_data2,
+                                    zero_method=zero_method, **stats_params)
+        result = StatResult('Wilcoxon test (paired samples)', 'Wilcoxon',
+                            'stat_value', stat, pval)
     elif test_name == 'Kruskal':
         stat, pval = stats.kruskal(box_data1, box_data2, **stats_params)
-        result = StatResult(
-            'Kruskal-Wallis paired samples', 'Kruskal', 'stat_value', stat, pval
+        result = StatResult('Kruskal-Wallis paired samples', 'Kruskal',
+                            'stat_value', stat, pval
         )
     else:
         result = StatResult(None, '', None, None, np.nan)
@@ -206,20 +202,19 @@ def simple_text(result: StatResult, pvalue_format, pvalue_thresholds, test_short
     return text + pval_text + result.significance_suffix
 
 
-def add_stat_annotation(ax, plot='boxplot',
-                        data=None, x=None, y=None, hue=None, units=None, order=None,
+def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
+                        hue=None, units=None, order=None,
                         hue_order=None, box_pairs=None, width=0.8,
-                        perform_stat_test=True,
-                        pvalues=None, test_short_name=None,
-                        test=None, text_format='star', pvalue_format_string=DEFAULT,
-                        text_annot_custom=None,
+                        perform_stat_test=True, pvalues=None,
+                        test_short_name=None, test=None, text_format='star',
+                        pvalue_format_string=DEFAULT, text_annot_custom=None,
                         loc='inside', show_test_name=True,
                         pvalue_thresholds=DEFAULT, stats_params: dict = None,
-                        comparisons_correction='bonferroni', num_comparisons='auto',
-                        use_fixed_offset=False, line_offset_to_box=None,
-                        line_offset=None, line_height=0.02, text_offset=1,
-                        color='0.2', linewidth=1.5,
-                        fontsize='medium', verbose=1):
+                        comparisons_correction='bonferroni',
+                        num_comparisons='auto', use_fixed_offset=False,
+                        line_offset_to_box=None, line_offset=None,
+                        line_height=0.02, text_offset=1, color='0.2',
+                        linewidth=1.5, fontsize='medium', verbose=1):
     """
     Optionally computes statistical test between pairs of data series, and add statistical annotation on top
     of the boxes/bars. The same exact arguments `data`, `x`, `y`, `hue`, `order`, `width`,
@@ -235,9 +230,12 @@ def add_stat_annotation(ax, plot='boxplot',
     :param plot: type of the plot, one of 'boxplot' or 'barplot'.
     :param line_height: in axes fraction coordinates
     :param text_offset: in points
-    :param box_pairs: can be of either form: For non-grouped boxplot: `[(cat1, cat2), (cat3, cat4)]`. For boxplot grouped by hue: `[((cat1, hue1), (cat2, hue2)), ((cat3, hue3), (cat4, hue4))]`
+    :param box_pairs: can be of either form: For non-grouped boxplot: `[(cat1, cat2), (cat3, cat4)]`.
+        For boxplot grouped by hue: `[((cat1, hue1), (cat2, hue2)), ((cat3, hue3), (cat4, hue4))]`
     :param pvalue_format_string: defaults to `"{.3e}"`
-    :param pvalue_thresholds: list of lists, or tuples. Default is: For "star" text_format: `[[1e-4, "****"], [1e-3, "***"], [1e-2, "**"], [0.05, "*"], [1, "ns"]]`. For "simple" text_format : `[[1e-5, "1e-5"], [1e-4, "1e-4"], [1e-3, "0.001"], [1e-2, "0.01"]]`
+    :param pvalue_thresholds: list of lists, or tuples. Default is:
+        For "star" text_format: `[[1e-4, "****"], [1e-3, "***"], [1e-2, "**"], [0.05, "*"], [1, "ns"]]`.
+        For "simple" text_format : `[[1e-5, "1e-5"], [1e-4, "1e-4"], [1e-3, "0.001"], [1e-2, "0.01"]]`
     :param pvalues: list or array of p-values for each box pair comparison.
     :param stats_params: Parameters for statistical test functions.
     :param comparisons_correction: Method for multiple comparisons correction.
@@ -277,11 +275,11 @@ def add_stat_annotation(ax, plot='boxplot',
         if b_plotter.plot_hues is None:
             # Draw a single box or a set of boxes
             # with a single level of grouping
-            box_data = remove_na(group_data)
+            box_data = remove_null(group_data)
         else:
             hue_level = boxName[1]
             hue_mask = b_plotter.plot_hues[index] == hue_level
-            box_data = remove_na(group_data[hue_mask])
+            box_data = remove_null(group_data[hue_mask])
 
         return box_data
 
@@ -393,8 +391,11 @@ def add_stat_annotation(ax, plot='boxplot',
         box_plotter = sns.categorical._BarPlotter(
             x, y, hue, data, order, hue_order,
             estimator=np.mean, ci=95, n_boot=1000, units=None,
-            orient=None, color=None, palette=None, saturation=.75,
+            orient=None, color=None, palette=None, saturation=.75, seed=None,
             errcolor=".26", errwidth=None, capsize=None, dodge=True)
+
+    else:
+        raise NotImplementedError("Only boxplots and barplots are supported.")
 
     # Build the list of box data structures with the x and ymax positions
     group_names = box_plotter.group_names
@@ -530,14 +531,14 @@ def add_stat_annotation(ax, plot='boxplot',
             if text_format == 'full':
                 text = "{} p = {}{}".format('{}', pvalue_format_string, '{}').format(
                     result.test_short_name, result.pval, result.significance_suffix)
-            elif text_format is None:
-                text = None
             elif text_format is 'star':
                 text = pval_annotation_text(result, pvalue_thresholds)
             elif text_format is 'simple':
                 test_short_name = result.test_short_name if show_test_name else None
                 text = simple_text(result, simple_format_string,
                                    pvalue_thresholds, test_short_name)
+            else:  # None:
+                text = None
 
         # Find y maximum for all the y_stacks *in between* the box1 and the box2
         i_ymax_in_range_x1_x2 = xi1 + np.nanargmax(
