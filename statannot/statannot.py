@@ -1,5 +1,3 @@
-from typing import Union, List
-
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
 import numpy as np
@@ -7,224 +5,31 @@ import pandas as pd
 import seaborn as sns
 from matplotlib import lines
 from matplotlib.font_manager import FontProperties
-from scipy import stats
 
-from statannot.StatResult import StatResult
-from statannot.comparisons_corrections.ComparisonsCorrection import ComparisonsCorrection
-from statannot.comparisons_corrections.utils import assert_valid_correction_name
+from statannot.format_annotations import pval_annotation_text, simple_text
+from statannot.stats.ComparisonsCorrection import ComparisonsCorrection
+from statannot.stats.StatResult import StatResult
+from statannot.stats.tests import stat_test, IMPLEMENTED_TESTS
+from statannot.stats.utils import assert_valid_correction_name
 from statannot.utils import assert_is_in, remove_null
 
 DEFAULT = object()
 
 
-def stat_test(
-        box_data1,
-        box_data2,
-        test_name,
-        comparisons_correction=None,
-        num_comparisons=1,
-        verbose=1,
-        **stats_params
-):
-    """Get formatted result of two sample statistical test.
-
-    Arguments
-    ---------
-    box_data1, box_data2
-    test_name: str
-        Statistical test to run. Must be one of:
-        - `Levene`
-        - `Mann-Whitney`
-        - `Mann-Whitney-gt`
-        - `Mann-Whitney-ls`
-        - `stat_func` - Which means a function is passed in stats_params
-        - `t-test_ind`
-        - `t-test_welch`
-        - `t-test_paired`
-        - `Wilcoxon`
-        - `Kruskal`
-    comparisons_correction: ComparisonCorrection (type 0) or None, default None
-        Method to use for multiple comparisons correction.
-    num_comparisons: int, default 1
-        Number of comparisons to use for multiple comparisons correction.
-    verbose: int
-        Verbosity parameter, see add_stat_annotation
-    stats_params
-        Additional keyword arguments to pass to scipy stats functions.
-        A keyword "stat_func" is expected to be a callable with interface
-         (X1, X2, **stats_params) and return a stat and a pvalue,
-          a keyword "test_long_name" and "test_short_name" are also expected.
-
-    Returns
-    -------
-    StatResult object with formatted result of test.
-
-    """
-    # Check arguments.
-    if comparisons_correction is not None:
-        if not isinstance(comparisons_correction, ComparisonsCorrection):
-            raise ValueError("comparisons_correction must be a "
-                             "ComparisonsCorrection instance")
-
-    # Switch to run scipy.stats hypothesis test.
-    if test_name == 'Levene':
-        stat, pval = stats.levene(box_data1, box_data2, **stats_params)
-        result = StatResult('Levene test of variance', 'levene',
-                            'stat_value', stat, pval)
-    elif test_name == 'Mann-Whitney':
-        u_stat, pval = stats.mannwhitneyu(box_data1, box_data2,
-                                          alternative='two-sided',
-                                          **stats_params)
-
-        result = StatResult('Mann-Whitney-Wilcoxon test two-sided', 'M.W.W.',
-                            'U_stat', u_stat, pval)
-
-    elif test_name == 'Mann-Whitney-gt':
-        u_stat, pval = stats.mannwhitneyu(
-            box_data1, box_data2, alternative='greater', **stats_params)
-        result = StatResult('Mann-Whitney-Wilcoxon test greater', 'M.W.W.',
-                            'U_stat', u_stat, pval)
-
-    elif test_name == 'Mann-Whitney-ls':
-        u_stat, pval = stats.mannwhitneyu(box_data1, box_data2,
-                                          alternative='less', **stats_params)
-        result = StatResult('Mann-Whitney-Wilcoxon test smaller', 'M.W.W.',
-                            'U_stat', u_stat, pval)
-
-    elif test_name == 't-test_ind':
-        stat, pval = stats.ttest_ind(a=box_data1, b=box_data2, **stats_params)
-        result = StatResult('t-test independent samples', 't-test_ind',
-                            'stat_value', stat, pval)
-
-    elif test_name == 't-test_welch':
-        stat, pval = stats.ttest_ind(
-            a=box_data1, b=box_data2, equal_var=False, **stats_params
-        )
-        result = StatResult(
-            'Welch\'s t-test independent samples',
-            't-test_welch',
-            'stat_value',
-            stat,
-            pval,
-        )
-
-    elif test_name == 't-test_paired':
-        stat, pval = stats.ttest_rel(a=box_data1, b=box_data2, **stats_params)
-        result = StatResult('t-test paired samples', 't-test_rel',
-                            'stat_value', stat, pval)
-
-    elif test_name == 'Wilcoxon':
-        zero_method = stats_params.pop('zero_method', None)
-        if zero_method is None:
-            zero_method = len(box_data1) <= 20 and "pratt" or "wilcox"
-
-        if verbose >= 1:
-            print("Using zero_method ", zero_method)
-
-        stat, pval = stats.wilcoxon(box_data1, box_data2,
-                                    zero_method=zero_method, **stats_params)
-        result = StatResult('Wilcoxon test (paired samples)', 'Wilcoxon',
-                            'stat_value', stat, pval)
-
-    elif test_name == 'Kruskal':
-        stat, pval = stats.kruskal(box_data1, box_data2, **stats_params)
-        result = StatResult('Kruskal-Wallis paired samples', 'Kruskal',
-                            'stat_value', stat, pval)
-
-    else:
-        if test_name == "stat_func":
-            try:
-                test_short_name = stats_params.pop("test_short_name")
-                test_long_name = stats_params.pop("test_long_name")
-                stat_func = stats_params.pop("stat_func")
-
-            except KeyError:
-                raise KeyError("All expected values were not found in "
-                               "stats_params")
-
-            stat, pval = stat_func(box_data1, box_data2, **stats_params)
-            result = StatResult(test_long_name, test_short_name,
-                                'stat_value', stat, pval)
-        else:
-            result = StatResult(None, '', None, None, np.nan)
-
-    # Optionally, run multiple comparisons correction
-    if comparisons_correction is not None and comparisons_correction.type == 0:
-        result.pval = comparisons_correction(result.pval, num_comparisons)
-        result.correction_method = comparisons_correction.name
-
-    return result
-
-
-def pval_annotation_text(result: Union[List[StatResult], StatResult], pvalue_thresholds):
-    single_value = False
-
-    if isinstance(result, list):
-        x1_pval = np.array([res.pval for res in result])
-        x1_corr_signif = [res.corrected_significance for res in result]
-    else:
-        x1_pval = np.array([result.pval])
-        x1_corr_signif = [result.corrected_significance]
-        single_value = True
-
-    # Sort the threshold array
-    pvalue_thresholds = pd.DataFrame(pvalue_thresholds).sort_values(by=0, ascending=False).values
-    x_annot = pd.Series(["" for _ in range(len(x1_pval))])
-
-    for i in range(0, len(pvalue_thresholds)):
-
-        if i < len(pvalue_thresholds) - 1:
-            condition = (x1_pval <= pvalue_thresholds[i][0]) & (pvalue_thresholds[i + 1][0] < x1_pval)
-            x_annot[condition] = pvalue_thresholds[i][1]
-
-        else:
-            condition = x1_pval < pvalue_thresholds[i][0]
-            x_annot[condition] = pvalue_thresholds[i][1]
-
-    x_annot = pd.Series(["ns" if corr_signif is False else star
-                         for star, corr_signif in zip(x_annot, x1_corr_signif)])
-
-    return x_annot if not single_value else x_annot.iloc[0]
-
-
-def simple_text(result: StatResult, pvalue_format, pvalue_thresholds, test_short_name=None):
-    """
-    Generates simple text for test name and pvalue
-    :param result: StatResult instance
-    :param pvalue_format: format string for pvalue
-    :param test_short_name: Short name of test to show
-    :param pvalue_thresholds: String to display per pvalue range
-    :return: simple annotation
-    """
-    # Sort thresholds
-    thresholds = sorted(pvalue_thresholds, key=lambda x: x[0])
-
-    # Test name if passed
-    text = test_short_name and test_short_name + " " or ""
-
-    for threshold in thresholds:
-        if result.pval < threshold[0]:
-            pval_text = "p ≤ {}".format(threshold[1])
-            break
-    else:
-        pval_text = "p = {}".format(pvalue_format).format(result.pval)
-
-    return text + pval_text + result.significance_suffix
-
-
 def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
-                        hue=None, units=None, order=None,
-                        hue_order=None, box_pairs=None, width=0.8,
-                        perform_stat_test=True, pvalues=None,
-                        test_short_name=None, test=None, text_format='star',
-                        pvalue_format_string=DEFAULT, text_annot_custom=None,
-                        loc='inside', show_test_name=True,
-                        pvalue_thresholds=DEFAULT, stats_params: dict = None,
+                        hue=None, units=None, order=None, hue_order=None,
+                        box_pairs=None, width=0.8, perform_stat_test=True,
+                        pvalues=None, test_short_name=None, test=None,
+                        text_format='star', pvalue_format_string=DEFAULT,
+                        text_annot_custom=None, loc='inside',
+                        show_test_name=True, pvalue_thresholds=DEFAULT,
+                        stats_params: dict = None,
                         comparisons_correction='bonferroni',
                         num_comparisons='auto', use_fixed_offset=False,
                         line_offset_to_box=None, line_offset=None,
                         line_height=0.02, text_offset=1, color='0.2',
                         linewidth=1.5, fontsize='medium', verbose=1):
+
     """
     Optionally computes statistical test between pairs of data series, and add statistical annotation on top
     of the boxes/bars. The same exact arguments `data`, `x`, `y`, `hue`, `order`, `width`,
@@ -240,10 +45,15 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
     :param plot: type of the plot, one of 'boxplot' or 'barplot'.
     :param line_height: in axes fraction coordinates
     :param text_offset: in points
-    :param box_pairs: can be of either form: For non-grouped boxplot: `[(cat1, cat2), (cat3, cat4)]`.
+    :param box_pairs: can be of either form:
+        For non-grouped boxplot: `[(cat1, cat2), (cat3, cat4)]`.
         For boxplot grouped by hue: `[((cat1, hue1), (cat2, hue2)), ((cat3, hue3), (cat4, hue4))]`
+    :param test_short_name:
+        How the test name should show on the plot, if show_test_name is True
+        (default). Default is the full test name
     :param pvalue_format_string: defaults to `"{.3e}"`
-    :param pvalue_thresholds: list of lists, or tuples. Default is:
+    :param pvalue_thresholds: list of lists, or tuples.
+        Default is:
         For "star" text_format: `[[1e-4, "****"], [1e-3, "***"], [1e-2, "**"], [0.05, "*"], [1, "ns"]]`.
         For "simple" text_format : `[[1e-5, "1e-5"], [1e-4, "1e-4"], [1e-3, "0.001"], [1e-2, "0.01"]]`
     :param pvalues: list or array of p-values for each box pair comparison.
@@ -253,16 +63,16 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
     :param num_comparisons: Override number of comparisons otherwise calculated with number of box_pairs
     """
 
-    def find_x_position_box(b_plotter, boxName):
+    def find_x_position_box(b_plotter, box_name):
         """
-        boxName can be either a name "cat" or a tuple ("cat", "hue")
+        box_name can be either a name "cat" or a tuple ("cat", "hue")
         """
         if b_plotter.plot_hues is None:
-            cat = boxName
+            cat = box_name
             hue_offset = 0
         else:
-            cat = boxName[0]
-            hue_level = boxName[1]
+            cat = box_name[0]
+            hue_level = box_name[1]
             hue_offset = b_plotter.hue_offsets[
                 b_plotter.hue_names.index(hue_level)]
 
@@ -270,14 +80,14 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
         box_pos = group_pos + hue_offset
         return box_pos
 
-    def get_box_data(b_plotter, boxName):
+    def get_box_data(b_plotter, box_name):
         """
-        boxName can be either a name "cat" or a tuple ("cat", "hue")
+        box_name can be either a name "cat" or a tuple ("cat", "hue")
 
         Here we really have to duplicate seaborn code, because there is not
         direct access to the box_data in the BoxPlotter class.
         """
-        cat = b_plotter.plot_hues is None and boxName or boxName[0]
+        cat = b_plotter.plot_hues is None and box_name or box_name[0]
 
         index = b_plotter.group_names.index(cat)
         group_data = b_plotter.plot_data[index]
@@ -287,7 +97,7 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
             # with a single level of grouping
             box_data = remove_null(group_data)
         else:
-            hue_level = boxName[1]
+            hue_level = box_name[1]
             hue_mask = b_plotter.plot_hues[index] == hue_level
             box_data = remove_null(group_data[hue_mask])
 
@@ -320,12 +130,10 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
         if pvalues is not None or test_short_name is not None:
             raise ValueError("If `perform_stat_test` is True, custom `pvalues` "
                              "or `test_short_name` must be `None`.")
-        valid_list = ['t-test_ind', 't-test_welch', 't-test_paired',
-                      'Mann-Whitney', 'Mann-Whitney-gt', 'Mann-Whitney-ls',
-                      'Levene', 'Wilcoxon', 'Kruskal', 'stat_func']
-        if test not in valid_list:
+
+        if test not in IMPLEMENTED_TESTS:
             raise ValueError("test value should be one of the following: {}."
-                             .format(', '.join(valid_list)))
+                             .format(', '.join(IMPLEMENTED_TESTS)))
     else:
         if pvalues is None:
             raise ValueError("If `perform_stat_test` is False, custom `pvalues` must be specified.")
@@ -353,8 +161,8 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
         assert_valid_correction_name(comparisons_correction)
         comparisons_correction = ComparisonsCorrection(comparisons_correction)
     elif not(isinstance(comparisons_correction, ComparisonsCorrection)):
-            raise ValueError("comparisons_correction must be a statmodels "
-                             "method name or a ComparisonCorrection instance")
+        raise ValueError("comparisons_correction must be a statmodels "
+                         "method name or a ComparisonCorrection instance")
 
     if verbose >= 1 and text_format == 'star':
         print("p-value annotation legend:")
@@ -400,7 +208,7 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
         # Create the same plotter object as seaborn's barplot
         box_plotter = sns.categorical._BarPlotter(
             x, y, hue, data, order, hue_order,
-            estimator=np.mean, ci=95, n_boot=1000, units=None,
+            estimator=np.mean, ci=95, n_boot=1000, units=units,
             orient=None, color=None, palette=None, saturation=.75, seed=None,
             errcolor=".26", errwidth=None, capsize=None, dodge=True)
 
@@ -544,7 +352,10 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
             elif text_format is 'star':
                 text = pval_annotation_text(result, pvalue_thresholds)
             elif text_format is 'simple':
-                test_short_name = result.test_short_name if show_test_name else None
+                if show_test_name:
+                    test_short_name = show_test_name and test_short_name or test
+                else:
+                    test_short_name = ""
                 text = simple_text(result, simple_format_string,
                                    pvalue_thresholds, test_short_name)
             else:  # None:

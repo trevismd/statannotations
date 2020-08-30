@@ -2,7 +2,11 @@ import warnings
 
 import numpy as np
 
+<<<<<<< HEAD:statannot/comparisons_corrections/utils.py
 import statannot.comparisons_corrections.ComparisonsCorrection as ComparisonsCorrection
+=======
+import statannot.stats.ComparisonsCorrection as CompCorr
+>>>>>>> refactoring:statannot/stats/utils.py
 from statannot.utils import raise_expected_got, assert_is_in
 
 
