@@ -1,5 +1,9 @@
 class StatResult:
-    def __init__(self, test_description, test_short_name, stat_str, stat, pval):
+    def __init__(self, test_description, test_short_name, stat_str, stat, pval,
+                 alpha=0.05):
+        """Alpha is used to know if the pvalue is non-significant as a result
+        of comparison correction or even without in cases it doesn't change the
+        pvalue"""
         self.test_description = test_description
         self.test_short_name = test_short_name
         self.stat_str = stat_str
@@ -7,6 +11,7 @@ class StatResult:
         self.pval = pval
         self._corrected_significance = None
         self._correction_method = None
+        self.alpha = alpha
 
     @property
     def correction_method(self):
@@ -45,8 +50,7 @@ class StatResult:
     @property
     def significance_suffix(self):
         # will add this only if a correction method is specified
-        if (self._corrected_significance is False
-                and self.pval < self._correction_method.alpha):
+        if self._corrected_significance is False and self.pval < self.alpha:
             return ' (ns)'
         return ""
 

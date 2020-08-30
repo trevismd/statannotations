@@ -310,7 +310,8 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
                 test_short_name,
                 None,
                 None,
-                pvalues[i_box_pair]
+                pvalues[i_box_pair],
+                alpha=pvalue_thresholds[-2][0]
             )
         result.box1 = box1
         result.box2 = box2
@@ -336,7 +337,9 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
             alpha = comparisons_correction.alpha
             for result in test_result_list:
                 result.correction_method = corr_name
-                result.corrected_significance = result.pval < alpha
+                result.corrected_significance = (result.pval < alpha
+                                                 or np.isclose(result.pval,
+                                                               alpha))
 
     # Then annotate
     for box_structs, result in zip(box_struct_pairs, test_result_list):
