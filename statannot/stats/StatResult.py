@@ -50,7 +50,7 @@ class StatResult:
     @property
     def significance_suffix(self):
         # will add this only if a correction method is specified
-        if self._corrected_significance is False and self.pval < self.alpha:
+        if self._corrected_significance is False and self.pval <= self.alpha:
             return ' (ns)'
         return ""
 
