@@ -301,6 +301,7 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
                 comparisons_correction,
                 num_comparisons != "auto" and num_comparisons or len(box_struct_pairs),
                 verbose,
+                alpha=pvalue_thresholds[-2][0],
                 **stats_params
             )
         else:
@@ -329,6 +330,7 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
             significant_pvalues = comparisons_correction(original_pvalues)
 
             for is_significant, result in zip(significant_pvalues, test_result_list):
+                print(result.pval, is_significant)
                 result.correction_method = corr_name
                 result.corrected_significance = is_significant
 

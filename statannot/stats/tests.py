@@ -17,6 +17,7 @@ def stat_test(
         test_name,
         comparisons_correction=None,
         num_comparisons=1,
+        alpha=0.05,
         verbose=1,
         **stats_params
 ):
@@ -42,6 +43,7 @@ def stat_test(
         Bonferroni correction is implemented to be applied on per-test basis.
     num_comparisons: int, default 1
         Number of comparisons to use for multiple comparisons correction.
+    alpha: Used for pvalue interpretation in case of comparisons_correction.
     verbose: int
         Verbosity parameter, see add_stat_annotation
     stats_params
@@ -67,48 +69,43 @@ def stat_test(
     if test_name == 'Levene':
         stat, pval = stats.levene(box_data1, box_data2, **stats_params)
         result = StatResult('Levene test of variance', 'levene',
-                            'stat_value', stat, pval)
+                            'stat_value', stat, pval, alpha=alpha)
     elif test_name == 'Mann-Whitney':
         u_stat, pval = stats.mannwhitneyu(box_data1, box_data2,
                                           alternative='two-sided',
                                           **stats_params)
 
         result = StatResult('Mann-Whitney-Wilcoxon test two-sided', 'M.W.W.',
-                            'U_stat', u_stat, pval)
+                            'U_stat', u_stat, pval, alpha=alpha)
 
     elif test_name == 'Mann-Whitney-gt':
         u_stat, pval = stats.mannwhitneyu(
             box_data1, box_data2, alternative='greater', **stats_params)
         result = StatResult('Mann-Whitney-Wilcoxon test greater', 'M.W.W.',
-                            'U_stat', u_stat, pval)
+                            'U_stat', u_stat, pval, alpha=alpha)
 
     elif test_name == 'Mann-Whitney-ls':
         u_stat, pval = stats.mannwhitneyu(box_data1, box_data2,
                                           alternative='less', **stats_params)
         result = StatResult('Mann-Whitney-Wilcoxon test smaller', 'M.W.W.',
-                            'U_stat', u_stat, pval)
+                            'U_stat', u_stat, pval, alpha=alpha)
 
     elif test_name == 't-test_ind':
         stat, pval = stats.ttest_ind(a=box_data1, b=box_data2, **stats_params)
         result = StatResult('t-test independent samples', 't-test_ind',
-                            'stat_value', stat, pval)
+                            'stat_value', stat, pval, alpha=alpha)
 
     elif test_name == 't-test_welch':
         stat, pval = stats.ttest_ind(
-            a=box_data1, b=box_data2, equal_var=False, **stats_params
-        )
-        result = StatResult(
-            'Welch\'s t-test independent samples',
-            't-test_welch',
-            'stat_value',
-            stat,
-            pval,
-        )
+            a=box_data1, b=box_data2, equal_var=False, **stats_params)
+        result = StatResult('Welch\'s t-test independent samples',
+                            't-test_welch',
+                            'stat_value', stat, pval, alpha=alpha)
 
     elif test_name == 't-test_paired':
         stat, pval = stats.ttest_rel(a=box_data1, b=box_data2, **stats_params)
         result = StatResult('t-test paired samples', 't-test_rel',
-                            'stat_value', stat, pval)
+                            'stat_value', stat, pval, alpha=alpha)
 
     elif test_name == 'Wilcoxon':
         zero_method = stats_params.pop('zero_method', None)
@@ -121,12 +118,12 @@ def stat_test(
         stat, pval = stats.wilcoxon(box_data1, box_data2,
                                     zero_method=zero_method, **stats_params)
         result = StatResult('Wilcoxon test (paired samples)', 'Wilcoxon',
-                            'stat_value', stat, pval)
+                            'stat_value', stat, pval, alpha=alpha)
 
     elif test_name == 'Kruskal':
         stat, pval = stats.kruskal(box_data1, box_data2, **stats_params)
         result = StatResult('Kruskal-Wallis paired samples', 'Kruskal',
-                            'stat_value', stat, pval)
+                            'stat_value', stat, pval, alpha=alpha)
 
     else:
         if test_name == "stat_func":
@@ -141,11 +138,12 @@ def stat_test(
 
             stat, pval = stat_func(box_data1, box_data2, **stats_params)
             result = StatResult(test_long_name, test_short_name,
-                                'stat_value', stat, pval)
+                                'stat_value', stat, pval, alpha=alpha)
         else:
             result = StatResult(None, '', None, None, np.nan)
 
-    # Optionally, run multiple comparisons correction that can independently be applied to each pval
+    # Optionally, run multiple comparisons correction that can independently be
+    # applied to each pval
     if comparisons_correction is not None and comparisons_correction.type == 0:
         result.pval = comparisons_correction(result.pval, num_comparisons)
         result.correction_method = comparisons_correction.name

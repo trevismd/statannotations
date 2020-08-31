@@ -122,12 +122,12 @@ class ComparisonsCorrection(object):
             self.__doc__ += f"    `method`: {self.method} \n"
 
         self.__doc__ += (
-            f"With\n" 
+            f"With\n"
             f"    type 0 function: Per-pvalue correction with modification\n"
             f"    type 1 function: Correction of interpretation of set of pvalues\n"
             f"------ Original function documentation ------ \n"
             f"{func.__doc__}")
-               
+
     def __call__(self, pvalues, m=None):
         try:
             # Will raise TypeError if scalar value
