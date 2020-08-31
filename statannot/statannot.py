@@ -331,7 +331,6 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
             significant_pvalues = comparisons_correction(original_pvalues)
 
             for is_significant, result in zip(significant_pvalues, test_result_list):
-                print(result.pval, is_significant)
                 result.correction_method = corr_name
                 result.corrected_significance = is_significant
 
