@@ -298,9 +298,10 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
                 box_data1,
                 box_data2,
                 test,
-                comparisons_correction,
-                num_comparisons != "auto" and num_comparisons or len(box_struct_pairs),
-                verbose,
+                comparisons_correction=comparisons_correction,
+                num_comparisons= (num_comparisons if num_comparisons != "auto"
+                                  else len(box_struct_pairs)),
+                verbose=verbose,
                 alpha=pvalue_thresholds[-2][0],
                 **stats_params
             )
@@ -311,7 +312,7 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
                 test_short_name,
                 None,
                 None,
-                pvalues[i_box_pair],
+                pval=pvalues[i_box_pair],
                 alpha=pvalue_thresholds[-2][0]
             )
         result.box1 = box1
