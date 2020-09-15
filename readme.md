@@ -41,15 +41,10 @@ on pypi.org.
 
 ## Installation
 
-The latest stable release can be installed from PyPI:
-
-```
-pip install statannot
-```
 You may instead want to use the development version from Github:
 
 ```
-pip install git+https://github.com/webermarcolivier/statannot.git
+pip install git+https://github.com/trevismd/statannotations.git
 ```
 
 ## Documentation
@@ -62,7 +57,7 @@ Here is a minimal example:
 
 ```python
 import seaborn as sns
-from statannot import add_stat_annotation
+from statannotations import add_stat_annotation
 
 df = sns.load_dataset("tips")
 x = "day"
