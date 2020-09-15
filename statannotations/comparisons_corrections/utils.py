@@ -2,8 +2,8 @@ import warnings
 
 import numpy as np
 
-import statannot.comparisons_corrections.ComparisonsCorrection as ComparisonsCorrection
-from statannot.utils import raise_expected_got, assert_is_in
+import statannotations.comparisons_corrections.ComparisonsCorrection as ComparisonsCorrection
+from statannotations.utils import raise_expected_got, assert_is_in
 
 
 def assert_valid_correction_name(name):

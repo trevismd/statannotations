@@ -9,10 +9,10 @@ from matplotlib import lines
 from matplotlib.font_manager import FontProperties
 from scipy import stats
 
-from statannot.StatResult import StatResult
-from statannot.comparisons_corrections.ComparisonsCorrection import ComparisonsCorrection
-from statannot.comparisons_corrections.utils import assert_valid_correction_name
-from statannot.utils import assert_is_in, remove_null
+from statannotations.StatResult import StatResult
+from statannotations.comparisons_corrections.ComparisonsCorrection import ComparisonsCorrection
+from statannotations.comparisons_corrections.utils import assert_valid_correction_name
+from statannotations.utils import assert_is_in, remove_null
 
 DEFAULT = object()
 
@@ -541,9 +541,9 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
             if text_format == 'full':
                 text = "{} p = {}{}".format('{}', pvalue_format_string, '{}').format(
                     result.test_short_name, result.pval, result.significance_suffix)
-            elif text_format is 'star':
+            elif text_format == 'star':
                 text = pval_annotation_text(result, pvalue_thresholds)
-            elif text_format is 'simple':
+            elif text_format == 'simple':
                 test_short_name = result.test_short_name if show_test_name else None
                 text = simple_text(result, simple_format_string,
                                    pvalue_thresholds, test_short_name)

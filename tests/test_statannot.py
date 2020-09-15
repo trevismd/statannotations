@@ -5,7 +5,7 @@ from functools import partial
 import numpy.testing as npt
 from statsmodels.stats.multitest import multipletests
 
-from statannot.comparisons_corrections.ComparisonsCorrection import ComparisonsCorrection
+from statannotations.comparisons_corrections.ComparisonsCorrection import ComparisonsCorrection
 
 
 class TestBonferroni(unittest.TestCase):
