@@ -56,7 +56,7 @@ pip install -r requirements.txt .
 
 ## Documentation
 
-See example jupyter notebook `example/example.ipynb`.
+See example jupyter notebook [doc/example.ipynb](`doc/example.ipynb).
 
 ## Usage
 
@@ -75,18 +75,15 @@ test_results = add_stat_annotation(
     ax, data=df, x=x, y=y, order=order,
     box_pairs=[("Thur", "Fri"), ("Thur", "Sat"), ("Fri", "Sun")],
     test='Mann-Whitney', text_format='star', loc='outside', verbose=2)
-    
+
 test_results
 ```
 
-More examples are available in the jupyter notebook `example/example.ipynb`.
-
-
 ## Examples
 
-![Example 1](/example/example_non-hue_outside.png)
+![Example 1](doc/example_non-hue_outside.png)
 
-![Example 2](/example/example_hue_layout.png)
+![Example 2](doc/example_hue_layout.png)
 
 ## Requirements
 
