@@ -1,9 +1,9 @@
 import numpy as np
 from scipy import stats
 
-from statannot.stats.ComparisonsCorrection import ComparisonsCorrection
-from statannot.stats.StatResult import StatResult
-from statannot.stats.utils import assert_valid_correction_name
+from statannotations.stats.ComparisonsCorrection import ComparisonsCorrection
+from statannotations.stats.StatResult import StatResult
+from statannotations.stats.utils import assert_valid_correction_name
 
 
 IMPLEMENTED_TESTS = ['t-test_ind', 't-test_welch', 't-test_paired',

@@ -6,12 +6,13 @@ import seaborn as sns
 from matplotlib import lines
 from matplotlib.font_manager import FontProperties
 
-from statannot.format_annotations import pval_annotation_text, simple_text
-from statannot.stats.ComparisonsCorrection import ComparisonsCorrection
-from statannot.stats.StatResult import StatResult
-from statannot.stats.tests import stat_test, IMPLEMENTED_TESTS
-from statannot.stats.utils import assert_valid_correction_name
-from statannot.utils import assert_is_in, remove_null
+
+from statannotations.format_annotations import pval_annotation_text, simple_text
+from statannotations.stats.ComparisonsCorrection import ComparisonsCorrection
+from statannotations.stats.StatResult import StatResult
+from statannotations.stats.tests import stat_test, IMPLEMENTED_TESTS
+from statannotations.stats.utils import assert_valid_correction_name
+from statannotations.utils import assert_is_in, remove_null
 
 DEFAULT = object()
 
@@ -258,7 +259,7 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
         valid = box1 in box_names and box2 in box_names
         if not valid:
             raise ValueError("box_pairs contains an invalid box pair.")
-            pass
+
         # i_box_pair will keep track of the original order of the box pairs.
         box_struct1 = dict(box_structs_dic[box1], i_box_pair=i_box_pair)
         box_struct2 = dict(box_structs_dic[box2], i_box_pair=i_box_pair)
@@ -363,9 +364,9 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
             if text_format == 'full':
                 text = "{} p = {}{}".format('{}', pvalue_format_string, '{}').format(
                     result.test_short_name, result.pval, result.significance_suffix)
-            elif text_format is 'star':
+            elif text_format == 'star':
                 text = pval_annotation_text(result, pvalue_thresholds)
-            elif text_format is 'simple':
+            elif text_format == 'simple':
                 if show_test_name:
                     test_short_name = show_test_name and test_short_name or test
                 else:

@@ -1,7 +1,7 @@
 import numpy as np
 
-from statannot.stats.utils import check_pval_correction_input_values, return_results, \
-    get_num_comparisons
+from statannotations.stats.utils import check_pval_correction_input_values, \
+    return_results, get_num_comparisons
 
 
 def bonferroni(p_values, num_comparisons='auto'):
