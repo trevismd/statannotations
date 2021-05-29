@@ -8,7 +8,8 @@ from statannotations.stats.utils import assert_valid_correction_name
 
 IMPLEMENTED_TESTS = ['t-test_ind', 't-test_welch', 't-test_paired',
                      'Mann-Whitney', 'Mann-Whitney-gt', 'Mann-Whitney-ls',
-                     'Levene', 'Wilcoxon', 'Kruskal', 'stat_func']
+                     'Levene', 'Wilcoxon', 'Kruskal', 'bootstrap', 'paired_bootstrap', 
+                     'stat_func']
 
 
 def stat_test(
@@ -19,6 +20,7 @@ def stat_test(
         num_comparisons=1,
         alpha=0.05,
         verbose=1,
+        n_bootstraps=None,
         **stats_params
 ):
     """Get formatted result of two sample statistical test.
@@ -38,6 +40,8 @@ def stat_test(
         - `t-test_paired`
         - `Wilcoxon`
         - `Kruskal`
+        - `bootstrap`
+        - `paired_bootstrap`
     comparisons_correction: str or or ComparisonCorrection or None, default None
         Method to use for multiple comparisons correction. Currently only the
         Bonferroni correction is implemented to be applied on per-test basis.
@@ -64,6 +68,10 @@ def stat_test(
     else:
         assert_valid_correction_name(comparisons_correction)
         comparisons_correction = ComparisonsCorrection(comparisons_correction)
+
+    if 'boot' in test_name and n_bootstraps is None:
+        print ('No value specified for the number of bootstraps to perform. Please provide a value for the \'n_boostraps\' variable.')
+        raise ValueError
 
     # Switch to run scipy.stats hypothesis test.
     if test_name == 'Levene':
@@ -125,6 +133,22 @@ def stat_test(
         result = StatResult('Kruskal-Wallis paired samples', 'Kruskal',
                             'stat_value', stat, pval, alpha=alpha)
 
+    elif test_name == 'bootstrap':
+        pval = bootstrap(box_data1, box_data2, n_bootstraps)
+        # 'stat' doesn't really apply for a bootstrapped comparison,
+        # but it is useful to record the number of bootstraps used.
+        # For a bootstrapped p-value, the statistic will be the number of bootstraps.
+
+        result = StatResult('Non-parametric bootstrapped two-sided comparison', 'bootstrap', 
+                            'stat_value', n_bootstraps, pval, alpha=alpha)
+
+    elif test_name == 'paired_bootstrap':
+        assert n_bootstraps is not None, 'No value specified for the number of bootstraps to perform. Please provide a value for the \'n_boostraps\' variable.'
+        pval = paired_bootstrap(box_data1, box_data2, n_bootstraps)
+        test_short_name = 'paired_bootstrap'
+        result = StatResult('Non-parametric paired bootstrap two-sided comparison', 'paired_bootstrap',
+                            'stat_value', n_bootstraps, pval, alpha=alpha)
+
     else:
         if test_name == "stat_func":
             try:
@@ -149,3 +173,48 @@ def stat_test(
         result.correction_method = comparisons_correction.name
 
     return result
+
+def bootstrap(dataset_a, dataset_b, n):
+    """Determine via bootstrapping if the mean of dataset a is 
+       significantly different than mean of dataset b.
+
+    Arguments
+    ---------
+    dataset_a: numpy array of data points
+    dataset_b: numpy array of data points
+    n: Number of bootstrapped samples to collect.
+
+    Returns
+    -------
+    Two-sided likelihood of samples being drawn from the same population of data points.
+
+    """
+    boot_a = np.array([np.mean(np.random.choice(dataset_a, size=len(dataset_a), replace=True)) for _ in range(n)])
+    boot_b = np.array([np.mean(np.random.choice(dataset_b, size=len(dataset_b), replace=True)) for _ in range(n)])
+
+    return min(np.mean(boot_a > boot_b), np.mean(boot_a < boot_b))*2  # two-sided
+
+def paired_bootstrap(dataset_a, dataset_b, n):
+    """determine via bootstrapping method if items from one dataset are higher or lower
+       than items from another paired dataset a significantly distinct proportion of the time.
+
+    Arguments
+    ---------
+    dataset_a: numpy array of data points
+    dataset_b: numpy array of data points. Must be the same size as dataset_a.
+               Test is valid only if dataset_a[n] and dataset_b[n] are paired.
+    n: Number of bootstrapped samples to collect.
+
+    Returns
+    -------
+    Two-sided likelihood of datapoints from dataset_a being higher or lower 
+    than paired datapoints from dataset_b.
+
+    """
+    if len(dataset_a) != len(dataset_b):
+        print ('Paired bootstrap tests can only be performed between two variables of equal size.')
+        raise ValueError
+
+    diffs = dataset_a.values - dataset_b.values
+    samples = np.array([np.sum(np.random.choice(diffs, size=len(diffs), replace=True)) for _ in range(n)])
+    return min(np.mean(samples > 0), np.mean(samples < 0))*2  # two-sided

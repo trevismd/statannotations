@@ -20,8 +20,8 @@ DEFAULT = object()
 # noinspection PyProtectedMember
 def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
                         hue=None, units=None, order=None, hue_order=None,
-                        box_pairs=None, width=0.8, perform_stat_test=True,
-                        pvalues=None, test_short_name=None, test=None,
+                        box_pairs=None, width=0.8, perform_stat_test=True, dodge=True,
+                        pvalues=None, test_short_name=None, test=None, n_bootstraps=None,
                         text_format='star', pvalue_format_string=DEFAULT,
                         text_annot_custom=None, loc='inside',
                         show_test_name=True, pvalue_thresholds=DEFAULT,
@@ -66,6 +66,7 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
         For "star" text_format: `[[1e-4, "****"], [1e-3, "***"], [1e-2, "**"], [0.05, "*"], [1, "ns"]]`.
         For "simple" text_format : `[[1e-5, "1e-5"], [1e-4, "1e-4"], [1e-3, "0.001"], [1e-2, "0.01"], [5e-2, "0.05"]]`
     :param pvalues: list or array of p-values for each box pair comparison.
+    :param n_bootstraps: If using bootstrapped statistical test, determines the number of bootstraps to perform.
     :param stats_params: Parameters for statistical test functions.
     :param comparisons_correction: Method for multiple comparisons correction.
         One of `statsmodel` `multipletests` methods (w/ default FWER), or a ComparisonCorrection instance.
@@ -304,6 +305,7 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
                                   else len(box_struct_pairs)),
                 verbose=verbose,
                 alpha=pvalue_thresholds[-2][0],
+                n_bootstraps=n_bootstraps,
                 **stats_params
             )
         else:
