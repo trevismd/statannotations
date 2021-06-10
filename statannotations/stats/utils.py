@@ -28,6 +28,12 @@ def check_pval_correction_input_values(p_values, num_comparisons):
             )
 
 
+def check_alpha(alpha):
+    if not 0 < alpha < 1:
+        raise ValueError("Alpha must be strictly larger than zero and "
+                         "smaller than one.")
+
+
 def get_num_comparisons(p_values_array, num_comparisons):
     if num_comparisons == 'auto':
         # Infer number of comparisons

@@ -1,9 +1,13 @@
+from statannotations.stats.utils import check_alpha
+
+
 class StatResult:
     def __init__(self, test_description, test_short_name, stat_str, stat, pval,
                  alpha=0.05):
         """Alpha is used to know if the pvalue is non-significant as a result
         of comparison correction or even without in cases it doesn't change the
         pvalue"""
+        check_alpha(alpha)
         self.test_description = test_description
         self.test_short_name = test_short_name
         self.stat_str = stat_str

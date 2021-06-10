@@ -46,7 +46,8 @@ def get_correction_parameters(name):
         return None
 
     if name not in IMPLEMENTED_METHODS:
-        raise NotImplementedError(f"Correction method {str(name)} is not implemented.")
+        raise NotImplementedError(f"Correction method {str(name)} is not "
+                                  f"implemented.")
 
     correction_method = methods_names[name]
 
@@ -127,7 +128,8 @@ class ComparisonsCorrection(object):
         self.__doc__ += (
             f"With\n"
             f"    type 0 function: Per-pvalue correction with modification\n"
-            f"    type 1 function: Correction of interpretation of set of pvalues\n"
+            f"    type 1 function: Correction of interpretation of set of "
+            f"pvalues\n"
             f"------ Original function documentation ------ \n"
             f"{func.__doc__}")
 
