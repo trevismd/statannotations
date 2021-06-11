@@ -88,7 +88,7 @@ test_results
 
 ## Requirements
 
-+ Python >= 3.5
++ Python >= 3.6
 + numpy >= 1.12.1
 + seaborn >= 0.8.1
 + matplotlib >= 2.2.2
