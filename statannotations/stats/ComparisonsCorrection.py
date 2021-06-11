@@ -9,6 +9,9 @@ try:
 except ImportError as statsmodel_import_error:
     multipletests = None
 
+else:
+    statsmodel_import_error = None
+
 # For user convenience
 methods_names = {'bonferroni':          'Bonferroni',
                  'bonf':                'Bonferroni',
