@@ -31,5 +31,5 @@ setup(
         "Operating System :: OS Independent",
     ],
     # install_requires=open("requirements.txt").readlines(),
-    python_requires='>=3.5',
+    python_requires='>=3.6',
 )

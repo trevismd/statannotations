@@ -6,13 +6,13 @@ import seaborn as sns
 from matplotlib import lines
 from matplotlib.font_manager import FontProperties
 
-
 from statannotations.format_annotations import pval_annotation_text, simple_text
 from statannotations.stats.ComparisonsCorrection import ComparisonsCorrection
 from statannotations.stats.StatResult import StatResult
 from statannotations.stats.tests import stat_test, IMPLEMENTED_TESTS
 from statannotations.stats.utils import assert_valid_correction_name
-from statannotations.utils import assert_is_in, remove_null
+from statannotations.utils import assert_is_in, remove_null, \
+    check_order_box_pairs_in_data
 
 DEFAULT = object()
 
@@ -134,6 +134,8 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
     fig = plt.gcf()
 
     # Validate arguments
+    check_order_box_pairs_in_data(x, order, box_pairs, data, hue, hue_order)
+
     if perform_stat_test:
         if test is None:
             raise ValueError("If `perform_stat_test` is True, `test` must be specified.")
