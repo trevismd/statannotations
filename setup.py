@@ -13,6 +13,12 @@ if match:
 else:
     raise RuntimeError("Unable to find version string in %s." % (VERSIONFILE,))
 
+
+def remove_statsmodels(list_of_dependencies):
+    return [dep.strip() for dep in list_of_dependencies
+            if not dep.startswith("statsmodels")]
+
+
 setup(
     name="statannotations",
     version=version,
@@ -32,6 +38,6 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    install_requires=open("requirements.txt").readlines(),
+    install_requires=remove_statsmodels(open("requirements.txt").readlines()),
     python_requires='>=3.6',
 )
