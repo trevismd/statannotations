@@ -2,7 +2,7 @@ from distutils.core import setup
 from setuptools import find_packages
 import re
 
-with open("readme.md", "r") as f:
+with open("README.md", "r") as f:
     long_description = f.read()
 
 VERSIONFILE = "statannotations/_version.py"
