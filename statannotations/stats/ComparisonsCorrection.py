@@ -105,7 +105,7 @@ class ComparisonsCorrection(object):
 
         self.alpha = alpha
         self.statsmodels_api = statsmodels_api
-
+        self.name = methods_names.get(self.name, self.name)
         func = self.func
         while isinstance(func, partial):
             func = func.func

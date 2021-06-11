@@ -134,7 +134,7 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
     fig = plt.gcf()
 
     # Validate arguments
-    check_order_box_pairs_in_data(x, order, box_pairs, data, hue, hue_order)
+    check_order_box_pairs_in_data(data, x, box_pairs, order, hue, hue_order)
 
     if perform_stat_test:
         if test is None:

@@ -34,25 +34,23 @@ def remove_null(series):
     return series[pd.notnull(series)]
 
 
-def check_order_box_pairs_in_data(x: str,
-                                  order: List[str],
+def check_order_box_pairs_in_data(data: pd.DataFrame,
+                                  x: str,
                                   box_pairs: Union[list, tuple],
-                                  data: pd.DataFrame,
+                                  order: List[str] = None,
                                   hue: str = None,
                                   hue_order: List[str] = None):
     """
     Checks that values referred to in `order` and `box_pairs` exist in data.
     """
 
-    if sum([1 for parameter in [hue, hue_order] if parameter is None]) % 2:
-        raise ValueError("None or both of Hue and hue order must be specified")
-
     x_values = list(data[x].unique())
 
-    for x_value in order:
-        if x_value not in x_values:
-            raise ValueError(f"Missing x value \"{x_value}\" in {x} "
-                             f"(specified in `order`)")
+    if order is not None:
+        for x_value in order:
+            if x_value not in x_values:
+                raise ValueError(f"Missing x value \"{x_value}\" in {x} "
+                                 f"(specified in `order`)")
 
     seen_x_values = set()  # Maybe smaller than x_values
 
@@ -76,3 +74,10 @@ def check_order_box_pairs_in_data(x: str,
                 raise ValueError(f"Missing hue value \"{hue_value}\" in {hue}"
                                  f" (specified in `box_pairs`)")
             seen_hues.add(hue_value)
+
+        # I assume hue is always defined with hue_order
+        if hue_order is not None:
+            for hue_value in hue_order:
+                if hue_value not in seen_hues and hue_value not in hue_values:
+                    raise ValueError(f"Missing hue value \"{hue_value}\" in {hue}"
+                                     f" (specified in `hue_order`)")
