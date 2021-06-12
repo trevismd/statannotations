@@ -13,7 +13,8 @@ from statannotations.stats.ComparisonsCorrection import ComparisonsCorrection
 from statannotations.stats.StatResult import StatResult
 from statannotations.stats.tests import stat_test, IMPLEMENTED_TESTS
 from statannotations.stats.utils import assert_valid_correction_name
-from statannotations.utils import assert_is_in, remove_null
+from statannotations.utils import assert_is_in, remove_null, \
+    check_order_box_pairs_in_data
 
 DEFAULT = object()
 
@@ -104,7 +105,7 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
         returns highest y point drawn between those two variables before
         annotations.
 
-        The highest data point is often not the highest item drawn 
+        The highest data point is often not the highest item drawn
         (eg, error bars and/or bar charts).
         """
         xpositions = {
@@ -190,6 +191,8 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
     fig = plt.gcf()
 
     # Validate arguments
+    check_order_box_pairs_in_data(data, x, box_pairs, order, hue, hue_order)
+
     if perform_stat_test:
         if test is None:
             raise ValueError("If `perform_stat_test` is True, `test` must be specified.")
@@ -490,8 +493,7 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
         ax_line_x, ax_line_y = [x1, x1, x2, x2], [y, y + h, y + h, y]
         # Then transform the resulting points from axes coordinates to data coordinates
         points = [ax_to_data.transform((x, y)) for x, y in zip(ax_line_x, ax_line_y)]
-        line_x, line_y = [x for x,y in points], [y for x, y in points]
-
+        line_x, line_y = [x for x, y in points], [y for x, y in points]
 
         if loc == 'inside':
             ax.plot(line_x, line_y, lw=linewidth, c=color)
