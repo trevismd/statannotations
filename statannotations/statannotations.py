@@ -390,8 +390,8 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
                 box_data2,
                 test,
                 comparisons_correction=comparisons_correction,
-                num_comparisons= (num_comparisons if num_comparisons != "auto"
-                                  else len(box_struct_pairs)),
+                num_comparisons=(num_comparisons if num_comparisons != "auto"
+                                 else len(box_struct_pairs)),
                 verbose=verbose,
                 alpha=pvalue_thresholds[-2][0],
                 **stats_params
@@ -431,9 +431,9 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
             alpha = comparisons_correction.alpha
             for result in test_result_list:
                 result.correction_method = corr_name
-                result.corrected_significance = (result.pval < alpha
-                                                 or np.isclose(result.pval,
-                                                               alpha))
+                result.corrected_significance = (
+                        result.pval < alpha
+                        or np.isclose(result.pval, alpha))
 
     # Then annotate
     for box_structs, result in zip(box_struct_pairs, test_result_list):
@@ -443,11 +443,10 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
         xi2 = box_structs[1]['xi']
         label1 = box_structs[0]['label']
         label2 = box_structs[1]['label']
-        # ymax1 = box_structs[0]['ymax']  # Not used, so do not assign them
-        # ymax2 = box_structs[1]['ymax']
+
         i_box_pair = box_structs[0]['i_box_pair']
         if verbose >= 1:
-            print("{} v.s. {}: {}".format(label1, label2, result.formatted_output))
+            print(f"{label1} v.s. {label2}: {result.formatted_output}")
 
         if text_annot_custom is not None:
             text = text_annot_custom[i_box_pair]
@@ -493,6 +492,7 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
         points = [ax_to_data.transform((x, y)) for x, y in zip(ax_line_x, ax_line_y)]
         line_x, line_y = [x for x,y in points], [y for x, y in points]
 
+
         if loc == 'inside':
             ax.plot(line_x, line_y, lw=linewidth, c=color)
         elif loc == 'outside':
@@ -525,8 +525,9 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
 
             if use_fixed_offset or got_mpl_error:
                 if verbose >= 1:
-                    print("Warning: cannot get the text bounding box. Falling back to a fixed"
-                          " y offset. Layout may be not optimal.")
+                    print("Warning: cannot get the text bounding box. Falling "
+                          "back to a fixed y offset. Layout may be not optimal.")
+
                 # We will apply a fixed offset in points,
                 # based on the font size of the annotation.
                 fontsize_points = FontProperties(size='medium').get_size_in_points()
