@@ -102,7 +102,7 @@ def stat_test(
         get_stat_result = StatTest.from_library(test_name)
 
     if get_stat_result is not None:
-        result = get_stat_result(box_data1, box_data2, verbose=verbose,
+        result = get_stat_result(box_data1, box_data2,
                                  alpha=alpha, **stats_params)
 
     # Optionally, run multiple comparisons correction that can independently be

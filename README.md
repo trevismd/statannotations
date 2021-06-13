@@ -29,8 +29,7 @@ statannotations, which provides additional features.
     - Levene test
     - Wilcoxon test
     - Kruskal-Wallis test
-- Interface to use any other function from any source with minimal extra code 
-
+- **Interface to use any other function from any source with minimal extra code**
 - Smart layout of multiple annotations with correct y offsets.
 - Annotations can be located inside or outside the plot.
 - **Corrections for multiple testing can be applied
@@ -39,7 +38,7 @@ statannotations, which provides additional features.
     - Holm-Bonferroni
     - Benjamini-Hochberg
     - Benjamini-Yekutieli
-    - And any other function from any source with minimal extra code
+- **And any other function from any source with minimal extra code**
 - Format of the statistical test annotation can be customized:
       star annotation, simplified p-value, or explicit p-value.
 - Optionally, custom p-values can be given as input.
