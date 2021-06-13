@@ -4,15 +4,17 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib import lines
+from matplotlib.collections import PathCollection
 from matplotlib.font_manager import FontProperties
-
+from matplotlib.patches import Rectangle
 
 from statannotations.format_annotations import pval_annotation_text, simple_text
 from statannotations.stats.ComparisonsCorrection import ComparisonsCorrection
 from statannotations.stats.StatResult import StatResult
 from statannotations.stats.tests import stat_test, IMPLEMENTED_TESTS
 from statannotations.stats.utils import assert_valid_correction_name
-from statannotations.utils import assert_is_in, remove_null
+from statannotations.utils import check_is_in, remove_null, \
+    check_order_box_pairs_in_data, check_not_none
 
 DEFAULT = object()
 
@@ -89,6 +91,61 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
         box_pos = group_pos + hue_offset
         return box_pos
 
+    def get_xpos_location(pos, xranges):
+        """
+        Finds the x-axis location of a categorical variable
+        """
+        for xrange in xranges:
+            if (pos >= xrange[0]) & (pos <= xrange[1]):
+                return xrange[2]
+
+    def generate_ymaxes(box_plotter, box_names, data_to_ax):
+        """
+        given box plotter and the names of two categorical variables,
+        returns highest y point drawn between those two variables before
+        annotations.
+
+        The highest data point is often not the highest item drawn
+        (eg, error bars and/or bar charts).
+        """
+        xpositions = {
+            np.round(find_x_position_box(box_plotter, box_name), 1): box_name
+            for box_name in box_names}
+        ymaxes = {name: 0 for name in box_names}
+
+        for child in ax.get_children():
+            if ((type(child) == PathCollection)
+                    and len(child.properties()['offsets'])):
+
+                ymax = child.properties()['offsets'][:, 1].max()
+                xpos = float(np.round(np.nanmean(
+                    child.properties()['offsets'][:, 0]), 1))
+
+                xname = xpositions[xpos]
+                ypos = data_to_ax.transform((0, ymax))[1]
+                if ypos > ymaxes[xname]:
+                    ymaxes[xname] = ypos
+
+            elif (type(child) == lines.Line2D) or (type(child) == Rectangle):
+                xunits = (max(list(xpositions.keys())) + 1) / len(xpositions)
+                xranges = {(pos - xunits / 2, pos + xunits / 2, pos): box_name
+                           for pos, box_name in xpositions.items()}
+                box = ax.transData.inverted().transform(
+                    child.get_window_extent(fig.canvas.get_renderer()))
+
+                if (box[:, 0].max() - box[:, 0].min()) > 1.1 * xunits:
+                    continue
+                raw_xpos = np.round(box[:, 0].mean(), 1)
+                xpos = get_xpos_location(raw_xpos, xranges)
+                if xpos not in xpositions:
+                    continue
+                xname = xpositions[xpos]
+                ypos = box[:, 1].max()
+                ypos = data_to_ax.transform((0, ypos))[1]
+                if ypos > ymaxes[xname]:
+                    ymaxes[xname] = ypos
+        return ymaxes
+
     def get_box_data(b_plotter, box_name):
         """
         box_name can be either a name "cat" or a tuple ("cat", "hue")
@@ -96,7 +153,7 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
         Here we really have to duplicate seaborn code, because there is not
         direct access to the box_data in the BoxPlotter class.
         """
-        cat = b_plotter.plot_hues is None and box_name or box_name[0]
+        cat = box_name if b_plotter.plot_hues is None else box_name[0]
 
         index = b_plotter.group_names.index(cat)
         group_data = b_plotter.plot_data[index]
@@ -134,6 +191,9 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
     fig = plt.gcf()
 
     # Validate arguments
+    check_not_none("box_pairs", box_pairs)
+    check_order_box_pairs_in_data(box_pairs, data, x, order, hue, hue_order)
+
     if perform_stat_test:
         if test is None:
             raise ValueError("If `perform_stat_test` is True, `test` must be specified.")
@@ -155,10 +215,10 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
     if text_annot_custom is not None and len(text_annot_custom) != len(box_pairs):
         raise ValueError("`text_annot_custom` should be of same length as `box_pairs`.")
 
-    assert_is_in(
+    check_is_in(
         loc, ['inside', 'outside'], label='argument `loc`'
     )
-    assert_is_in(
+    check_is_in(
         text_format,
         ['full', 'simple', 'star'],
         label='argument `text_format`'
@@ -186,8 +246,36 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
                 print('{}: p <= {:.2e}'.format(pvalue_thresholds[i][1], pvalue_thresholds[i][0]))
         print()
 
-    ylim = ax.get_ylim()
-    yrange = ylim[1] - ylim[0]
+    #  Generate coordinate transformation functions
+    def get_transform_func(ax, kind):
+        """
+        Given an axis object, returns one of three possible transformation
+        functions to move between coordinate systems, depending on the value of kind:
+        'data_to_ax': converts data coordinates to axes coordinates
+        'ax_to_data': converts axes coordinates to data coordinates
+        'pix_to_ax': converts pixel coordinates to axes coordinates
+        'all': return tuple of all three
+
+        This function should be called whenever axes limits are altered.
+        """
+        if kind == 'pix_to_ax':
+            return ax.transAxes.inverted()
+
+        data_to_ax = ax.transData + ax.get_xaxis_transform().inverted()
+        if kind == 'data_to_ax':
+            return data_to_ax
+        elif kind == 'ax_to_data':
+            return data_to_ax.inverted()
+        elif kind == 'all':
+            return data_to_ax, data_to_ax.inverted(), ax.transAxes.inverted()
+
+    # while by default matplotlib works in data coordinates,
+    # we will work in axes coordinates on the y axis to allow for
+    # consistency between different y scales (log, etc)
+    data_to_ax, ax_to_data, pix_to_ax = get_transform_func(ax, 'all')
+
+    orig_ylim = ax.get_ylim()
+    ylim = (0, 1)
 
     if line_offset is None:
         if loc == 'inside':
@@ -205,14 +293,15 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
                 line_offset_to_box = 0.06
         elif loc == 'outside':
             line_offset_to_box = line_offset
-    y_offset = line_offset * yrange
-    y_offset_to_box = line_offset_to_box * yrange
+    y_offset = line_offset
+    y_offset_to_box = line_offset_to_box
 
     if plot == 'boxplot':
         # Create the same plotter object as seaborn's boxplot
         box_plotter = sns.categorical._BoxPlotter(
-            x, y, hue, data, order, hue_order, orient=None, width=width, color=None,
-            palette=None, saturation=.75, dodge=True, fliersize=5, linewidth=None)
+            x, y, hue, data, order, hue_order, orient=None, width=width,
+            color=None, palette=None, saturation=.75, dodge=True, fliersize=5,
+            linewidth=None)
 
     elif plot == 'barplot':
         # Create the same plotter object as seaborn's barplot
@@ -232,8 +321,12 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
         box_names = group_names
         labels = box_names
     else:
-        box_names = [(group_name, hue_name) for group_name in group_names for hue_name in hue_names]
-        labels = ['{}_{}'.format(group_name, hue_name) for (group_name, hue_name) in box_names]
+        box_names = [(group_name, hue_name) for group_name in group_names
+                     for hue_name in hue_names]
+        labels = ['{}_{}'.format(group_name, hue_name)
+                  for (group_name, hue_name) in box_names]
+
+    ymaxes = generate_ymaxes(box_plotter, box_names, data_to_ax)
 
     box_structs = [
         {
@@ -241,17 +334,17 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
             'label':    labels[i],
             'x':        find_x_position_box(box_plotter, box_names[i]),
             'box_data': get_box_data(box_plotter, box_names[i]),
-            'ymax':     (np.amax(get_box_data(box_plotter, box_names[i]))
-                         if len(get_box_data(box_plotter, box_names[i])) > 0
-                         else np.nan)
+            'ymax':     ymaxes[box_names[i]]
         } for i in range(len(box_names))]
 
     # Sort the box data structures by position along the x axis
     box_structs = sorted(box_structs, key=lambda a: a['x'])
     # Add the index position in the list of boxes along the x axis
-    box_structs = [dict(box_struct, xi=i) for i, box_struct in enumerate(box_structs)]
+    box_structs = [dict(box_struct, xi=i)
+                   for i, box_struct in enumerate(box_structs)]
     # Same data structure list with access key by box name
-    box_structs_dic = {box_struct['box']: box_struct for box_struct in box_structs}
+    box_structs_dic = {box_struct['box']: box_struct
+                       for box_struct in box_structs}
 
     # Build the list of box data structure pairs
     box_struct_pairs = []
@@ -271,7 +364,8 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
 
     # Draw first the annotations with the shortest between-boxes distance, in order to reduce
     # overlapping between annotations.
-    box_struct_pairs = sorted(box_struct_pairs, key=lambda a: abs(a[1]['x'] - a[0]['x']))
+    box_struct_pairs = sorted(box_struct_pairs,
+                              key=lambda a: abs(a[1]['x'] - a[0]['x']))
 
     # Build array that contains the x and y_max position of the highest annotation or box data at
     # a given x position, and also keeps track of the number of stacked annotations.
@@ -300,8 +394,8 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
                 box_data2,
                 test,
                 comparisons_correction=comparisons_correction,
-                num_comparisons= (num_comparisons if num_comparisons != "auto"
-                                  else len(box_struct_pairs)),
+                num_comparisons=(num_comparisons if num_comparisons != "auto"
+                                 else len(box_struct_pairs)),
                 verbose=verbose,
                 alpha=pvalue_thresholds[-2][0],
                 **stats_params
@@ -331,7 +425,8 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
 
             significant_pvalues = comparisons_correction(original_pvalues)
 
-            for is_significant, result in zip(significant_pvalues, test_result_list):
+            for is_significant, result in zip(significant_pvalues,
+                                              test_result_list):
                 result.correction_method = corr_name
                 result.corrected_significance = is_significant
 
@@ -340,9 +435,9 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
             alpha = comparisons_correction.alpha
             for result in test_result_list:
                 result.correction_method = corr_name
-                result.corrected_significance = (result.pval < alpha
-                                                 or np.isclose(result.pval,
-                                                               alpha))
+                result.corrected_significance = (
+                        result.pval < alpha
+                        or np.isclose(result.pval, alpha))
 
     # Then annotate
     for box_structs, result in zip(box_struct_pairs, test_result_list):
@@ -352,11 +447,10 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
         xi2 = box_structs[1]['xi']
         label1 = box_structs[0]['label']
         label2 = box_structs[1]['label']
-        # ymax1 = box_structs[0]['ymax']  # Not used, so do not assign them
-        # ymax2 = box_structs[1]['ymax']
+
         i_box_pair = box_structs[0]['i_box_pair']
         if verbose >= 1:
-            print("{} v.s. {}: {}".format(label1, label2, result.formatted_output))
+            print(f"{label1} v.s. {label2}: {result.formatted_output}")
 
         if text_annot_custom is not None:
             text = text_annot_custom[i_box_pair]
@@ -394,64 +488,79 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
             # there is an annotation below
             offset = y_offset
         y = yref2 + offset
-        h = line_height * yrange
-        line_x, line_y = [x1, x1, x2, x2], [y, y + h, y + h, y]
+        h = line_height
+
+        # Determine lines in axes coordinates
+        ax_line_x, ax_line_y = [x1, x1, x2, x2], [y, y + h, y + h, y]
+        # Then transform the resulting points from axes coordinates to data coordinates
+        points = [ax_to_data.transform((x, y)) for x, y in zip(ax_line_x, ax_line_y)]
+        line_x, line_y = [x for x, y in points], [y for x, y in points]
+
         if loc == 'inside':
             ax.plot(line_x, line_y, lw=linewidth, c=color)
         elif loc == 'outside':
-            line = lines.Line2D(line_x, line_y, lw=linewidth, c=color, transform=ax.transData)
+            line = lines.Line2D(line_x, line_y, lw=linewidth, c=color,
+                                transform=ax.transData)
             line.set_clip_on(False)
             ax.add_line(line)
 
-        # why should we change here the ylim if at the very end we set it to the correct range????
-        # ax.set_ylim((ylim[0], 1.1*(y + h)))
-
         if text is not None:
             ann = ax.annotate(
-                text, xy=(np.mean([x1, x2]), y + h),
+                text, xy=(np.mean([x1, x2]), line_y[2]),
                 xytext=(0, text_offset), textcoords='offset points',
                 xycoords='data', ha='center', va='bottom',
                 fontsize=fontsize, clip_on=False, annotation_clip=False)
             ann_list.append(ann)
 
             plt.draw()
+            ax.set_ylim(orig_ylim)
+            data_to_ax, ax_to_data, pix_to_ax = get_transform_func(ax, 'all')
+
             y_top_annot = None
             got_mpl_error = False
             if not use_fixed_offset:
                 try:
                     bbox = ann.get_window_extent()
-                    bbox_data = bbox.transformed(ax.transData.inverted())
-                    y_top_annot = bbox_data.ymax
+                    bbox_ax = bbox.transformed(pix_to_ax)
+                    y_top_annot = bbox_ax.ymax
                 except RuntimeError:
                     got_mpl_error = True
 
             if use_fixed_offset or got_mpl_error:
                 if verbose >= 1:
-                    print("Warning: cannot get the text bounding box. Falling back to a fixed"
-                          " y offset. Layout may be not optimal.")
+                    print("Warning: cannot get the text bounding box. Falling "
+                          "back to a fixed y offset. Layout may be not optimal.")
+
                 # We will apply a fixed offset in points,
                 # based on the font size of the annotation.
                 fontsize_points = FontProperties(size='medium').get_size_in_points()
                 offset_trans = mtransforms.offset_copy(
-                    ax.transData, fig=fig, x=0,
+                    ax.transAxes, fig=fig, x=0,
                     y=1.0 * fontsize_points + text_offset, units='points')
                 y_top_display = offset_trans.transform((0, y + h))
-                y_top_annot = ax.transData.inverted().transform(y_top_display)[1]
+                y_top_annot = ax.transAxes.inverted().transform(y_top_display)[1]
         else:
             y_top_annot = y + h
 
-        y_stack.append(y_top_annot)  # remark: y_stack is not really necessary if we have the stack_array
+        # remark: y_stack is not really necessary if we have the stack_array
+        y_stack.append(y_top_annot)
         ymaxs.append(max(y_stack))
+
         # Fill the highest y position of the annotation into the y_stack array
         # for all positions in the range x1 to x2
-        y_stack_arr[1, (x1 <= y_stack_arr[0, :]) & (y_stack_arr[0, :] <= x2)] = y_top_annot
+        y_stack_arr[1,
+                    (x1 <= y_stack_arr[0, :])
+                    & (y_stack_arr[0, :] <= x2)] = y_top_annot
         # Increment the counter of annotations in the y_stack array
         y_stack_arr[2, xi1:xi2 + 1] = y_stack_arr[2, xi1:xi2 + 1] + 1
 
-    y_stack_max = max(ymaxs)
-    if loc == 'inside':
-        ax.set_ylim((ylim[0], max(1.03 * y_stack_max, ylim[1])))
-    elif loc == 'outside':
-        ax.set_ylim((ylim[0], ylim[1]))
+    y_stack_max = max(y_stack_arr[1, :])
 
+    # reset transformation
+    ax_to_data = get_transform_func(ax, 'ax_to_data')
+    ylims = ([(0, ylim[0]), (0, max(1.03 * y_stack_max, ylim[1]))]
+             if loc == 'inside'
+             else [(0, ylim[0]), (0, ylim[1])])  # outside
+
+    ax.set_ylim(ax_to_data.transform(ylims)[:, 1])
     return ax, test_result_list
