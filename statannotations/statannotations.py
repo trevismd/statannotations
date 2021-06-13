@@ -41,8 +41,9 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
     `hue_order` (and `units`) as in the seaborn boxplot/barplot function must be passed to this function.
 
     This function works in one of the two following modes:
-    a) `perform_stat_test` is True: statistical test as given by argument `test` is performed.
-       The `test_short_name` argument can be used to customize what appears before the pvalues
+    a) `perform_stat_test` is True (default):
+        statistical test as given by argument `test` is performed.
+        The `test_short_name` argument can be used to customize what appears before the pvalues if test is a string.
     b) `perform_stat_test` is False: no statistical test is performed, list of custom p-values `pvalues` are
        used for each pair of boxes. The `test_short_name` argument is then used as the name of the
        custom statistical test.
@@ -51,6 +52,7 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
     :param data: seaborn  plot's data
     :param x: seaborn plot's x
     :param y: seaborn plot's y
+    :param test: StatResult or name from list of scipy functions supported
     :param hue: seaborn plot's hue
     :param order: seaborn plot's order
     :param hue_order: seaborn plot's hue_order
