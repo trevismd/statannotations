@@ -4,5 +4,5 @@
 
  - Refactoring with implementation of `StatTest` ([#7](https://github.com/trevismd/statannotations/pull/5) in preparation)
  - Annotations y-positions based on plot coordinates instead of data coordinates 
-   ([#5](https://github.com/trevismd/statannotations/pull/5) by [JosephLalli](https://github.com/JosephLalli)).
+   ([#5](https://github.com/trevismd/statannotations/pull/5) by [JosephLalli](https://github.com/JosephLalli), fixes https://github.com/webermarcolivier/statannot/issues/21).
  - Add this CHANGELOG
