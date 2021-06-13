@@ -13,16 +13,16 @@ def raise_expected_got(expected, for_, got, error_type=ValueError):
         Expected `expected`; got `got` instead.
 
     """
-    rendered_for = f"for {for_}" if for_ is not None else ""
+    rendered_for = f" for '{for_}'" if for_ is not None else ""
+    quotes = "" if "[" in expected else "`"
+    raise error_type(f"Expected {quotes}{expected}{quotes}{rendered_for}; got `{got}` instead.")
 
-    raise error_type(f'Expected {expected} {rendered_for}; got {got} instead.')
 
-
-def assert_is_in(x, valid_values, error_type=ValueError, label=None):
+def check_is_in(x, valid_values, error_type=ValueError, label=None):
     """Raise an error if x is not in valid_values."""
     if x not in valid_values:
         raise_expected_got(
-            f'one of {valid_values}', label, x, error_type=error_type)
+            f"one of {valid_values}", label, x, error_type=error_type)
 
 
 def remove_null(series):
