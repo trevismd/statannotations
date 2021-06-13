@@ -29,17 +29,21 @@ def remove_null(series):
     return series[pd.notnull(series)]
 
 
-def check_order_box_pairs_in_data(data: pd.DataFrame,
-                                  x: str,
-                                  box_pairs: Union[list, tuple],
+def check_order_box_pairs_in_data(box_pairs: Union[list, tuple],
+                                  data: Union[List[list], pd.DataFrame] = None,
+                                  x: Union[str, list] = None,
                                   order: List[str] = None,
                                   hue: str = None,
                                   hue_order: List[str] = None):
     """
     Checks that values referred to in `order` and `box_pairs` exist in data.
     """
-
-    x_values = list(data[x].unique())
+    if isinstance(data, pd.DataFrame):
+        x_values = list(data[x].unique())
+    elif data is not None:
+        x_values = [_ for _ in range(len(data))]
+    else:
+        x_values = set(x)
 
     if order is not None:
         for x_value in order:
@@ -76,3 +80,8 @@ def check_order_box_pairs_in_data(data: pd.DataFrame,
                 if hue_value not in seen_hues and hue_value not in hue_values:
                     raise ValueError(f"Missing hue value \"{hue_value}\" in {hue}"
                                      f" (specified in `hue_order`)")
+
+
+def check_not_none(name, value):
+    if value is None:
+        raise ValueError(f"{name} must be defined and different from `None`")
