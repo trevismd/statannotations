@@ -73,6 +73,9 @@ class StatTest:
             return StatTest(stats.kruskal,
                             'Kruskal-Wallis paired samples', 'Kruskal')
 
+        raise NotImplementedError(
+            f"Test named {test_name} is not implemented, or wrongly spelled")
+
     def __init__(self, func: Callable, test_long_name: str,
                  test_short_name: str, stat_name: str = "Stat",
                  alpha: float = 0.05, *args, **kwargs):

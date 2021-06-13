@@ -1,15 +1,11 @@
 import unittest
-import warnings
-from functools import partial
-
-import numpy.testing as npt
 
 from statannotations.stats.ComparisonsCorrection import ComparisonsCorrection
 from statannotations.stats.StatResult import StatResult
 
 
 class TestStatResult(unittest.TestCase):
-    """Test  correction implementation."""
+    """Test `statannotations.stats.StatResult` class"""
 
     def setUp(self) -> None:
         self.benjamini_hochberg = ComparisonsCorrection("Benjamini-Hochberg")
