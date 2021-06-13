@@ -39,3 +39,6 @@ jobs:
       run: |
         coverage run -m unittest discover tests
         coverage report -m
+    - name: Upload Coverage to Codecov
+      uses: codecov/codecov-action@v1
+      with:
