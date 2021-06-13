@@ -11,8 +11,9 @@ from matplotlib.patches import Rectangle
 from statannotations.format_annotations import pval_annotation_text, simple_text
 from statannotations.stats.ComparisonsCorrection import ComparisonsCorrection
 from statannotations.stats.StatResult import StatResult
+from statannotations.stats.StatTest import StatTest
 from statannotations.stats.tests import stat_test, IMPLEMENTED_TESTS
-from statannotations.stats.utils import assert_valid_correction_name
+from statannotations.stats.utils import check_valid_correction_name
 from statannotations.utils import check_is_in, remove_null, \
     check_order_box_pairs_in_data, check_not_none
 
@@ -201,8 +202,9 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
             raise ValueError("If `perform_stat_test` is True, custom `pvalues` "
                              "or `test_short_name` must be `None`.")
 
-        if test not in IMPLEMENTED_TESTS:
-            raise ValueError("test value should be one of the following: {}."
+        if test not in IMPLEMENTED_TESTS and not isinstance(test, StatTest):
+            raise ValueError("test value should be a StatTest instance "
+                             "or one of the following strings: {}."
                              .format(', '.join(IMPLEMENTED_TESTS)))
     else:
         if pvalues is None:
@@ -228,7 +230,7 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
     if comparisons_correction is None:
         pass
     elif isinstance(comparisons_correction, str):
-        assert_valid_correction_name(comparisons_correction)
+        check_valid_correction_name(comparisons_correction)
         comparisons_correction = ComparisonsCorrection(comparisons_correction)
     elif not(isinstance(comparisons_correction, ComparisonsCorrection)):
         raise ValueError("comparisons_correction must be a statmodels "
@@ -396,7 +398,6 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
                 comparisons_correction=comparisons_correction,
                 num_comparisons=(num_comparisons if num_comparisons != "auto"
                                  else len(box_struct_pairs)),
-                verbose=verbose,
                 alpha=pvalue_thresholds[-2][0],
                 **stats_params
             )

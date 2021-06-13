@@ -1,4 +1,5 @@
 from typing import Callable
+
 from scipy import stats
 
 from statannotations.stats.StatResult import StatResult
@@ -7,9 +8,8 @@ from statannotations.stats.StatResult import StatResult
 # Also example for how to add other functions
 def wilcoxon(box_data1, box_data2, verbose=1, **stats_params):
     """
-    This function provides the equivalent behavior from versions of
-    statannot/statannotations prior to 0.2.3 (at least) and 0.3.0,
-    respectively.
+    This function provides the equivalent behavior from earlier versions of
+    statannot/statannotations.
     """
     zero_method = stats_params.pop('zero_method', None)
     if zero_method is None:

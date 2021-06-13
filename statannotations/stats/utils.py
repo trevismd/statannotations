@@ -6,7 +6,7 @@ import statannotations.stats.ComparisonsCorrection as ComparisonsCorrection
 from statannotations.utils import raise_expected_got, check_is_in
 
 
-def assert_valid_correction_name(name):
+def check_valid_correction_name(name):
     check_is_in(name, ComparisonsCorrection.IMPLEMENTED_METHODS + [None],
                 label='argument `comparisons_correction`')
 
