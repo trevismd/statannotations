@@ -96,7 +96,7 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
         Here we really have to duplicate seaborn code, because there is not
         direct access to the box_data in the BoxPlotter class.
         """
-        cat = b_plotter.plot_hues is None and box_name or box_name[0]
+        cat = box_name if b_plotter.plot_hues is None else box_name[0]
 
         index = b_plotter.group_names.index(cat)
         group_data = b_plotter.plot_data[index]
