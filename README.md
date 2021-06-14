@@ -1,5 +1,4 @@
-![coverage](https://raw.githubusercontent.com/trevismd/statannotations/master/coverage.svg)
-
+![coverage](https://raw.githubusercontent.com/trevismd/statannotations/master/coverage.svg)  ![Python](https://img.shields.io/badge/Python-3.6%2B-blue)
 ## What is it
 
 Python package to optionally compute statistical test and add statistical
