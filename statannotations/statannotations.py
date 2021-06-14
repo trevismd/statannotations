@@ -73,7 +73,7 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
     :param pvalues: list or array of p-values for each box pair comparison.
     :param stats_params: Parameters for statistical test functions.
     :param comparisons_correction: Method for multiple comparisons correction.
-        One of `statsmodels` `multipletests` methods (w/ default FWER), or a ComparisonCorrection instance.
+        One of `statsmodels` `multipletests` methods (w/ default FWER), or a `ComparisonsCorrection` instance.
     :param num_comparisons: Override number of comparisons otherwise calculated with number of box_pairs
     """
 

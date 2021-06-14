@@ -22,10 +22,10 @@ def remove_statsmodels(list_of_dependencies):
 setup(
     name="statannotations",
     version=version,
-    author="Florian Charlier",
+    maintainer="Florian Charlier",
+    maintainer_email="trevis@cascliniques.be",
     description=("add statistical significance annotations on seaborn "
-                 "boxplot/barplot. Further development of statannot 0.2.3 by "
-                 "Marc Weber, copyright 2019"),
+                 "boxplot/barplot. Based on statannot 0.2.3"),
     license="MIT License",
     license_file="LICENSE",
     long_description=long_description,

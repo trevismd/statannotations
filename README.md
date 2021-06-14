@@ -44,10 +44,10 @@ statannotations, which provides additional features.
 - Optionally, custom p-values can be given as input.
       In this case, no statistical test is performed, but **corrections for
       multiple testing can be applied.**
-- And various fixes (see [CHANGELOG.md](`https://raw.githubusercontent.com/trevismd/statannotations/master/CHANGELOG.md)).
+- And various fixes (see [CHANGELOG.md](https://raw.githubusercontent.com/trevismd/statannotations/master/CHANGELOG.md)).
 ## Installation
 
-From version 0.3.0, the package is distributed on PyPi.  
+From version 0.3.0 on, the package is distributed on PyPi.  
 The latest stable release can be downloaded and installed with:
 ```bash
 pip install statannotations
@@ -75,12 +75,11 @@ x = "day"
 y = "total_bill"
 order = ['Sun', 'Thur', 'Fri', 'Sat']
 ax = sns.boxplot(data=df, x=x, y=y, order=order)
-test_results = add_stat_annotation(
+add_stat_annotation(
     ax, data=df, x=x, y=y, order=order,
     box_pairs=[("Thur", "Fri"), ("Thur", "Sat"), ("Fri", "Sun")],
     test='Mann-Whitney', text_format='star', loc='outside', verbose=2)
 
-test_results
 ```
 
 ## Examples
