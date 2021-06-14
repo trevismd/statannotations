@@ -44,10 +44,11 @@ statannotations, which provides additional features.
 - Optionally, custom p-values can be given as input.
       In this case, no statistical test is performed, but **corrections for
       multiple testing can be applied.**
-
+- And various fixes (see [CHANGELOG.md](`https://raw.githubusercontent.com/trevismd/statannotations/master/CHANGELOG.md)).
 ## Installation
 
-The latest stable release can be installed from PyPI.
+From version 0.3.0, the package is distributed on PyPi.  
+The latest stable release can be downloaded and installed with:
 ```bash
 pip install statannotations
 ```
