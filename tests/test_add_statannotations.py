@@ -29,3 +29,13 @@ class TestParametersValidation(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "(specified in `order`)"):
             add_stat_annotation(self.ax, data=self.data, box_pairs=[(0, 1)],
                                 order=[0, 1, 2])
+
+    def test_location(self):
+        with self.assertRaisesRegex(ValueError, "argument `loc`"):
+            add_stat_annotation(self.ax, data=self.data, box_pairs=[(0, 1)],
+                                test="t-test_ind", loc="somewhere")
+
+    def test_format(self):
+        with self.assertRaisesRegex(ValueError, "argument `text_format`"):
+            add_stat_annotation(self.ax, data=self.data, box_pairs=[(0, 1)],
+                                test="t-test_ind", text_format="that")
