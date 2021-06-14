@@ -3,12 +3,12 @@ import warnings
 import numpy as np
 
 import statannotations.stats.ComparisonsCorrection as ComparisonsCorrection
-from statannotations.utils import raise_expected_got, assert_is_in
+from statannotations.utils import raise_expected_got, check_is_in
 
 
-def assert_valid_correction_name(name):
-    assert_is_in(name, ComparisonsCorrection.IMPLEMENTED_METHODS + [None],
-                 label='argument `comparisons_correction`')
+def check_valid_correction_name(name):
+    check_is_in(name, ComparisonsCorrection.IMPLEMENTED_METHODS + [None],
+                label='argument `comparisons_correction`')
 
 
 def check_pval_correction_input_values(p_values, num_comparisons):
@@ -26,6 +26,12 @@ def check_pval_correction_input_values(p_values, num_comparisons):
             raise_expected_got(
                 'Int or `auto`', 'argument `num_comparisons`', num_comparisons
             )
+
+
+def check_alpha(alpha):
+    if not 0 < alpha < 1:
+        raise ValueError("Alpha must be strictly larger than zero and "
+                         "smaller than one.")
 
 
 def get_num_comparisons(p_values_array, num_comparisons):
