@@ -11,8 +11,9 @@ from matplotlib.patches import Rectangle
 from statannotations.format_annotations import pval_annotation_text, simple_text
 from statannotations.stats.ComparisonsCorrection import ComparisonsCorrection
 from statannotations.stats.StatResult import StatResult
+from statannotations.stats.StatTest import StatTest
 from statannotations.stats.tests import stat_test, IMPLEMENTED_TESTS
-from statannotations.stats.utils import assert_valid_correction_name
+from statannotations.stats.utils import check_valid_correction_name
 from statannotations.utils import check_is_in, remove_null, \
     check_order_box_pairs_in_data, check_not_none
 
@@ -40,8 +41,9 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
     `hue_order` (and `units`) as in the seaborn boxplot/barplot function must be passed to this function.
 
     This function works in one of the two following modes:
-    a) `perform_stat_test` is True: statistical test as given by argument `test` is performed.
-       The `test_short_name` argument can be used to customize what appears before the pvalues
+    a) `perform_stat_test` is True (default):
+        statistical test as given by argument `test` is performed.
+        The `test_short_name` argument can be used to customize what appears before the pvalues if test is a string.
     b) `perform_stat_test` is False: no statistical test is performed, list of custom p-values `pvalues` are
        used for each pair of boxes. The `test_short_name` argument is then used as the name of the
        custom statistical test.
@@ -50,6 +52,7 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
     :param data: seaborn  plot's data
     :param x: seaborn plot's x
     :param y: seaborn plot's y
+    :param test: StatResult or name from list of scipy functions supported
     :param hue: seaborn plot's hue
     :param order: seaborn plot's order
     :param hue_order: seaborn plot's hue_order
@@ -201,8 +204,9 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
             raise ValueError("If `perform_stat_test` is True, custom `pvalues` "
                              "or `test_short_name` must be `None`.")
 
-        if test not in IMPLEMENTED_TESTS:
-            raise ValueError("test value should be one of the following: {}."
+        if test not in IMPLEMENTED_TESTS and not isinstance(test, StatTest):
+            raise ValueError("test value should be a StatTest instance "
+                             "or one of the following strings: {}."
                              .format(', '.join(IMPLEMENTED_TESTS)))
     else:
         if pvalues is None:
@@ -228,7 +232,7 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
     if comparisons_correction is None:
         pass
     elif isinstance(comparisons_correction, str):
-        assert_valid_correction_name(comparisons_correction)
+        check_valid_correction_name(comparisons_correction)
         comparisons_correction = ComparisonsCorrection(comparisons_correction)
     elif not(isinstance(comparisons_correction, ComparisonsCorrection)):
         raise ValueError("comparisons_correction must be a statmodels "
@@ -396,7 +400,6 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
                 comparisons_correction=comparisons_correction,
                 num_comparisons=(num_comparisons if num_comparisons != "auto"
                                  else len(box_struct_pairs)),
-                verbose=verbose,
                 alpha=pvalue_thresholds[-2][0],
                 **stats_params
             )

@@ -29,6 +29,7 @@ statannotations, which provides additional features.
     - Levene test
     - Wilcoxon test
     - Kruskal-Wallis test
+- **Interface to use any other function from any source with minimal extra code**
 - Smart layout of multiple annotations with correct y offsets.
 - Annotations can be located inside or outside the plot.
 - **Corrections for multiple testing can be applied
@@ -37,7 +38,7 @@ statannotations, which provides additional features.
     - Holm-Bonferroni
     - Benjamini-Hochberg
     - Benjamini-Yekutieli
-    - And any other function from any source with minimal extra code
+- **And any other function from any source with minimal extra code**
 - Format of the statistical test annotation can be customized:
       star annotation, simplified p-value, or explicit p-value.
 - Optionally, custom p-values can be given as input.
@@ -46,11 +47,12 @@ statannotations, which provides additional features.
 
 ## Installation
 
+The latest stable release can be installed from PyPI.
 ```bash
-pip install git+https://github.com/trevismd/statannotations.git
+pip install statannotations
 ```
-or, from the directory into which this repository was cloned:
 
+or, after cloning the repository,
 ```bash
 pip install -r requirements.txt .
 ```
@@ -90,7 +92,7 @@ test_results
 
 + Python >= 3.6
 + numpy >= 1.12.1
-+ seaborn >= 0.8.1
++ seaborn >= 0.9
 + matplotlib >= 2.2.2
 + pandas >= 0.23.0
 + scipy >= 1.1.0
