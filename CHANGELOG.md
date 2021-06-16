@@ -1,4 +1,7 @@
 ## v0.3
+### v0.3.2
+ - Fix `simple` format outputs
+
 ### v0.3.1
  - Added support of functions returning more than the two expected values when used in `StatTest`
  - Fix version numbers in CHANGELOG

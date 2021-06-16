@@ -123,3 +123,7 @@ class StatTest:
 
         return StatResult(self._test_long_name, self._test_short_name,
                           self._stat_name, stat, pval, alpha=alpha)
+
+    @property
+    def short_name(self):
+        return self._test_short_name
