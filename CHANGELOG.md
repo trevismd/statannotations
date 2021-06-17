@@ -1,6 +1,8 @@
 ## v0.3
 ### v0.3.2
  - Fix `simple` format outputs
+ - Fix `ImportError` when applying a multiple comparison correction without statsmodels.
+ - Multiple comparison correction is `None` by default, as `statsmodels` is an additional dependency.
 
 ### v0.3.1
  - Added support of functions returning more than the two expected values when used in `StatTest`

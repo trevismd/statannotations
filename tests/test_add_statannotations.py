@@ -1,7 +1,8 @@
 import unittest
+
 import seaborn as sns
 
-from statannotations.statannotations import add_stat_annotation
+from statannotations import add_stat_annotation
 
 
 class TestParametersValidation(unittest.TestCase):

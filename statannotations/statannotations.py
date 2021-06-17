@@ -29,7 +29,7 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
                         text_annot_custom=None, loc='inside',
                         show_test_name=True, pvalue_thresholds=DEFAULT,
                         stats_params: dict = None,
-                        comparisons_correction='bonferroni',
+                        comparisons_correction=None,
                         num_comparisons='auto', use_fixed_offset=False,
                         line_offset_to_box=None, line_offset=None,
                         line_height=0.02, text_offset=1, color='0.2',
@@ -233,7 +233,12 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
         pass
     elif isinstance(comparisons_correction, str):
         check_valid_correction_name(comparisons_correction)
-        comparisons_correction = ComparisonsCorrection(comparisons_correction)
+        try:
+            comparisons_correction = ComparisonsCorrection(comparisons_correction)
+        except ImportError as e:
+            raise ImportError(f"{e} Please install statsmodels or pass "
+                              f"`comparisons_correction=None`.")
+
     elif not(isinstance(comparisons_correction, ComparisonsCorrection)):
         raise ValueError("comparisons_correction must be a statmodels "
                          "method name or a ComparisonCorrection instance")

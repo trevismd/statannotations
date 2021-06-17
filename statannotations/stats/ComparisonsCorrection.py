@@ -6,11 +6,8 @@ import numpy as np
 try:
     from statsmodels.stats.multitest import multipletests
 
-except ImportError as statsmodel_import_error:
+except ImportError:
     multipletests = None
-
-else:
-    statsmodel_import_error = None
 
 # For user convenience
 methods_names = {'bonferroni':          'Bonferroni',
@@ -84,7 +81,9 @@ class ComparisonsCorrection(object):
 
         if isinstance(method, str):
             if multipletests is None:
-                raise ImportError(statsmodel_import_error)
+                raise ImportError("The statsmodels package is required to use "
+                                  "one of the multiple comparisons correction "
+                                  "methods proposed in statannotations.")
 
             self.name = name if name is not None else method
             self.method, self.type = get_correction_parameters(method)
