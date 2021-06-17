@@ -1,4 +1,4 @@
-from typing import Union, Callable
+from typing import Union
 
 import numpy as np
 

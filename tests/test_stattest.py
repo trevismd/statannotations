@@ -11,7 +11,8 @@ class TestStatTest(unittest.TestCase):
     """Test `statannotations.stats.StatTest` class."""
 
     def setUp(self):
-        self.x, self.y = [1, 2, 3], [2, 2, 2]
+        self.x = [1, 2, 3]
+        self.y = [2, 2, 2]
 
     @staticmethod
     def a_func(x, y):

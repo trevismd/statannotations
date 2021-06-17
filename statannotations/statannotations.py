@@ -29,7 +29,7 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
                         text_annot_custom=None, loc='inside',
                         show_test_name=True, pvalue_thresholds=DEFAULT,
                         stats_params: dict = None,
-                        comparisons_correction='bonferroni',
+                        comparisons_correction=None,
                         num_comparisons='auto', use_fixed_offset=False,
                         line_offset_to_box=None, line_offset=None,
                         line_height=0.02, text_offset=1, color='0.2',
@@ -52,7 +52,7 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
     :param data: seaborn  plot's data
     :param x: seaborn plot's x
     :param y: seaborn plot's y
-    :param test: StatResult or name from list of scipy functions supported
+    :param test: `StatTest` instance or name from list of scipy functions supported
     :param hue: seaborn plot's hue
     :param order: seaborn plot's order
     :param hue_order: seaborn plot's hue_order
@@ -65,7 +65,7 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
     :param test_short_name:
         How the test name should show on the plot, if show_test_name is True
         (default). Default is the full test name
-    :param pvalue_format_string: defaults to `"{.3e}"`
+    :param pvalue_format_string: defaults to `"{:.3e}"` or `"{:.2f}"` for `"simple"` format
     :param pvalue_thresholds: list of lists, or tuples.
         Default is:
         For "star" text_format: `[[1e-4, "****"], [1e-3, "***"], [1e-2, "**"], [0.05, "*"], [1, "ns"]]`.
@@ -186,7 +186,7 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
         else:
             pvalue_thresholds = [[1e-5, "1e-5"], [1e-4, "1e-4"],
                                  [1e-3, "0.001"], [1e-2, "0.01"],
-                                 [5e-2, "0.05"], [1, "ns"]]
+                                 [5e-2, "0.05"]]
 
     if stats_params is None:
         stats_params = dict()
@@ -233,7 +233,12 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
         pass
     elif isinstance(comparisons_correction, str):
         check_valid_correction_name(comparisons_correction)
-        comparisons_correction = ComparisonsCorrection(comparisons_correction)
+        try:
+            comparisons_correction = ComparisonsCorrection(comparisons_correction)
+        except ImportError as e:
+            raise ImportError(f"{e} Please install statsmodels or pass "
+                              f"`comparisons_correction=None`.")
+
     elif not(isinstance(comparisons_correction, ComparisonsCorrection)):
         raise ValueError("comparisons_correction must be a statmodels "
                          "method name or a ComparisonCorrection instance")
@@ -465,7 +470,10 @@ def add_stat_annotation(ax, plot='boxplot', data=None, x=None, y=None,
                 text = pval_annotation_text(result, pvalue_thresholds)
             elif text_format == 'simple':
                 if show_test_name:
-                    test_short_name = show_test_name and test_short_name or test
+                    if test_short_name is None:
+                        test_short_name = (test
+                                           if isinstance(test, str)
+                                           else test.short_name)
                 else:
                     test_short_name = ""
                 text = simple_text(result, simple_format_string,

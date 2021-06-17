@@ -83,7 +83,9 @@ class StatTest:
         Wrapper for any statistical function to use with statannotations.
         The function must be callable with two 1D collections of data points as
         first and second arguments, can have any number of additional arguments
-        , and must return a) a statistical value, and b) a pvalue.
+        , and must at least return, in order,
+            a) a statistical value, and
+            b) a pvalue.
 
         :param func:
             Function to be called
@@ -117,7 +119,11 @@ class StatTest:
                  **stat_params):
 
         stat, pval = self._func(box_data1, box_data2, *self.args,
-                                **{**self.kwargs, **stat_params})
+                                **{**self.kwargs, **stat_params})[:2]
 
         return StatResult(self._test_long_name, self._test_short_name,
                           self._stat_name, stat, pval, alpha=alpha)
+
+    @property
+    def short_name(self):
+        return self._test_short_name
