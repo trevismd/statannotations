@@ -3,6 +3,7 @@ import unittest
 import seaborn as sns
 
 from statannotations import add_stat_annotation
+from statannotations.statannotations import apply_comparisons_correction
 
 
 class TestParametersValidation(unittest.TestCase):
@@ -40,3 +41,6 @@ class TestParametersValidation(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "argument `text_format`"):
             add_stat_annotation(self.ax, data=self.data, box_pairs=[(0, 1)],
                                 test="t-test_ind", text_format="that")
+
+    def test_apply_comparisons_correction(self):
+        self.assertIsNone(apply_comparisons_correction(None, []))
