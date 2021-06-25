@@ -19,8 +19,8 @@ from statannotations.utils import check_is_in, remove_null, \
     check_order_box_pairs_in_data, check_not_none, check_valid_text_format
 
 DEFAULT = object()
-# temp: only for annotate : line_height, show_test_name, use_fixed_offset,
-# fontsize, pvalue_format_string, color, loc,
+# temp: only for annotate : line_height, use_fixed_offset,
+# fontsize, color
 
 CONFIGURABLE_PARAMETERS = [
     'comparisons_correction',
@@ -652,9 +652,9 @@ class Annotator:
 
         self._just_configured = True
 
+        return self
+
     def apply_test(self, num_comparisons='auto', **stats_params):
-
-
         """
         :param stats_params: Parameters for statistical test functions.
 
@@ -672,6 +672,8 @@ class Annotator:
         self.annotations = self._get_results(num_comparisons=num_comparisons,
                                              **stats_params)
         self._just_configured = False
+
+        return self
 
     def set_custom_annotation(self, pvalues, test_short_name=None,
                               num_comparisons='auto'):
@@ -692,6 +694,8 @@ class Annotator:
                                              pvalues=pvalues)
         self._just_configured = False
 
+        return self
+
     def add_stat_annotation(self,
                             text_annot_custom=None,
                             show_test_name=True,
@@ -704,11 +708,12 @@ class Annotator:
         :param line_height: in axes fraction coordinates
         :param text_offset: in points
         """
-        if self._just_configured:
+        if self._just_configured and text_annot_custom is None:
             warnings.warn("Annotator was reconfigured without applying the "
                           "test (again) which will probably lead to unexpected "
                           "results")
-        check_correct_number_custom_annotations(text_annot_custom, self.box_struct_pairs)
+        check_correct_number_custom_annotations(text_annot_custom,
+                                                self.box_struct_pairs)
         ax_to_data = _get_transform_func(self.ax, 'ax_to_data')
         ann_list = []
         ymaxs = []
@@ -738,8 +743,8 @@ class Annotator:
                 text = text_annot_custom[i_box_pair]
 
             else:
-                text = self._get_text(box_structs, result, self.test_short_name, show_test_name,
-                                 verbose)
+                text = self._get_text(box_structs, result, self.test_short_name,
+                                      show_test_name)
 
             # Find y maximum for all the y_stacks *in between* the box1 and the box2
             i_ymax_in_range_x1_x2 = xi1 + np.nanargmax(
