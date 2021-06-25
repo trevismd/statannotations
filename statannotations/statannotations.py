@@ -472,6 +472,12 @@ OFFSET_FUNCS = {"inside": _get_offsets_inside,
                 "outside": _get_offsets_outside}
 
 
+def _print_result_line(box_structs, formatted_output):
+    label1 = box_structs[0]['label']
+    label2 = box_structs[1]['label']
+    print(f"{label1} v.s. {label2}: {formatted_output}")
+
+
 class Annotator:
     """
     Optionally computes statistical test between pairs of data series, and add
@@ -878,14 +884,7 @@ class Annotator:
 
         return test_result_list
 
-    def _get_text(self, box_structs, result, test_short_name,
-                  show_test_name):
-
-        label1 = box_structs[0]['label']
-        label2 = box_structs[1]['label']
-
-        if self.verbose >= 1:
-            print(f"{label1} v.s. {label2}: {result.formatted_output}")
+    def _get_text(self, result, test_short_name, show_test_name):
 
         if self.text_format == 'full':
             text = ("{} p = {}{}"
@@ -924,8 +923,10 @@ class Annotator:
             text = self.custom_annotations[i_box_pair]
 
         else:
-            text = self._get_text(box_structs, result, self.test_short_name,
-                                  self.show_test_name)
+            if self.verbose >= 1:
+                _print_result_line(box_structs, result.formatted_output)
+
+            text = self._get_text(result, self.test_short_name, self.show_test_name)
 
         # Find y maximum for all the y_stacks *in between* the box1 and the box2
         i_ymax_in_range_x1_x2 = xi1 + np.nanargmax(
