@@ -2,8 +2,7 @@ import unittest
 
 import seaborn as sns
 
-from statannotations import add_stat_annotation
-from statannotations.statannotations import apply_comparisons_correction
+from statannotations.statannotations import _apply_comparisons_correction, Annotator
 
 
 class TestParametersValidation(unittest.TestCase):
@@ -12,35 +11,38 @@ class TestParametersValidation(unittest.TestCase):
         self.data = [[1, 2, 3], [2, 5, 7]]
         self.ax = sns.boxplot(data=self.data)
 
-    def test_box_pairs_provided(self):
-        with self.assertRaisesRegex(ValueError, "box_pairs"):
-            add_stat_annotation(self.ax, data=self.data)
-
-        with self.assertRaisesRegex(ValueError, "box_pairs"):
-            add_stat_annotation(self.ax, data=self.data, test="t-test_ind")
+    def test_init(self):
+        self.annot = Annotator(self.ax, [(0, 1)], data=self.data)
 
     def test_test_name_provided(self):
+        self.test_init()
         with self.assertRaisesRegex(ValueError, "test"):
-            add_stat_annotation(self.ax, data=self.data, box_pairs=[(0, 1)])
+            self.annot.apply_test()
 
     def test_box_pairs_in_x(self):
         with self.assertRaisesRegex(ValueError, "(specified in `box_pairs`)"):
-            add_stat_annotation(self.ax, data=self.data, box_pairs=[(0, 2)])
+            self.annot = Annotator(self.ax, [(0, 2)], data=self.data)
 
     def test_order_in_x(self):
         with self.assertRaisesRegex(ValueError, "(specified in `order`)"):
-            add_stat_annotation(self.ax, data=self.data, box_pairs=[(0, 1)],
-                                order=[0, 1, 2])
+            self.annot = Annotator(self.ax, [(0, 2)], data=self.data,
+                                   order=[0, 1, 2])
 
     def test_location(self):
+        self.test_init()
         with self.assertRaisesRegex(ValueError, "argument `loc`"):
-            add_stat_annotation(self.ax, data=self.data, box_pairs=[(0, 1)],
-                                test="t-test_ind", loc="somewhere")
+            self.annot.configure(loc="somewhere")
+
+    def test_unknown_parameter(self):
+        self.test_init()
+        with self.assertRaisesRegex(ValueError, "Parameter `that`"):
+            self.annot.configure(that="this")
 
     def test_format(self):
+        self.test_init()
+
         with self.assertRaisesRegex(ValueError, "argument `text_format`"):
-            add_stat_annotation(self.ax, data=self.data, box_pairs=[(0, 1)],
-                                test="t-test_ind", text_format="that")
+            self.annot.configure(text_format="that")
 
     def test_apply_comparisons_correction(self):
-        self.assertIsNone(apply_comparisons_correction(None, []))
+        self.assertIsNone(_apply_comparisons_correction(None, []))

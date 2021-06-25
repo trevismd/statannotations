@@ -85,3 +85,11 @@ def check_order_box_pairs_in_data(box_pairs: Union[list, tuple],
 def check_not_none(name, value):
     if value is None:
         raise ValueError(f"{name} must be defined and different from `None`")
+
+
+def check_valid_text_format(text_format):
+    check_is_in(
+        text_format,
+        ['full', 'simple', 'star'],
+        label='argument `text_format`'
+    )
