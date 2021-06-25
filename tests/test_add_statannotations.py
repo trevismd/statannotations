@@ -50,4 +50,4 @@ class TestParametersValidation(unittest.TestCase):
     def test_correct_num_custom_annotations(self):
         self.test_init()
         with self.assertRaisesRegex(ValueError, "same length"):
-            self.annot.add_stat_annotation(text_annot_custom=["One", "Two"])
+            self.annot.set_custom_annotation(["One", "Two"])

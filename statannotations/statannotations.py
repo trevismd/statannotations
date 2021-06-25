@@ -19,20 +19,26 @@ from statannotations.utils import check_is_in, remove_null, \
     check_order_box_pairs_in_data, check_not_none, check_valid_text_format
 
 DEFAULT = object()
-# temp: only for annotate : line_height, use_fixed_offset,
-# fontsize, color
+
 
 CONFIGURABLE_PARAMETERS = [
     'comparisons_correction',
-    'line_offset',
-    'line_offset_to_box',
     'loc',
     'pvalue_format_string',
     'pvalue_thresholds',
     'test',
     'test_short_name',
     'text_format',
-    'verbose'
+    'verbose',
+    'show_test_name',
+    'use_fixed_offset',
+    'line_offset_to_box',
+    'line_offset',
+    'line_height',
+    'text_offset',
+    'color',
+    'line_width',
+    'fontsize'
 ]
 
 
@@ -403,23 +409,25 @@ def _get_box_plotter(plot, x, y, hue, data, order, hue_order,
     return box_plotter
 
 
-def _get_offsets(loc, line_offset, line_offset_to_box):
+def _get_offsets_inside(line_offset, line_offset_to_box):
     if line_offset is None:
-        if loc == 'inside':
-            line_offset = 0.05
-            if line_offset_to_box is None:
-                line_offset_to_box = 0.06
-        # 'outside', see valid_list
-        else:
-            line_offset = 0.03
-            if line_offset_to_box is None:
-                line_offset_to_box = line_offset
+        line_offset = 0.05
+        if line_offset_to_box is None:
+            line_offset_to_box = 0.06
     else:
-        if loc == 'inside':
-            if line_offset_to_box is None:
-                line_offset_to_box = 0.06
-        elif loc == 'outside':
+        if line_offset_to_box is None:
+            line_offset_to_box = 0.06
+    y_offset = line_offset
+    return y_offset, line_offset_to_box
+
+
+def _get_offsets_outside(line_offset, line_offset_to_box):
+    if line_offset is None:
+        line_offset = 0.03
+        if line_offset_to_box is None:
             line_offset_to_box = line_offset
+    else:
+        line_offset_to_box = line_offset
 
     y_offset = line_offset
     return y_offset, line_offset_to_box
@@ -458,6 +466,10 @@ def _get_box_names_and_labels(box_plotter):
         labels = ['{}_{}'.format(group_name, hue_name)
                   for (group_name, hue_name) in box_names]
     return box_names, labels
+
+
+OFFSET_FUNCS = {"inside": _get_offsets_inside,
+                "outside": _get_offsets_outside}
 
 
 class Annotator:
@@ -500,19 +512,29 @@ class Annotator:
         self.fig = basic_plot[3]
         self.ax = ax
 
-        self.test = None
+        self._test = None
         self.perform_stat_test = None
-        self.test_results = None
         self.test_short_name = None
         self._pvalue_thresholds = _get_pvalue_thresholds(DEFAULT, "star")
         self.annotations = None
-        self._text_format = None
+        self._text_format = "star"
         self._comparisons_correction = None
         self._pvalue_format_string, self._simple_format_string = (
             _get_pvalue_and_simple_formats(DEFAULT))
         self._loc = "inside"
         self.verbose = 1
-        self._just_configured = False
+        self._just_configured = True
+        self.show_test_name = True
+        self.use_fixed_offset = False
+        self.line_offset_to_box = None
+        self.line_offset = None
+        self.line_height = 0.02
+        self.text_offset = 1
+        self.color = '0.2'
+        self.line_width = 1.5
+        self.fontsize = 'medium'
+        self.y_offset = None
+        self.custom_annotations = None
 
     @staticmethod
     def get_basic_plot(
@@ -555,21 +577,34 @@ class Annotator:
         self.box_struct_pairs = basic_plot[2]
         self.fig = basic_plot[3]
         self.ax = ax
+        self.line_offset = None
+        self.line_offset_to_box = None
+        self.perform_stat_test = None
+
+        return self
 
     def reset_configuration(self):
-        self.test = None
-        self.perform_stat_test = None
-        self.test_results = None
+        self._test = None
         self.test_short_name = None
         self._pvalue_thresholds = _get_pvalue_thresholds(DEFAULT, "star")
         self.annotations = None
-        self._text_format = None
+        self._text_format = "star"
         self._comparisons_correction = None
         self._pvalue_format_string, self._simple_format_string = (
             _get_pvalue_and_simple_formats(DEFAULT))
         self._loc = "inside"
         self.verbose = 1
-        self._just_configured = False
+        self._just_configured = True
+        self.show_test_name = True
+        self.use_fixed_offset = False
+        self.line_height = 0.02
+        self.text_offset = 1
+        self.color = '0.2'
+        self.line_width = 1.5
+        self.fontsize = 'medium'
+        self.custom_annotations = None
+
+        return self
 
     @property
     def comparisons_correction(self):
@@ -609,6 +644,18 @@ class Annotator:
         self._text_format = text_format
 
     @property
+    def test(self):
+        return self._test
+
+    @test.setter
+    def test(self, test):
+        """
+        :param test: Name of a test for `StatTest.from_library` or a
+            `StatTest` instance
+        """
+        self._test = test
+
+    @property
     def pvalue_format_string(self):
         return self._pvalue_format_string
 
@@ -635,13 +682,33 @@ class Annotator:
         """
         :param pvalue_thresholds: list of lists, or tuples.
             Default is:
-            For "star" text_format: `[[1e-4, "****"], [1e-3, "***"], [1e-2, "**"], [0.05, "*"], [1, "ns"]]`.
-            For "simple" text_format : `[[1e-5, "1e-5"], [1e-4, "1e-4"], [1e-3, "0.001"], [1e-2, "0.01"], [5e-2, "0.05"]]`
+            For "star" text_format: `[
+                [1e-4, "****"],
+                [1e-3, "***"],
+                [1e-2, "**"],
+                [0.05, "*"],
+                [1, "ns"]
+            ]`.
+
+            For "simple" text_format : `[
+                [1e-5, "1e-5"],
+                [1e-4, "1e-4"],
+                [1e-3, "0.001"],
+                [1e-2, "0.01"],
+                [5e-2, "0.05"]
+            ]`
         """
         self._pvalue_thresholds = _get_pvalue_thresholds(
             pvalue_thresholds, text_format=self.text_format)
 
     def configure(self, **parameters):
+        """
+
+        * `show_test_name`: Set to False to not show the (short) name of
+            test
+        * `line_height`: in axes fraction coordinates
+        * `text_offset`: in points
+        """
         for parameter in parameters:
             if parameter not in CONFIGURABLE_PARAMETERS:
                 raise ValueError(f"Parameter `{parameter}` is invalid to "
@@ -650,7 +717,7 @@ class Annotator:
         for parameter, value in parameters.items():
             setattr(self, parameter, value)
 
-        self._just_configured = True
+        self.activate_configured_warning()
 
         return self
 
@@ -671,49 +738,58 @@ class Annotator:
 
         self.annotations = self._get_results(num_comparisons=num_comparisons,
                                              **stats_params)
-        self._just_configured = False
+        self.deactivate_configured_warning()
 
         return self
 
-    def set_custom_annotation(self, pvalues, test_short_name=None,
-                              num_comparisons='auto'):
+    @property
+    def should_warn_about_configuration(self):
+        return self._just_configured
+
+    def set_pvalues(self, pvalues,
+                    num_comparisons='auto'):
         """
         :param pvalues: list or array of p-values for each box pair comparison.
         :param num_comparisons: Override number of comparisons otherwise
             calculated with number of box_pairs
-        :param test_short_name: Name to use for labelling the custom
-            statistical test results.
         """
 
         _check_test_pvalues_no_perform(self.test, pvalues, self.box_pairs)
 
         self.perform_stat_test = False
 
-        self.annotations = self._get_results(test_short_name=test_short_name,
-                                             num_comparisons=num_comparisons,
-                                             pvalues=pvalues)
-        self._just_configured = False
+        self.annotations = self._get_results(
+            test_short_name=self.test_short_name,
+            num_comparisons=num_comparisons, pvalues=pvalues)
+
+        self.deactivate_configured_warning()
 
         return self
 
-    def add_stat_annotation(self,
-                            text_annot_custom=None,
-                            show_test_name=True,
-                            use_fixed_offset=False,
-                            line_offset_to_box=None, line_offset=None,
-                            line_height=0.02, text_offset=1, color='0.2',
-                            line_width=1.5, fontsize='medium', verbose=1):
+    def set_custom_annotation(self, text_annot_custom):
+        """
+        :param text_annot_custom: List of values to annotate for each
+            `box_pair`
+        """
+        check_correct_number_custom_annotations(text_annot_custom,
+                                                self.box_struct_pairs)
+        self.custom_annotations = text_annot_custom
+        self.deactivate_configured_warning()
+        return self
 
-        """
-        :param line_height: in axes fraction coordinates
-        :param text_offset: in points
-        """
-        if self._just_configured and text_annot_custom is None:
+    def activate_configured_warning(self):
+        self._just_configured = True
+
+    def deactivate_configured_warning(self):
+        self._just_configured = False
+
+    def annotate(self, line_offset=None, line_offset_to_box=None):
+
+        if self.should_warn_about_configuration:
             warnings.warn("Annotator was reconfigured without applying the "
                           "test (again) which will probably lead to unexpected "
                           "results")
-        check_correct_number_custom_annotations(text_annot_custom,
-                                                self.box_struct_pairs)
+
         ax_to_data = _get_transform_func(self.ax, 'ax_to_data')
         ann_list = []
         ymaxs = []
@@ -722,114 +798,24 @@ class Annotator:
 
         ylim = (0, 1)
 
+        offset_func = OFFSET_FUNCS[self.loc]
+        self.y_offset, self.line_offset_to_box = offset_func(
+            line_offset, line_offset_to_box)
+
         if self.loc == 'outside':
             self.y_stack_arr[1, :] = ylim[1]
 
-        if verbose >= 1 and self.text_format == 'star':
+        if self.verbose and self.text_format == 'star':
             self.print_pvalue_legend()
-
-        y_offset, line_offset_to_box = _get_offsets(
-            self.loc, line_offset, line_offset_to_box)
 
         for box_structs, result in zip(self.box_struct_pairs, self.annotations):
 
-            x1 = box_structs[0]['x']
-            x2 = box_structs[1]['x']
-            xi1 = box_structs[0]['xi']
-            xi2 = box_structs[1]['xi']
-
-            if text_annot_custom is not None:
-                i_box_pair = box_structs[0]['i_box_pair']
-                text = text_annot_custom[i_box_pair]
-
-            else:
-                text = self._get_text(box_structs, result, self.test_short_name,
-                                      show_test_name)
-
-            # Find y maximum for all the y_stacks *in between* the box1 and the box2
-            i_ymax_in_range_x1_x2 = xi1 + np.nanargmax(
-                self.y_stack_arr[1, np.where((x1 <= self.y_stack_arr[0, :])
-                                             & (self.y_stack_arr[0, :] <= x2))])
-            ymax_in_range_x1_x2 = self.y_stack_arr[1, i_ymax_in_range_x1_x2]
-
-            yref = ymax_in_range_x1_x2
-            yref2 = yref
-
-            # Choose the best offset depending on whether there is an annotation below
-            # at the x position in the range [x1, x2] where the stack is the highest
-            if self.y_stack_arr[2, i_ymax_in_range_x1_x2] == 0:
-                # there is only a box below
-                offset = line_offset_to_box
-            else:
-                # there is an annotation below
-                offset = y_offset
-
-            y = yref2 + offset
-
-            # Determine lines in axes coordinates
-            ax_line_x, ax_line_y = [x1, x1, x2, x2], [y, y + line_height, y + line_height, y]
-            # Then transform the resulting points from axes coordinates to data coordinates
-            points = [ax_to_data.transform((x, y)) for x, y in zip(ax_line_x, ax_line_y)]
-            line_x, line_y = [x for x, y in points], [y for x, y in points]
-
-            if self.loc == 'inside':
-                self.ax.plot(line_x, line_y, lw=line_width, c=color)
-            else:
-                line = lines.Line2D(line_x, line_y, lw=line_width, c=color,
-                                    transform=self.ax.transData)
-                line.set_clip_on(False)
-                self.ax.add_line(line)
-
-            if text is not None:
-                ann = self.ax.annotate(
-                    text, xy=(np.mean([x1, x2]), line_y[2]),
-                    xytext=(0, text_offset), textcoords='offset points',
-                    xycoords='data', ha='center', va='bottom',
-                    fontsize=fontsize, clip_on=False, annotation_clip=False)
-                ann_list.append(ann)
-
-                plt.draw()
-                self.ax.set_ylim(orig_ylim)
-                data_to_ax, ax_to_data, pix_to_ax = _get_transform_func(
-                    self.ax, 'all')
-
-                y_top_annot = None
-                got_mpl_error = False
-                if not use_fixed_offset:
-                    try:
-                        bbox = ann.get_window_extent()
-                        bbox_ax = bbox.transformed(pix_to_ax)
-                        y_top_annot = bbox_ax.ymax
-                    except RuntimeError:
-                        got_mpl_error = True
-
-                if use_fixed_offset or got_mpl_error:
-                    if verbose >= 1:
-                        print("Warning: cannot get the text bounding box. Falling "
-                              "back to a fixed y offset. Layout may be not optimal.")
-
-                    # We will apply a fixed offset in points,
-                    # based on the font size of the annotation.
-                    fontsize_points = FontProperties(size='medium').get_size_in_points()
-                    offset_trans = mtransforms.offset_copy(
-                        self.ax.transAxes, fig=self.fig, x=0,
-                        y=1.0 * fontsize_points + text_offset, units='points')
-                    y_top_display = offset_trans.transform((0, y + line_height))
-                    y_top_annot = self.ax.transAxes.inverted().transform(y_top_display)[1]
-            else:
-                y_top_annot = y + line_height
-
-            # remark: y_stack is not really necessary if we have the stack_array
-            y_stack.append(y_top_annot)
-            ymaxs.append(max(y_stack))
-
-            # Fill the highest y position of the annotation into the y_stack array
-            # for all positions in the range x1 to x2
-            self.y_stack_arr[1,
-                             (x1 <= self.y_stack_arr[0, :])
-                             & (self.y_stack_arr[0, :] <= x2)] = y_top_annot
-            # Increment the counter of annotations in the y_stack array
-            self.y_stack_arr[2, xi1:xi2 + 1] = self.y_stack_arr[2, xi1:xi2 + 1] + 1
+            self._update_plot(box_structs, result,
+                              ax_to_data=ax_to_data,
+                              ann_list=ann_list,
+                              ymaxs=ymaxs,
+                              y_stack=y_stack,
+                              orig_ylim=orig_ylim)
 
         y_stack_max = max(self.y_stack_arr[1, :])
 
@@ -920,7 +906,114 @@ class Annotator:
                 test_short_name = ""
             text = simple_text(result, self.simple_format_string,
                                self.pvalue_thresholds, test_short_name)
-        else:  # None:
+        else:
             text = None
 
         return text
+
+    def _update_plot(self, box_structs, result, ax_to_data,
+                     ann_list, ymaxs, y_stack, orig_ylim):
+
+        x1 = box_structs[0]['x']
+        x2 = box_structs[1]['x']
+        xi1 = box_structs[0]['xi']
+        xi2 = box_structs[1]['xi']
+
+        if self.custom_annotations is not None:
+            i_box_pair = box_structs[0]['i_box_pair']
+            text = self.custom_annotations[i_box_pair]
+
+        else:
+            text = self._get_text(box_structs, result, self.test_short_name,
+                                  self.show_test_name)
+
+        # Find y maximum for all the y_stacks *in between* the box1 and the box2
+        i_ymax_in_range_x1_x2 = xi1 + np.nanargmax(
+            self.y_stack_arr[1, np.where((x1 <= self.y_stack_arr[0, :])
+                                         & (self.y_stack_arr[0, :] <= x2))])
+        ymax_in_range_x1_x2 = self.y_stack_arr[1, i_ymax_in_range_x1_x2]
+
+        yref = ymax_in_range_x1_x2
+        yref2 = yref
+
+        # Choose the best offset depending on whether there is an annotation below
+        # at the x position in the range [x1, x2] where the stack is the highest
+        if self.y_stack_arr[2, i_ymax_in_range_x1_x2] == 0:
+            # there is only a box below
+            offset = self.line_offset_to_box
+        else:
+            # there is an annotation below
+            offset = self.y_offset
+
+        y = yref2 + offset
+
+        # Determine lines in axes coordinates
+        ax_line_x = [x1, x1, x2, x2]
+        ax_line_y = [y, y + self.line_height, y + self.line_height, y]
+
+        points = [ax_to_data.transform((x, y))
+                  for x, y
+                  in zip(ax_line_x, ax_line_y)]
+
+        line_x, line_y = [x for x, y in points], [y for x, y in points]
+
+        if self.loc == 'inside':
+            self.ax.plot(line_x, line_y, lw=self.line_width, c=self.color)
+        else:
+            line = lines.Line2D(line_x, line_y, lw=self.line_width,
+                                c=self.color, transform=self.ax.transData)
+            line.set_clip_on(False)
+            self.ax.add_line(line)
+
+        if text is not None:
+            ann = self.ax.annotate(
+                text, xy=(np.mean([x1, x2]), line_y[2]),
+                xytext=(0, self.text_offset), textcoords='offset points',
+                xycoords='data', ha='center', va='bottom',
+                fontsize=self.fontsize, clip_on=False, annotation_clip=False)
+            ann_list.append(ann)
+
+            plt.draw()
+            self.ax.set_ylim(orig_ylim)
+            data_to_ax, ax_to_data, pix_to_ax = _get_transform_func(
+                self.ax, 'all')
+
+            y_top_annot = None
+            got_mpl_error = False
+            if not self.use_fixed_offset:
+                try:
+                    bbox = ann.get_window_extent()
+                    bbox_ax = bbox.transformed(pix_to_ax)
+                    y_top_annot = bbox_ax.ymax
+                except RuntimeError:
+                    got_mpl_error = True
+
+            if self.use_fixed_offset or got_mpl_error:
+                if self.verbose >= 1:
+                    print("Warning: cannot get the text bounding box. Falling "
+                          "back to a fixed y offset. Layout may be not optimal.")
+
+                # We will apply a fixed offset in points,
+                # based on the font size of the annotation.
+                fontsize_points = FontProperties(size='medium').get_size_in_points()
+                offset_trans = mtransforms.offset_copy(
+                    self.ax.transAxes, fig=self.fig, x=0,
+                    y=1.0 * fontsize_points + self.text_offset, units='points')
+
+                y_top_display = offset_trans.transform((0, y + self.line_height))
+                y_top_annot = self.ax.transAxes.inverted().transform(y_top_display)[1]
+        else:
+            y_top_annot = y + self.line_height
+
+        # remark: y_stack is not really necessary if we have the stack_array
+        y_stack.append(y_top_annot)
+        ymaxs.append(max(y_stack))
+
+        # Fill the highest y position of the annotation into the y_stack array
+        # for all positions in the range x1 to x2
+        self.y_stack_arr[1,
+                         (x1 <= self.y_stack_arr[0, :])
+                         & (self.y_stack_arr[0, :] <= x2)] = y_top_annot
+
+        # Increment the counter of annotations in the y_stack array
+        self.y_stack_arr[2, xi1:xi2 + 1] = self.y_stack_arr[2, xi1:xi2 + 1] + 1
