@@ -50,11 +50,11 @@ class Annotator:
 
     This function works in one of the two following modes:
     a) `perform_stat_test` is True (default):
-        statistical test as given by argument `test` is performed.
-        The `test_short_name` argument can be used to customize what appears
-        before the pvalues if test is a string.
+    * statistical test as given by argument `test` is performed.
+    * The `test_short_name` argument can be used to customize what appears
+    before the pvalues if test is a string.
     b) `perform_stat_test` is False: no statistical test is performed, list of
-        custom p-values `pvalues` are used for each pair of boxes.
+    custom p-values `pvalues` are used for each pair of boxes.
     """
 
     def __init__(self, ax, box_pairs, plot='boxplot', data=None, x=None,
@@ -202,12 +202,12 @@ class Annotator:
         ax_to_data = _get_transform_func(self.ax, 'ax_to_data')
 
         for box_structs, result in zip(self.box_struct_pairs, self.annotations):
-            self._update_plot(box_structs, result,
-                              ax_to_data=ax_to_data,
-                              ann_list=ann_list,
-                              ymaxs=ymaxs,
-                              y_stack=y_stack,
-                              orig_ylim=orig_ylim)
+            self._annotate_pair(box_structs, result,
+                                ax_to_data=ax_to_data,
+                                ann_list=ann_list,
+                                ymaxs=ymaxs,
+                                y_stack=y_stack,
+                                orig_ylim=orig_ylim)
 
         y_stack_max = max(self.y_stack_arr[1, :])
 
@@ -475,8 +475,8 @@ class Annotator:
 
         return text
 
-    def _update_plot(self, box_structs, result, ax_to_data,
-                     ann_list, ymaxs, y_stack, orig_ylim):
+    def _annotate_pair(self, box_structs, result, ax_to_data,
+                       ann_list, ymaxs, y_stack, orig_ylim):
 
         x1 = box_structs[0]['x']
         x2 = box_structs[1]['x']

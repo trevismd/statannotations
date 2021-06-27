@@ -23,38 +23,33 @@ def stat_test(
 ):
     """Get formatted result of two-sample statistical test.
 
-    Arguments
-    ---------
-    box_data1, box_data2:
-        Data
-    test:
-        Statistical test to run. Either a `StatTest` instance or one of:
-        - `Levene`
-        - `Mann-Whitney`
-        - `Mann-Whitney-gt`
-        - `Mann-Whitney-ls`
-        - `t-test_ind`
-        - `t-test_welch`
-        - `t-test_paired`
-        - `Wilcoxon`
-        - `Kruskal`
-    comparisons_correction:
-        Method to use for multiple comparisons correction. Either a
+    :param box_data1: data
+    :param box_data2: data
+    :param test: Union[StatTest, str]: Statistical test to run.
+    Either a `StatTest` instance or one of:
+    - `Levene`
+    - `Mann-Whitney`
+    - `Mann-Whitney-gt`
+    - `Mann-Whitney-ls`
+    - `t-test_ind`
+    - `t-test_welch`
+    - `t-test_paired`
+    - `Wilcoxon`
+    - `Kruskal`
+    :param comparisons_correction: Union[ComparisonsCorrection, str]: (Default value = None)
+    Method to use for multiple comparisons correction. Either a
         `ComparisonsCorrection` instance or one of (interfacing statsmodels):
         - Bonferroni
         - Holm-Bonferroni
         - Benjamini-Hochberg
         - Benjamini-Yekutieli
-    num_comparisons:
-        Number of comparisons to use for multiple comparisons correction.
-    alpha: Used for pvalue interpretation in case of comparisons_correction.
-    stats_params
-        Additional keyword arguments to pass to the test function
+    :param num_comparisons: int:  (Default value = 1)
+    Number of comparisons to use for multiple comparisons correction.
+    :param alpha: float:  (Default value = 0.05)
+    Used for pvalue interpretation in case of comparisons_correction.
+    :param stats_params: Additional keyword arguments to pass to the test function
 
-    Returns
-    -------
-    StatResult object with formatted result of test.
-
+    
     """
     # Check arguments.
     if (isinstance(comparisons_correction, ComparisonsCorrection)

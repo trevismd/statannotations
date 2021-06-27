@@ -5,6 +5,12 @@ import pandas as pd
 
 
 def pval_annotation_text(result: Union[List[StatResult], StatResult], pvalue_thresholds):
+    """
+
+    :param result: StatResult instance or list thereof
+    :param pvalue_thresholds: thresholds to use for formatting
+
+    """
     single_value = False
 
     if isinstance(result, list):
@@ -36,12 +42,15 @@ def pval_annotation_text(result: Union[List[StatResult], StatResult], pvalue_thr
 
 def simple_text(result: StatResult, pvalue_format, pvalue_thresholds, test_short_name=None):
     """
-    Generates simple text for test name and pvalue
+    Generates simple text for test name and pvalue.
+
     :param result: StatResult instance
     :param pvalue_format: format string for pvalue
-    :param test_short_name: Short name of test to show
+    :param test_short_name: Short name of test to show (Default value = None)
     :param pvalue_thresholds: String to display per pvalue range
-    :return: simple annotation
+    :param result: StatResult: 
+    :returns: simple annotation
+
     """
     # Sort thresholds
     thresholds = sorted(pvalue_thresholds, key=lambda x: x[0])

@@ -1,0 +1,256 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>statannotations.stats package &#8212; statannotations 1.0.0a0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="statannotations package" href="statannotations.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="statannotations-stats-package">
+<h1>statannotations.stats package<a class="headerlink" href="#statannotations-stats-package" title="Permalink to this headline">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="module-statannotations.stats.ComparisonsCorrection">
+<span id="statannotations-stats-comparisonscorrection-module"></span><h2>statannotations.stats.ComparisonsCorrection module<a class="headerlink" href="#module-statannotations.stats.ComparisonsCorrection" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="statannotations.stats.ComparisonsCorrection.ComparisonsCorrection">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">statannotations.stats.ComparisonsCorrection.</span></span><span class="sig-name descname"><span class="pre">ComparisonsCorrection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">callable</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">statsmodels_api</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">corr_kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.stats.ComparisonsCorrection.ComparisonsCorrection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="statannotations.stats.ComparisonsCorrection.get_correction_parameters">
+<span class="sig-prename descclassname"><span class="pre">statannotations.stats.ComparisonsCorrection.</span></span><span class="sig-name descname"><span class="pre">get_correction_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.stats.ComparisonsCorrection.get_correction_parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-statannotations.stats.StatResult">
+<span id="statannotations-stats-statresult-module"></span><h2>statannotations.stats.StatResult module<a class="headerlink" href="#module-statannotations.stats.StatResult" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="statannotations.stats.StatResult.StatResult">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">statannotations.stats.StatResult.</span></span><span class="sig-name descname"><span class="pre">StatResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_description</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_short_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stat_str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pval</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.stats.StatResult.StatResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py property">
+<dt class="sig sig-object py" id="statannotations.stats.StatResult.StatResult.corrected_significance">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">corrected_significance</span></span><a class="headerlink" href="#statannotations.stats.StatResult.StatResult.corrected_significance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="statannotations.stats.StatResult.StatResult.correction_method">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">correction_method</span></span><a class="headerlink" href="#statannotations.stats.StatResult.StatResult.correction_method" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="statannotations.stats.StatResult.StatResult.formatted_output">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">formatted_output</span></span><a class="headerlink" href="#statannotations.stats.StatResult.StatResult.formatted_output" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="statannotations.stats.StatResult.StatResult.significance_suffix">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">significance_suffix</span></span><a class="headerlink" href="#statannotations.stats.StatResult.StatResult.significance_suffix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-statannotations.stats.StatTest">
+<span id="statannotations-stats-stattest-module"></span><h2>statannotations.stats.StatTest module<a class="headerlink" href="#module-statannotations.stats.StatTest" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="statannotations.stats.StatTest.StatTest">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">statannotations.stats.StatTest.</span></span><span class="sig-name descname"><span class="pre">StatTest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_long_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_short_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stat_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'Stat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.stats.StatTest.StatTest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="statannotations.stats.StatTest.StatTest.from_library">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">from_library</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#statannotations.stats.StatTest.StatTest" title="statannotations.stats.StatTest.StatTest"><span class="pre">statannotations.stats.StatTest.StatTest</span></a><a class="headerlink" href="#statannotations.stats.StatTest.StatTest.from_library" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="statannotations.stats.StatTest.StatTest.short_name">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">short_name</span></span><a class="headerlink" href="#statannotations.stats.StatTest.StatTest.short_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="statannotations.stats.StatTest.wilcoxon">
+<span class="sig-prename descclassname"><span class="pre">statannotations.stats.StatTest.</span></span><span class="sig-name descname"><span class="pre">wilcoxon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box_data1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box_data2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">stats_params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.stats.StatTest.wilcoxon" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function provides the equivalent behavior from earlier versions of
+statannot/statannotations.</p>
+</dd></dl>
+
+</section>
+<section id="module-statannotations.stats.tests">
+<span id="statannotations-stats-tests-module"></span><h2>statannotations.stats.tests module<a class="headerlink" href="#module-statannotations.stats.tests" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="statannotations.stats.tests.stat_test">
+<span class="sig-prename descclassname"><span class="pre">statannotations.stats.tests.</span></span><span class="sig-name descname"><span class="pre">stat_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box_data1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box_data2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#statannotations.stats.StatTest.StatTest" title="statannotations.stats.StatTest.StatTest"><span class="pre">statannotations.stats.StatTest.StatTest</span></a><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comparisons_correction</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#statannotations.stats.ComparisonsCorrection.ComparisonsCorrection" title="statannotations.stats.ComparisonsCorrection.ComparisonsCorrection"><span class="pre">statannotations.stats.ComparisonsCorrection.ComparisonsCorrection</span></a><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_comparisons</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">stats_params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.stats.tests.stat_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get formatted result of two-sample statistical test.</p>
+<dl class="simple">
+<dt>box_data1, box_data2:</dt><dd><p>Data</p>
+</dd>
+<dt>test:</dt><dd><p>Statistical test to run. Either a <cite>StatTest</cite> instance or one of:
+- <cite>Levene</cite>
+- <cite>Mann-Whitney</cite>
+- <cite>Mann-Whitney-gt</cite>
+- <cite>Mann-Whitney-ls</cite>
+- <cite>t-test_ind</cite>
+- <cite>t-test_welch</cite>
+- <cite>t-test_paired</cite>
+- <cite>Wilcoxon</cite>
+- <cite>Kruskal</cite></p>
+</dd>
+<dt>comparisons_correction:</dt><dd><p>Method to use for multiple comparisons correction. Either a
+<cite>ComparisonsCorrection</cite> instance or one of (interfacing statsmodels):
+- Bonferroni
+- Holm-Bonferroni
+- Benjamini-Hochberg
+- Benjamini-Yekutieli</p>
+</dd>
+<dt>num_comparisons:</dt><dd><p>Number of comparisons to use for multiple comparisons correction.</p>
+</dd>
+</dl>
+<p>alpha: Used for pvalue interpretation in case of comparisons_correction.
+stats_params</p>
+<blockquote>
+<div><p>Additional keyword arguments to pass to the test function</p>
+</div></blockquote>
+<p>StatResult object with formatted result of test.</p>
+</dd></dl>
+
+</section>
+<section id="module-statannotations.stats.utils">
+<span id="statannotations-stats-utils-module"></span><h2>statannotations.stats.utils module<a class="headerlink" href="#module-statannotations.stats.utils" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="statannotations.stats.utils.check_alpha">
+<span class="sig-prename descclassname"><span class="pre">statannotations.stats.utils.</span></span><span class="sig-name descname"><span class="pre">check_alpha</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.stats.utils.check_alpha" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="statannotations.stats.utils.check_pval_correction_input_values">
+<span class="sig-prename descclassname"><span class="pre">statannotations.stats.utils.</span></span><span class="sig-name descname"><span class="pre">check_pval_correction_input_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_comparisons</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.stats.utils.check_pval_correction_input_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="statannotations.stats.utils.check_valid_correction_name">
+<span class="sig-prename descclassname"><span class="pre">statannotations.stats.utils.</span></span><span class="sig-name descname"><span class="pre">check_valid_correction_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.stats.utils.check_valid_correction_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="statannotations.stats.utils.get_num_comparisons">
+<span class="sig-prename descclassname"><span class="pre">statannotations.stats.utils.</span></span><span class="sig-name descname"><span class="pre">get_num_comparisons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p_values_array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_comparisons</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.stats.utils.get_num_comparisons" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="statannotations.stats.utils.return_results">
+<span class="sig-prename descclassname"><span class="pre">statannotations.stats.utils.</span></span><span class="sig-name descname"><span class="pre">return_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results_array</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.stats.utils.return_results" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-statannotations.stats">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-statannotations.stats" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">statannotations</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">statannotations</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="statannotations.html">statannotations package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">statannotations</a><ul>
+  <li><a href="statannotations.html">statannotations package</a><ul>
+      <li>Previous: <a href="statannotations.html" title="previous chapter">statannotations package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Florian Charlier.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/statannotations.stats.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
