@@ -26,27 +26,29 @@ def stat_test(
     :param box_data1: data
     :param box_data2: data
     :param test: Union[StatTest, str]: Statistical test to run.
-    Either a `StatTest` instance or one of:
-    - `Levene`
-    - `Mann-Whitney`
-    - `Mann-Whitney-gt`
-    - `Mann-Whitney-ls`
-    - `t-test_ind`
-    - `t-test_welch`
-    - `t-test_paired`
-    - `Wilcoxon`
-    - `Kruskal`
+        Either a `StatTest` instance or one of:
+        - `Levene`
+        - `Mann-Whitney`
+        - `Mann-Whitney-gt`
+        - `Mann-Whitney-ls`
+        - `t-test_ind`
+        - `t-test_welch`
+        - `t-test_paired`
+        - `Wilcoxon`
+        - `Kruskal`
+
     :param comparisons_correction: Union[ComparisonsCorrection, str]: (Default value = None)
-    Method to use for multiple comparisons correction. Either a
+        Method to use for multiple comparisons correction. Either a
         `ComparisonsCorrection` instance or one of (interfacing statsmodels):
         - Bonferroni
         - Holm-Bonferroni
         - Benjamini-Hochberg
         - Benjamini-Yekutieli
+
     :param num_comparisons: int:  (Default value = 1)
-    Number of comparisons to use for multiple comparisons correction.
+        Number of comparisons to use for multiple comparisons correction.
     :param alpha: float:  (Default value = 0.05)
-    Used for pvalue interpretation in case of comparisons_correction.
+        Used for pvalue interpretation in case of comparisons_correction.
     :param stats_params: Additional keyword arguments to pass to the test function
 
     """

@@ -87,7 +87,8 @@ class Annotator:
         self._test = None
         self.perform_stat_test = None
         self.test_short_name = None
-        self._pvalue_thresholds = _get_pvalue_thresholds(DEFAULT, "star")
+        self._pvalue_thresholds = Annotator._get_pvalue_thresholds(DEFAULT,
+                                                                   "star")
         self.annotations = None
         self._text_format = "star"
         self._comparisons_correction = None
@@ -110,6 +111,9 @@ class Annotator:
         self.y_offset = None
         self.custom_annotations = None
 
+        self.OFFSET_FUNCS = {"inside": Annotator._get_offsets_inside,
+                             "outside": Annotator._get_offsets_outside}
+
     @staticmethod
     def get_basic_plot(
             ax, box_pairs, plot='boxplot', data=None, x=None, y=None, hue=None,
@@ -119,16 +123,16 @@ class Annotator:
         check_order_in_data(data, x, order)
         check_box_pairs_in_data(box_pairs, data, x, hue, hue_order)
 
-        box_plotter = _get_box_plotter(plot, x, y, hue, data, order, hue_order,
-                                       **plot_params)
+        box_plotter = Annotator._get_box_plotter(plot, x, y, hue, data, order, hue_order,
+                                                 **plot_params)
 
-        box_names, labels = _get_box_names_and_labels(box_plotter)
+        box_names, labels = Annotator._get_box_names_and_labels(box_plotter)
 
         fig = plt.gcf()
-        ymaxes = _generate_ymaxes(ax, fig, box_plotter, box_names)
-        box_structs = _get_box_structs(box_plotter, box_names, labels, ymaxes)
+        ymaxes = Annotator._generate_ymaxes(ax, fig, box_plotter, box_names)
+        box_structs = Annotator._get_box_structs(box_plotter, box_names, labels, ymaxes)
 
-        box_struct_pairs = _get_box_struct_pairs(box_pairs, box_structs)
+        box_struct_pairs = Annotator._get_box_struct_pairs(box_pairs, box_structs)
 
         y_stack_arr = np.array(
             [[box_struct['x'], box_struct['ymax'], 0]
@@ -153,13 +157,13 @@ class Annotator:
         self.line_offset = None
         self.line_offset_to_box = None
         self.perform_stat_test = None
-
         return self
 
     def reset_configuration(self):
         self._test = None
         self.test_short_name = None
-        self._pvalue_thresholds = _get_pvalue_thresholds(DEFAULT, "star")
+        self._pvalue_thresholds = Annotator._get_pvalue_thresholds(DEFAULT,
+                                                                   "star")
         self.annotations = None
         self._text_format = "star"
         self._comparisons_correction = None
@@ -188,19 +192,21 @@ class Annotator:
                           "test (again) which will probably lead to unexpected "
                           "results")
 
+        self.update_y_for_loc()
+
         ann_list = []
         ymaxs = []
         y_stack = []
         orig_ylim = self.ax.get_ylim()
 
-        offset_func = OFFSET_FUNCS[self.loc]
+        offset_func = self.OFFSET_FUNCS[self.loc]
         self.y_offset, self.line_offset_to_box = offset_func(
             line_offset, line_offset_to_box)
 
         if self.verbose and self.text_format == 'star':
             self.print_pvalue_legend()
 
-        ax_to_data = _get_transform_func(self.ax, 'ax_to_data')
+        ax_to_data = Annotator._get_transform_func(self.ax, 'ax_to_data')
 
         for box_structs, result in zip(self.box_struct_pairs, self.annotations):
             self._annotate_pair(box_structs, result,
@@ -213,7 +219,7 @@ class Annotator:
         y_stack_max = max(self.y_stack_arr[1, :])
 
         # reset transformation
-        ax_to_data = _get_transform_func(self.ax, 'ax_to_data')
+        ax_to_data = Annotator._get_transform_func(self.ax, 'ax_to_data')
         ylims = ([(0, 0), (0, max(1.03 * y_stack_max, 1))]
                  if self.loc == 'inside'
                  else [(0, 0), (0, 1)])
@@ -245,8 +251,6 @@ class Annotator:
         check_is_in(
             loc, ['inside', 'outside'], label='argument `loc`'
         )
-        if loc == 'outside':
-            self.y_stack_arr[1, :] = 1
         self._loc = loc
 
     @property
@@ -288,7 +292,7 @@ class Annotator:
             for `"simple"` format
         """
         self._pvalue_format_string, self._simple_format_string = (
-            _get_pvalue_and_simple_formats(pvalue_format_string)
+            Annotator._get_pvalue_and_simple_formats(pvalue_format_string)
         )
 
     @property
@@ -316,7 +320,7 @@ class Annotator:
                 [5e-2, "0.05"]
             ]`
         """
-        self._pvalue_thresholds = _get_pvalue_thresholds(
+        self._pvalue_thresholds = Annotator._get_pvalue_thresholds(
             pvalue_thresholds, text_format=self.text_format)
 
     def configure(self, **parameters):
@@ -347,7 +351,7 @@ class Annotator:
             calculated with number of box_pairs
         """
 
-        _check_test_pvalues_perform(self.test, self.test_short_name)
+        self._check_test_pvalues_perform()
 
         if stats_params is None:
             stats_params = dict()
@@ -372,7 +376,7 @@ class Annotator:
             calculated with number of box_pairs
         """
 
-        _check_test_pvalues_no_perform(self.test, pvalues, self.box_pairs)
+        self._check_test_pvalues_no_perform(pvalues)
 
         self.perform_stat_test = False
 
@@ -389,8 +393,7 @@ class Annotator:
         :param text_annot_custom: List of values to annotate for each
             `box_pair`
         """
-        check_correct_number_custom_annotations(text_annot_custom,
-                                                self.box_struct_pairs)
+        self._check_correct_number_custom_annotations(text_annot_custom)
         self.custom_annotations = text_annot_custom
         self.deactivate_configured_warning()
         return self
@@ -430,14 +433,14 @@ class Annotator:
             box2 = box_struct2['box']
 
             if self.perform_stat_test:
-                result = _get_stat_result_from_test(
+                result = Annotator._get_stat_result_from_test(
                     box_struct1, box_struct2, self.test,
                     self.comparisons_correction,
                     num_comparisons, self.pvalue_thresholds,
                     **stats_params)
             else:
-                result = _get_custom_results(box_struct1, test_short_name,
-                                             self.pvalue_thresholds, pvalues)
+                result = Annotator._get_custom_results(box_struct1, test_short_name,
+                                                       self.pvalue_thresholds, pvalues)
 
             result.box1 = box1
             result.box2 = box2
@@ -445,8 +448,8 @@ class Annotator:
             test_result_list.append(result)
 
         # Perform other types of correction methods for multiple testing
-        _apply_comparisons_correction(self.comparisons_correction,
-                                      test_result_list)
+        Annotator._apply_comparisons_correction(self.comparisons_correction,
+                                                test_result_list)
 
         return test_result_list
 
@@ -542,7 +545,7 @@ class Annotator:
 
             plt.draw()
             self.ax.set_ylim(orig_ylim)
-            data_to_ax, ax_to_data, pix_to_ax = _get_transform_func(
+            data_to_ax, ax_to_data, pix_to_ax = Annotator._get_transform_func(
                 self.ax, 'all')
 
             y_top_annot = None
@@ -585,191 +588,433 @@ class Annotator:
         # Increment the counter of annotations in the y_stack array
         self.y_stack_arr[2, xi1:xi2 + 1] = self.y_stack_arr[2, xi1:xi2 + 1] + 1
 
+    def update_y_for_loc(self):
+        if self._loc == 'outside':
+            self.y_stack_arr[1, :] = 1
 
-def _get_box_x_position(b_plotter, box_name):
-    """
-    box_name can be either a name "cat" or a tuple ("cat", "hue")
-    """
-    if b_plotter.plot_hues is None:
-        cat = box_name
-        hue_offset = 0
-    else:
-        cat = box_name[0]
-        hue_level = box_name[1]
-        hue_offset = b_plotter.hue_offsets[
-            b_plotter.hue_names.index(hue_level)]
-
-    group_pos = b_plotter.group_names.index(cat)
-    box_pos = group_pos + hue_offset
-    return box_pos
-
-
-def _get_xpos_location(pos, xranges):
-    """
-    Finds the x-axis location of a categorical variable
-    """
-    for xrange in xranges:
-        if (pos >= xrange[0]) & (pos <= xrange[1]):
-            return xrange[2]
-
-
-def _get_ypos_for_line2d_or_rectangle(xpositions, data_to_ax, ax, fig, child):
-    xunits = (max(list(xpositions.keys())) + 1) / len(xpositions)
-    xranges = {(pos - xunits / 2, pos + xunits / 2, pos): box_name
-               for pos, box_name in xpositions.items()}
-    box = ax.transData.inverted().transform(
-        child.get_window_extent(fig.canvas.get_renderer()))
-
-    if (box[:, 0].max() - box[:, 0].min()) > 1.1 * xunits:
-        return None, None
-    raw_xpos = np.round(box[:, 0].mean(), 1)
-    xpos = _get_xpos_location(raw_xpos, xranges)
-    if xpos not in xpositions:
-        return None, None
-    xname = xpositions[xpos]
-    ypos = box[:, 1].max()
-    ypos = data_to_ax.transform((0, ypos))[1]
-
-    return xname, ypos
-
-
-def _get_ypos_for_path_collection(xpositions, data_to_ax, child):
-    ymax = child.properties()['offsets'][:, 1].max()
-    xpos = float(np.round(np.nanmean(
-        child.properties()['offsets'][:, 0]), 1))
-
-    xname = xpositions[xpos]
-    ypos = data_to_ax.transform((0, ymax))[1]
-
-    return xname, ypos
-
-
-def _generate_ymaxes(ax, fig, box_plotter, box_names):
-    """
-    given box plotter and the names of two categorical variables,
-    returns highest y point drawn between those two variables before
-    annotations.
-
-    The highest data point is often not the highest item drawn
-    (eg, error bars and/or bar charts).
-    """
-    xpositions = {
-        np.round(_get_box_x_position(box_plotter, box_name), 1): box_name
-        for box_name in box_names}
-
-    ymaxes = {name: 0 for name in box_names}
-
-    data_to_ax = _get_transform_func(ax, 'data_to_ax')
-
-    for child in ax.get_children():
-        if ((type(child) == PathCollection)
-                and len(child.properties()['offsets'])):
-            xname, ypos = _get_ypos_for_path_collection(
-                xpositions, data_to_ax, child)
-
-        elif (type(child) == lines.Line2D) or (type(child) == Rectangle):
-            xname, ypos = _get_ypos_for_line2d_or_rectangle(
-                xpositions, data_to_ax, ax, fig, child)
-            if xname is None:
-                continue
+    @staticmethod
+    def _get_box_x_position(b_plotter, box_name):
+        """
+        box_name can be either a name "cat" or a tuple ("cat", "hue")
+        """
+        if b_plotter.plot_hues is None:
+            cat = box_name
+            hue_offset = 0
         else:
-            continue
+            cat = box_name[0]
+            hue_level = box_name[1]
+            hue_offset = b_plotter.hue_offsets[
+                b_plotter.hue_names.index(hue_level)]
 
-        if ypos > ymaxes[xname]:
-            ymaxes[xname] = ypos
-    return ymaxes
+        group_pos = b_plotter.group_names.index(cat)
+        box_pos = group_pos + hue_offset
+        return box_pos
+
+    @staticmethod
+    def _get_xpos_location(pos, xranges):
+        """
+        Finds the x-axis location of a categorical variable
+        """
+        for xrange in xranges:
+            if (pos >= xrange[0]) & (pos <= xrange[1]):
+                return xrange[2]
+
+    @staticmethod
+    def _get_ypos_for_line2d_or_rectangle(xpositions, data_to_ax, ax, fig, child):
+        xunits = (max(list(xpositions.keys())) + 1) / len(xpositions)
+        xranges = {(pos - xunits / 2, pos + xunits / 2, pos): box_name
+                   for pos, box_name in xpositions.items()}
+        box = ax.transData.inverted().transform(
+            child.get_window_extent(fig.canvas.get_renderer()))
+
+        if (box[:, 0].max() - box[:, 0].min()) > 1.1 * xunits:
+            return None, None
+        raw_xpos = np.round(box[:, 0].mean(), 1)
+        xpos = Annotator._get_xpos_location(raw_xpos, xranges)
+        if xpos not in xpositions:
+            return None, None
+        xname = xpositions[xpos]
+        ypos = box[:, 1].max()
+        ypos = data_to_ax.transform((0, ypos))[1]
+
+        return xname, ypos
+
+    @staticmethod
+    def _get_ypos_for_path_collection(xpositions, data_to_ax, child):
+        ymax = child.properties()['offsets'][:, 1].max()
+        xpos = float(np.round(np.nanmean(
+            child.properties()['offsets'][:, 0]), 1))
+
+        xname = xpositions[xpos]
+        ypos = data_to_ax.transform((0, ymax))[1]
+
+        return xname, ypos
+
+    @staticmethod
+    def _generate_ymaxes(ax, fig, box_plotter, box_names):
+        """
+        given box plotter and the names of two categorical variables,
+        returns highest y point drawn between those two variables before
+        annotations.
+
+        The highest data point is often not the highest item drawn
+        (eg, error bars and/or bar charts).
+        """
+        xpositions = {
+            np.round(Annotator._get_box_x_position(box_plotter, box_name), 1): box_name
+            for box_name in box_names}
+
+        ymaxes = {name: 0 for name in box_names}
+
+        data_to_ax = Annotator._get_transform_func(ax, 'data_to_ax')
+
+        for child in ax.get_children():
+            if ((type(child) == PathCollection)
+                    and len(child.properties()['offsets'])):
+                xname, ypos = Annotator._get_ypos_for_path_collection(
+                    xpositions, data_to_ax, child)
+
+            elif (type(child) == lines.Line2D) or (type(child) == Rectangle):
+                xname, ypos = Annotator._get_ypos_for_line2d_or_rectangle(
+                    xpositions, data_to_ax, ax, fig, child)
+                if xname is None:
+                    continue
+            else:
+                continue
+
+            if ypos > ymaxes[xname]:
+                ymaxes[xname] = ypos
+        return ymaxes
+
+    @staticmethod
+    def _get_group_data(b_plotter, cat):
+        index = b_plotter.group_names.index(cat)
+
+        return b_plotter.plot_data[index], index
+
+    @staticmethod
+    def _get_box_data_with_hue(b_plotter, box_name):
+        cat = box_name[0]
+        group_data, index = Annotator._get_group_data(b_plotter, cat)
+
+        hue_level = box_name[1]
+        hue_mask = b_plotter.plot_hues[index] == hue_level
+
+        return group_data[hue_mask]
+
+    @staticmethod
+    def _get_box_data_without_hue(b_plotter, box_name):
+        cat = box_name
+        group_data, _ = Annotator._get_group_data(b_plotter, cat)
+
+        return group_data
+
+    @staticmethod
+    def _get_box_data(b_plotter, box_name):
+        """
+        box_name can be either a name "cat" or a tuple ("cat", "hue")
+
+        Almost a duplicate of seaborn's code, because there is not
+        direct access to the box_data in the BoxPlotter class.
+        """
+        if b_plotter.plot_hues is None:
+            data = Annotator._get_box_data_without_hue(b_plotter, box_name)
+        else:
+            data = Annotator._get_box_data_with_hue(b_plotter, box_name)
+
+        box_data = remove_null(data)
+
+        return box_data
+
+    @staticmethod
+    def _get_transform_func(ax, kind):
+        """
+        Given an axis object, returns one of three possible transformation
+        functions to move between coordinate systems, depending on the value of
+        kind:
+        'data_to_ax': converts data coordinates to axes coordinates
+        'ax_to_data': converts axes coordinates to data coordinates
+        'pix_to_ax': converts pixel coordinates to axes coordinates
+        'all': return tuple of all three
+
+        This function should be called whenever axes limits are altered.
+        """
+
+        check_is_in(kind, ['data_to_ax', 'ax_to_data', 'pix_to_ax', 'all'],
+                    'kind')
+
+        if kind == 'pix_to_ax':
+            return ax.transAxes.inverted()
+
+        data_to_ax = ax.transData + ax.get_xaxis_transform().inverted()
+
+        if kind == 'data_to_ax':
+            return data_to_ax
+
+        elif kind == 'ax_to_data':
+            return data_to_ax.inverted()
+
+        else:
+            return data_to_ax, data_to_ax.inverted(), ax.transAxes.inverted()
+
+    def _check_test_pvalues_perform(self):
+        if self.test is None:
+            raise ValueError("If `perform_stat_test` is True, "
+                             "`test` must be specified.")
+        if self.test_short_name is not None:
+            raise ValueError("If `perform_stat_test` is True"
+                             "and `test_short_name` must be `None`.")
+
+        if self.test not in IMPLEMENTED_TESTS and \
+                not isinstance(self.test, StatTest):
+            raise ValueError("test value should be a StatTest instance "
+                             "or one of the following strings: {}."
+                             .format(', '.join(IMPLEMENTED_TESTS)))
+
+    def _check_test_pvalues_no_perform(self, pvalues):
+        if pvalues is None:
+            raise ValueError("If `perform_stat_test` is False, "
+                             "custom `pvalues` must be specified.")
+        if self.test is not None:
+            raise ValueError("If `perform_stat_test` is False, "
+                             "`test` must be None.")
+        if len(pvalues) != len(self.box_pairs):
+            raise ValueError("`pvalues` should be of the same length as "
+                             "`box_pairs`.")
+
+    def _check_correct_number_custom_annotations(self, text_annot_custom):
+        if text_annot_custom is None:
+            return
+
+        if len(text_annot_custom) != len(self.box_struct_pairs):
+            raise ValueError(
+                "`text_annot_custom` should be of same length as `box_pairs`.")
+
+    @staticmethod
+    def _apply_type1_comparisons_correction(comparisons_correction,
+                                            test_result_list):
+        original_pvalues = [result.pval for result in test_result_list]
+
+        significant_pvalues = comparisons_correction(original_pvalues)
+
+        for is_significant, result in zip(significant_pvalues,
+                                          test_result_list):
+            result.correction_method = comparisons_correction.name
+            result.corrected_significance = is_significant
+
+    @staticmethod
+    def _apply_type0_comparisons_correction(comparisons_correction,
+                                            test_result_list):
+        alpha = comparisons_correction.alpha
+        for result in test_result_list:
+            result.correction_method = comparisons_correction.name
+            result.corrected_significance = (
+                    result.pval < alpha
+                    or np.isclose(result.pval, alpha))
+
+    @staticmethod
+    def _apply_comparisons_correction(comparisons_correction, test_result_list):
+        if comparisons_correction is None:
+            return
+
+        if comparisons_correction.type == 1:
+            Annotator._apply_type1_comparisons_correction(comparisons_correction,
+                                                          test_result_list)
+
+        else:
+            Annotator._apply_type0_comparisons_correction(comparisons_correction,
+                                                          test_result_list)
+
+    @staticmethod
+    def _get_pvalue_and_simple_formats(pvalue_format_string):
+        if pvalue_format_string is DEFAULT:
+            pvalue_format_string = '{:.3e}'
+            simple_format_string = '{:.2f}'
+        else:
+            simple_format_string = pvalue_format_string
+
+        return pvalue_format_string, simple_format_string
+
+    @staticmethod
+    def _get_stat_result_from_test(box_struct1, box_struct2, test,
+                                   comparisons_correction, num_comparisons,
+                                   pvalue_thresholds,
+                                   **stats_params) -> StatResult:
+        box_data1 = box_struct1['box_data']
+        box_data2 = box_struct2['box_data']
+
+        result = stat_test(
+            box_data1,
+            box_data2,
+            test,
+            comparisons_correction=comparisons_correction,
+            num_comparisons=num_comparisons,
+            alpha=pvalue_thresholds[-2][0],
+            **stats_params
+        )
+
+        return result
+
+    @staticmethod
+    def _get_custom_results(box_struct1, test_short_name, pvalue_thresholds,
+                            pvalues) -> StatResult:
+        i_box_pair = box_struct1['i_box_pair']
+
+        result = StatResult(
+            'Custom statistical test',
+            test_short_name,
+            None,
+            None,
+            pval=pvalues[i_box_pair],
+            alpha=pvalue_thresholds[-2][0]
+        )
+
+        return result
+
+    @staticmethod
+    def _get_box_struct_pairs(box_pairs, box_structs):
+        box_structs_dic = {box_struct['box']: box_struct
+                           for box_struct in box_structs}
+
+        box_struct_pairs = []
+
+        for i_box_pair, (box1, box2) in enumerate(box_pairs):
+            box_struct1 = dict(box_structs_dic[box1], i_box_pair=i_box_pair)
+            box_struct2 = dict(box_structs_dic[box2], i_box_pair=i_box_pair)
+
+            if box_struct1['x'] <= box_struct2['x']:
+                box_struct_pairs.append((box_struct1, box_struct2))
+            else:
+                box_struct_pairs.append((box_struct2, box_struct1))
+
+        # Draw first the annotations with the shortest between-boxes distance, in
+        # order to reduce overlapping between annotations.
+        box_struct_pairs = sorted(box_struct_pairs,
+                                  key=lambda a: abs(a[1]['x'] - a[0]['x']))
+
+        return box_struct_pairs
+
+    @staticmethod
+    def _get_pvalue_thresholds(pvalue_thresholds, text_format):
+        if pvalue_thresholds is DEFAULT:
+            if text_format == "star":
+                return [[1e-4, "****"], [1e-3, "***"],
+                        [1e-2, "**"], [0.05, "*"], [1, "ns"]]
+            else:
+                return [[1e-5, "1e-5"], [1e-4, "1e-4"],
+                        [1e-3, "0.001"], [1e-2, "0.01"],
+                        [5e-2, "0.05"]]
+
+        return pvalue_thresholds
+
+    @staticmethod
+    def _get_box_plotter(plot, x, y, hue, data, order, hue_order,
+                         **plot_params):
+        if plot_params.pop("dodge", None) is False:
+            raise ValueError("`dodge` must be true in statannotations")
+
+        if plot == 'boxplot':
+            # noinspection PyProtectedMember
+            box_plotter = sns.categorical._BoxPlotter(
+
+                x, y, hue, data, order, hue_order,
+                orient=plot_params.get("orient"),
+                width=plot_params.get("width", 0.8),
+                dodge=True,
+                fliersize=plot_params.get("fliersize", 5),
+                linewidth=plot_params.get("linewidth"),
+                saturation=.75, color=None, palette=None)
+
+        elif plot == 'barplot':
+            # noinspection PyProtectedMember
+            box_plotter = sns.categorical._BarPlotter(
+                x, y, hue, data, order, hue_order,
+                estimator=plot_params.get("estimator", np.mean),
+                ci=plot_params.get("ci", 95),
+                n_boot=plot_params.get("nboot", 1000),
+                units=plot_params.get("units"),
+                orient=plot_params.get("orient"),
+                seed=plot_params.get("seed"),
+                color=None, palette=None, saturation=.75,
+                errcolor=".26", errwidth=plot_params.get("errwidth"),
+                capsize=None,
+                dodge=True)
+
+        else:
+            raise NotImplementedError("Only boxplots and barplots are supported.")
+
+        return box_plotter
+
+    @staticmethod
+    def _get_offsets_inside(line_offset, line_offset_to_box):
+        if line_offset is None:
+            line_offset = 0.05
+            if line_offset_to_box is None:
+                line_offset_to_box = 0.06
+        else:
+            if line_offset_to_box is None:
+                line_offset_to_box = 0.06
+        y_offset = line_offset
+        return y_offset, line_offset_to_box
+
+    @staticmethod
+    def _get_offsets_outside(line_offset, line_offset_to_box):
+        if line_offset is None:
+            line_offset = 0.03
+            if line_offset_to_box is None:
+                line_offset_to_box = line_offset
+        else:
+            line_offset_to_box = line_offset
+
+        y_offset = line_offset
+        return y_offset, line_offset_to_box
+
+    @staticmethod
+    def _get_box_structs(box_plotter, box_names, labels, ymaxes):
+        box_structs = [
+            {
+                'box': box_names[i],
+                'label': labels[i],
+                'x': Annotator._get_box_x_position(box_plotter, box_names[i]),
+                'box_data': Annotator._get_box_data(box_plotter, box_names[i]),
+                'ymax': ymaxes[box_names[i]]
+            } for i in range(len(box_names))]
+
+        # Sort the box data structures by position along the x axis
+        box_structs = sorted(box_structs, key=lambda a: a['x'])
+
+        # Add the index position in the list of boxes along the x axis
+        box_structs = [dict(box_struct, xi=i)
+                       for i, box_struct in enumerate(box_structs)]
+
+        return box_structs
+
+    @staticmethod
+    def _get_box_names_and_labels(box_plotter):
+        group_names = box_plotter.group_names
+        hue_names = box_plotter.hue_names
+
+        if box_plotter.plot_hues is None:
+            box_names = group_names
+            labels = box_names
+        else:
+            box_names = [(group_name, hue_name) for group_name in group_names
+                         for hue_name in hue_names]
+            labels = ['{}_{}'.format(group_name, hue_name)
+                      for (group_name, hue_name) in box_names]
+
+        return box_names, labels
 
 
-def _get_group_data(b_plotter, cat):
-    index = b_plotter.group_names.index(cat)
-
-    return b_plotter.plot_data[index], index
-
-
-def _get_box_data_with_hue(b_plotter, box_name):
-    cat = box_name[0]
-    group_data, index = _get_group_data(b_plotter, cat)
-
-    hue_level = box_name[1]
-    hue_mask = b_plotter.plot_hues[index] == hue_level
-
-    return group_data[hue_mask]
+def _print_result_line(box_structs, formatted_output):
+    label1 = box_structs[0]['label']
+    label2 = box_structs[1]['label']
+    print(f"{label1} v.s. {label2}: {formatted_output}")
 
 
-def _get_box_data_without_hue(b_plotter, box_name):
-    cat = box_name
-    group_data, _ = _get_group_data(b_plotter, cat)
-
-    return group_data
-
-
-def _get_box_data(b_plotter, box_name):
-    """
-    box_name can be either a name "cat" or a tuple ("cat", "hue")
-
-    Almost a duplicate of seaborn's code, because there is not
-    direct access to the box_data in the BoxPlotter class.
-    """
-    if b_plotter.plot_hues is None:
-        data = _get_box_data_without_hue(b_plotter, box_name)
-    else:
-        data = _get_box_data_with_hue(b_plotter, box_name)
-
-    box_data = remove_null(data)
-
-    return box_data
-
-
-def _get_transform_func(ax, kind):
-    """
-    Given an axis object, returns one of three possible transformation
-    functions to move between coordinate systems, depending on the value of
-    kind:
-    'data_to_ax': converts data coordinates to axes coordinates
-    'ax_to_data': converts axes coordinates to data coordinates
-    'pix_to_ax': converts pixel coordinates to axes coordinates
-    'all': return tuple of all three
-
-    This function should be called whenever axes limits are altered.
-    """
-
-    check_is_in(kind, ['data_to_ax', 'ax_to_data', 'pix_to_ax', 'all'], 'kind')
-
-    if kind == 'pix_to_ax':
-        return ax.transAxes.inverted()
-
-    data_to_ax = ax.transData + ax.get_xaxis_transform().inverted()
-
-    if kind == 'data_to_ax':
-        return data_to_ax
-
-    elif kind == 'ax_to_data':
-        return data_to_ax.inverted()
-
-    else:
-        return data_to_ax, data_to_ax.inverted(), ax.transAxes.inverted()
-
-
-def _check_test_pvalues_perform(test, test_short_name):
-    if test is None:
-        raise ValueError("If `perform_stat_test` is True, `test` must be specified.")
-    if test_short_name is not None:
-        raise ValueError("If `perform_stat_test` is True"
-                         "and `test_short_name` must be `None`.")
-
-    if test not in IMPLEMENTED_TESTS and not isinstance(test, StatTest):
-        raise ValueError("test value should be a StatTest instance "
-                         "or one of the following strings: {}."
-                         .format(', '.join(IMPLEMENTED_TESTS)))
-
-
-def _check_test_pvalues_no_perform(test, pvalues, box_pairs):
-    if pvalues is None:
-        raise ValueError("If `perform_stat_test` is False, custom `pvalues` must be specified.")
-    if test is not None:
-        raise ValueError("If `perform_stat_test` is False, `test` must be None.")
-    if len(pvalues) != len(box_pairs):
-        raise ValueError("`pvalues` should be of the same length as `box_pairs`.")
+def sort_pvalue_thresholds(pvalue_thresholds):
+    return sorted(pvalue_thresholds,
+                  key=lambda threshold_notation: threshold_notation[0])
 
 
 def get_validated_comparisons_correction(comparisons_correction):
@@ -796,238 +1041,3 @@ def get_validated_comparisons_correction(comparisons_correction):
                          "method name or a ComparisonCorrection instance")
 
     return comparisons_correction
-
-
-def sort_pvalue_thresholds(pvalue_thresholds):
-    return sorted(pvalue_thresholds,
-                  key=lambda threshold_notation: threshold_notation[0])
-
-
-def check_correct_number_custom_annotations(text_annot_custom, box_struct_pairs):
-    if text_annot_custom is None:
-        return
-
-    if len(text_annot_custom) != len(box_struct_pairs):
-        raise ValueError(
-            "`text_annot_custom` should be of same length as `box_pairs`.")
-
-
-def _apply_type1_comparisons_correction(comparisons_correction, test_result_list):
-    original_pvalues = [result.pval for result in test_result_list]
-
-    significant_pvalues = comparisons_correction(original_pvalues)
-
-    for is_significant, result in zip(significant_pvalues,
-                                      test_result_list):
-        result.correction_method = comparisons_correction.name
-        result.corrected_significance = is_significant
-
-
-def _apply_type0_comparisons_correction(comparisons_correction, test_result_list):
-    alpha = comparisons_correction.alpha
-    for result in test_result_list:
-        result.correction_method = comparisons_correction.name
-        result.corrected_significance = (
-                result.pval < alpha
-                or np.isclose(result.pval, alpha))
-
-
-def _apply_comparisons_correction(comparisons_correction, test_result_list):
-    if comparisons_correction is None:
-        return
-
-    if comparisons_correction.type == 1:
-        _apply_type1_comparisons_correction(comparisons_correction,
-                                            test_result_list)
-
-    else:
-        _apply_type0_comparisons_correction(comparisons_correction,
-                                            test_result_list)
-
-
-def _get_pvalue_and_simple_formats(pvalue_format_string):
-    if pvalue_format_string is DEFAULT:
-        pvalue_format_string = '{:.3e}'
-        simple_format_string = '{:.2f}'
-    else:
-        simple_format_string = pvalue_format_string
-
-    return pvalue_format_string, simple_format_string
-
-
-def _get_stat_result_from_test(box_struct1, box_struct2, test,
-                               comparisons_correction, num_comparisons,
-                               pvalue_thresholds, **stats_params) -> StatResult:
-    box_data1 = box_struct1['box_data']
-    box_data2 = box_struct2['box_data']
-
-    result = stat_test(
-        box_data1,
-        box_data2,
-        test,
-        comparisons_correction=comparisons_correction,
-        num_comparisons=num_comparisons,
-        alpha=pvalue_thresholds[-2][0],
-        **stats_params
-    )
-
-    return result
-
-
-def _get_custom_results(box_struct1, test_short_name, pvalue_thresholds,
-                        pvalues) -> StatResult:
-    i_box_pair = box_struct1['i_box_pair']
-
-    result = StatResult(
-        'Custom statistical test',
-        test_short_name,
-        None,
-        None,
-        pval=pvalues[i_box_pair],
-        alpha=pvalue_thresholds[-2][0]
-    )
-
-    return result
-
-
-def _get_box_struct_pairs(box_pairs, box_structs):
-    box_structs_dic = {box_struct['box']: box_struct
-                       for box_struct in box_structs}
-
-    box_struct_pairs = []
-
-    for i_box_pair, (box1, box2) in enumerate(box_pairs):
-        box_struct1 = dict(box_structs_dic[box1], i_box_pair=i_box_pair)
-        box_struct2 = dict(box_structs_dic[box2], i_box_pair=i_box_pair)
-
-        if box_struct1['x'] <= box_struct2['x']:
-            box_struct_pairs.append((box_struct1, box_struct2))
-        else:
-            box_struct_pairs.append((box_struct2, box_struct1))
-
-    # Draw first the annotations with the shortest between-boxes distance, in
-    # order to reduce overlapping between annotations.
-    box_struct_pairs = sorted(box_struct_pairs,
-                              key=lambda a: abs(a[1]['x'] - a[0]['x']))
-
-    return box_struct_pairs
-
-
-def _get_pvalue_thresholds(pvalue_thresholds, text_format):
-    if pvalue_thresholds is DEFAULT:
-        if text_format == "star":
-            return [[1e-4, "****"], [1e-3, "***"],
-                    [1e-2, "**"], [0.05, "*"], [1, "ns"]]
-        else:
-            return [[1e-5, "1e-5"], [1e-4, "1e-4"],
-                    [1e-3, "0.001"], [1e-2, "0.01"],
-                    [5e-2, "0.05"]]
-
-    return pvalue_thresholds
-
-
-def _get_box_plotter(plot, x, y, hue, data, order, hue_order,
-                     **plot_params):
-    if plot_params.pop("dodge", None) is False:
-        raise ValueError("`dodge` must be true in statannotations")
-
-    if plot == 'boxplot':
-        # noinspection PyProtectedMember
-        box_plotter = sns.categorical._BoxPlotter(
-
-            x, y, hue, data, order, hue_order,
-            orient=plot_params.get("orient"),
-            width=plot_params.get("width", 0.8),
-            dodge=True,
-            fliersize=plot_params.get("fliersize", 5),
-            linewidth=plot_params.get("linewidth"),
-            saturation=.75, color=None, palette=None)
-
-    elif plot == 'barplot':
-        # noinspection PyProtectedMember
-        box_plotter = sns.categorical._BarPlotter(
-            x, y, hue, data, order, hue_order,
-            estimator=plot_params.get("estimator", np.mean),
-            ci=plot_params.get("ci", 95),
-            n_boot=plot_params.get("nboot", 1000),
-            units=plot_params.get("units"),
-            orient=plot_params.get("orient"),
-            seed=plot_params.get("seed"),
-            color=None, palette=None, saturation=.75,
-            errcolor=".26", errwidth=plot_params.get("errwidth"),
-            capsize=None,
-            dodge=True)
-
-    else:
-        raise NotImplementedError("Only boxplots and barplots are supported.")
-
-    return box_plotter
-
-
-def _get_offsets_inside(line_offset, line_offset_to_box):
-    if line_offset is None:
-        line_offset = 0.05
-        if line_offset_to_box is None:
-            line_offset_to_box = 0.06
-    else:
-        if line_offset_to_box is None:
-            line_offset_to_box = 0.06
-    y_offset = line_offset
-    return y_offset, line_offset_to_box
-
-
-def _get_offsets_outside(line_offset, line_offset_to_box):
-    if line_offset is None:
-        line_offset = 0.03
-        if line_offset_to_box is None:
-            line_offset_to_box = line_offset
-    else:
-        line_offset_to_box = line_offset
-
-    y_offset = line_offset
-    return y_offset, line_offset_to_box
-
-
-def _get_box_structs(box_plotter, box_names, labels, ymaxes):
-    box_structs = [
-        {
-            'box': box_names[i],
-            'label': labels[i],
-            'x': _get_box_x_position(box_plotter, box_names[i]),
-            'box_data': _get_box_data(box_plotter, box_names[i]),
-            'ymax': ymaxes[box_names[i]]
-        } for i in range(len(box_names))]
-
-    # Sort the box data structures by position along the x axis
-    box_structs = sorted(box_structs, key=lambda a: a['x'])
-
-    # Add the index position in the list of boxes along the x axis
-    box_structs = [dict(box_struct, xi=i)
-                   for i, box_struct in enumerate(box_structs)]
-
-    return box_structs
-
-
-def _get_box_names_and_labels(box_plotter):
-    group_names = box_plotter.group_names
-    hue_names = box_plotter.hue_names
-
-    if box_plotter.plot_hues is None:
-        box_names = group_names
-        labels = box_names
-    else:
-        box_names = [(group_name, hue_name) for group_name in group_names
-                     for hue_name in hue_names]
-        labels = ['{}_{}'.format(group_name, hue_name)
-                  for (group_name, hue_name) in box_names]
-    return box_names, labels
-
-
-OFFSET_FUNCS = {"inside": _get_offsets_inside,
-                "outside": _get_offsets_outside}
-
-
-def _print_result_line(box_structs, formatted_output):
-    label1 = box_structs[0]['label']
-    label2 = box_structs[1]['label']
-    print(f"{label1} v.s. {label2}: {formatted_output}")

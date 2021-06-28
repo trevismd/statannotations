@@ -240,12 +240,12 @@ calculated with number of box_pairs</p></li>
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">text_format</span></span><a class="headerlink" href="#statannotations.statannotations.Annotator.text_format" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="statannotations.statannotations.check_correct_number_custom_annotations">
-<span class="sig-prename descclassname"><span class="pre">statannotations.statannotations.</span></span><span class="sig-name descname"><span class="pre">check_correct_number_custom_annotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text_annot_custom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box_struct_pairs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.statannotations.check_correct_number_custom_annotations" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="statannotations.statannotations.Annotator.update_y_for_loc">
+<span class="sig-name descname"><span class="pre">update_y_for_loc</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.statannotations.Annotator.update_y_for_loc" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="statannotations.statannotations.get_validated_comparisons_correction">
@@ -279,7 +279,7 @@ calculated with number of box_pairs</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="statannotations.utils.check_order_in_data">
-<span class="sig-prename descclassname"><span class="pre">statannotations.utils.</span></span><span class="sig-name descname"><span class="pre">check_order_in_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.utils.check_order_in_data" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">statannotations.utils.</span></span><span class="sig-name descname"><span class="pre">check_order_in_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span><a class="headerlink" href="#statannotations.utils.check_order_in_data" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -289,7 +289,7 @@ calculated with number of box_pairs</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="statannotations.utils.get_x_values">
-<span class="sig-prename descclassname"><span class="pre">statannotations.utils.</span></span><span class="sig-name descname"><span class="pre">get_x_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.utils.get_x_values" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">statannotations.utils.</span></span><span class="sig-name descname"><span class="pre">get_x_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">set</span><a class="headerlink" href="#statannotations.utils.get_x_values" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -307,6 +307,11 @@ calculated with number of box_pairs</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="statannotations.utils.remove_null">
 <span class="sig-prename descclassname"><span class="pre">statannotations.utils.</span></span><span class="sig-name descname"><span class="pre">remove_null</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">series</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.utils.remove_null" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="statannotations.utils.render_set">
+<span class="sig-prename descclassname"><span class="pre">statannotations.utils.</span></span><span class="sig-name descname"><span class="pre">render_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a_set</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.utils.render_set" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </section>
@@ -453,6 +458,11 @@ calculated with number of box_pairs</p></li>
 <dl class="py property">
 <dt class="sig sig-object py" id="statannotations.Annotator.text_format">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">text_format</span></span><a class="headerlink" href="#statannotations.Annotator.text_format" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="statannotations.Annotator.update_y_for_loc">
+<span class="sig-name descname"><span class="pre">update_y_for_loc</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.update_y_for_loc" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>

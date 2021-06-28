@@ -249,3 +249,11 @@ class TestBenjaminiHochberg(unittest.TestCase):
         expected = [True, True, True]
         observed = self.benjamini_hochberg_006_man_diff_api(raw_p_values)
         npt.assert_allclose(observed, expected)
+
+    def test_values_of_documentation(self):
+        raw_p_values = [6.477e-01, 4.690e-02, 2.680e-02]
+        expected = [False, False, False]
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            observed = self.benjamini_hochberg(raw_p_values)
+        npt.assert_allclose(observed, expected)

@@ -30,70 +30,73 @@ def remove_null(series):
     return series[pd.notnull(series)]
 
 
-def get_x_values(data, x):
+def get_x_values(data, x) -> set:
     if isinstance(data, pd.DataFrame):
-        x_values = list(data[x].unique())
+        return set(data[x].unique())
     elif data is not None:
-        x_values = [_ for _ in range(len(data))]
+        return set([_ for _ in range(len(data))])
     else:
-        x_values = set(x)
-    return x_values
+        return set(x)
 
 
-def check_order_in_data(data, x, order):
+def check_order_in_data(data, x, order) -> None:
     if order is None:
         return
 
     x_values = get_x_values(data, x)
-    for x_value in order:
-        if x_value not in x_values:
-            raise ValueError(f"Missing x value \"{x_value}\" in {x} "
-                             f"(specified in `order`)")
+    unmatched_in_order = set(order) - x_values
+
+    if unmatched_in_order:
+        raise ValueError(f"Missing x value(s) "
+                         f"`{render_set(unmatched_in_order)}` in {x} "
+                         f"(specified in `order`)")
 
 
 def _check_box_pairs_in_data_no_hue(box_pairs: Union[list, tuple],
                                     data: Union[List[list],
                                                 pd.DataFrame] = None,
-                                    x: Union[str, list] = None):
+                                    x: Union[str, list] = None) -> None:
+    x_values = get_x_values(data, x)
+    pairs_x_values = set(itertools.chain(*box_pairs))
+    unmatched_x_values = pairs_x_values - x_values
+    if unmatched_x_values:
+        raise ValueError(f"Missing x value(s) "
+                         f"`{render_set(unmatched_x_values)}` in {x}"
+                         f" (specified in `box_pairs`) in data")
+
+
+def _check_box_pairs_in_data_with_hue(box_pairs: Union[list, tuple],
+                                      data: Union[List[list],
+                                                  pd.DataFrame] = None,
+                                      x: Union[str, list] = None,
+                                      hue: str = None) -> set:
 
     x_values = get_x_values(data, x)
     seen_x_values = set()
 
-    for x_value in itertools.chain(*box_pairs):
-        if x_value not in seen_x_values and x_value not in x_values:
-            raise ValueError(f"Missing x value \"{x_value}\" in {x}"
-                             f" (specified in `box_pairs`) in data")
+    hue_values = set(data[hue].unique())
 
-        seen_x_values.add(x_value)
-
-
-def _check_box_pairs_in_data_hue(box_pairs: Union[list, tuple],
-                                data: Union[List[list], pd.DataFrame] = None,
-                                x: Union[str, list] = None,
-                                hue: str = None,
-                                hue_order: List[str] = None):
-    x_values = get_x_values(data, x)
-    seen_x_values = set()
-
-    hue_values = list(data[hue].unique())
-    seen_hues = set()
     for x_value, hue_value in itertools.chain(itertools.chain(*box_pairs)):
         if x_value not in seen_x_values and x_value not in x_values:
-            raise ValueError(f"Missing x value \"{x_value}\" in {x}"
+            raise ValueError(f"Missing x value `{x_value}` in {x}"
                              f" (specified in `box_pairs`)")
         seen_x_values.add(x_value)
 
-        if hue_value not in seen_hues and hue_value not in hue_values:
-            raise ValueError(f"Missing hue value \"{hue_value}\" in {hue}"
+        if hue_value not in hue_values:
+            raise ValueError(f"Missing hue value `{hue_value}` in {hue}"
                              f" (specified in `box_pairs`)")
-        seen_hues.add(hue_value)
 
-    # I assume hue is always defined with hue_order
+    return hue_values
+
+
+def _check_hue_order_in_data(hue, hue_values: set,
+                             hue_order: List[str] = None) -> None:
     if hue_order is not None:
-        for hue_value in hue_order:
-            if hue_value not in seen_hues and hue_value not in hue_values:
-                raise ValueError(f"Missing hue value \"{hue_value}\""
-                                 f" in {hue} (specified in `hue_order`)")
+        unmatched = set(hue_order) - set(hue_values)
+        if unmatched:
+            raise ValueError(f"Missing hue value(s) "
+                             f"`{render_set(unmatched)}`"
+                             f" in {hue} (specified in `hue_order`)")
 
 
 def check_box_pairs_in_data(box_pairs: Union[list, tuple],
@@ -105,10 +108,11 @@ def check_box_pairs_in_data(box_pairs: Union[list, tuple],
     Checks that values referred to in `order` and `box_pairs` exist in data.
     """
 
-    if hue is None:
+    if hue is None and hue_order is None:
         _check_box_pairs_in_data_no_hue(box_pairs, data, x)
     else:
-        _check_box_pairs_in_data_hue(box_pairs, data, x, hue, hue_order)
+        hue_values = _check_box_pairs_in_data_with_hue(box_pairs, data, x, hue)
+        _check_hue_order_in_data(hue, hue_values, hue_order)
 
 
 def check_not_none(name, value):
@@ -122,3 +126,7 @@ def check_valid_text_format(text_format):
         ['full', 'simple', 'star'],
         label='argument `text_format`'
     )
+
+
+def render_set(a_set):
+    return '","'.join(map(str, a_set))

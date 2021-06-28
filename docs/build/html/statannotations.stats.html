@@ -122,11 +122,8 @@ statannot/statannotations.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>box_data1</strong> – data</p></li>
 <li><p><strong>box_data2</strong> – data</p></li>
-<li><p><strong>test</strong> – Union[StatTest, str]: Statistical test to run.</p></li>
-</ul>
-</dd>
-</dl>
-<p>Either a <cite>StatTest</cite> instance or one of:
+<li><p><strong>test</strong> – Union[StatTest, str]: Statistical test to run.
+Either a <cite>StatTest</cite> instance or one of:
 - <cite>Levene</cite>
 - <cite>Mann-Whitney</cite>
 - <cite>Mann-Whitney-gt</cite>
@@ -135,25 +132,22 @@ statannot/statannotations.</p>
 - <cite>t-test_welch</cite>
 - <cite>t-test_paired</cite>
 - <cite>Wilcoxon</cite>
-- <cite>Kruskal</cite>
-:param comparisons_correction: Union[ComparisonsCorrection, str]: (Default value = None)
-Method to use for multiple comparisons correction. Either a</p>
-<blockquote>
-<div><p><cite>ComparisonsCorrection</cite> instance or one of (interfacing statsmodels):
+- <cite>Kruskal</cite></p></li>
+<li><p><strong>comparisons_correction</strong> – Union[ComparisonsCorrection, str]: (Default value = None)
+Method to use for multiple comparisons correction. Either a
+<cite>ComparisonsCorrection</cite> instance or one of (interfacing statsmodels):
 - Bonferroni
 - Holm-Bonferroni
 - Benjamini-Hochberg
-- Benjamini-Yekutieli</p>
-</div></blockquote>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>num_comparisons</strong> – int:  (Default value = 1)</p>
+- Benjamini-Yekutieli</p></li>
+<li><p><strong>num_comparisons</strong> – int:  (Default value = 1)
+Number of comparisons to use for multiple comparisons correction.</p></li>
+<li><p><strong>alpha</strong> – float:  (Default value = 0.05)
+Used for pvalue interpretation in case of comparisons_correction.</p></li>
+<li><p><strong>stats_params</strong> – Additional keyword arguments to pass to the test function</p></li>
+</ul>
 </dd>
 </dl>
-<p>Number of comparisons to use for multiple comparisons correction.
-:param alpha: float:  (Default value = 0.05)
-Used for pvalue interpretation in case of comparisons_correction.
-:param stats_params: Additional keyword arguments to pass to the test function</p>
 </dd></dl>
 
 </section>
