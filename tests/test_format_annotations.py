@@ -20,7 +20,8 @@ class TestFormatAnnotations(unittest.TestCase):
     def test_format_simple2(self):
 
         self.assertEqual(
-            simple_text(self.result, "{:.2f}", [(0.1, 0.1), (0.5, 0.5)], "This"),
+            simple_text(self.result,
+                        "{:.2f}", [(0.1, 0.1), (0.5, 0.5)], "This"),
             "This p ≤ 0.5")
 
     def test_format_simple3(self):

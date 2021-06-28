@@ -2,7 +2,9 @@ import unittest
 
 import seaborn as sns
 
-from statannotations.statannotations import _apply_comparisons_correction, Annotator
+# noinspection PyProtectedMember
+from statannotations.statannotations import \
+    _apply_comparisons_correction, Annotator
 
 
 class TestParametersValidation(unittest.TestCase):

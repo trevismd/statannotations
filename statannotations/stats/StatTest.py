@@ -26,55 +26,11 @@ def wilcoxon(box_data1, box_data2, verbose=1, **stats_params):
 class StatTest:
     @staticmethod
     def from_library(test_name: str) -> 'StatTest':
-
-        # Switch to run scipy.stats hypothesis test.
-        if test_name == 'Levene':
-            return StatTest(stats.levene, 'Levene test of variance', 'levene')
-
-        elif test_name == 'Mann-Whitney':
-            return StatTest(stats.mannwhitneyu,
-                            'Mann-Whitney-Wilcoxon test two-sided', 'M.W.W.',
-                            'U_stat', alternative='two-sided')
-
-        elif test_name == 'Mann-Whitney-gt':
-            return StatTest(stats.mannwhitneyu,
-                            'Mann-Whitney-Wilcoxon test greater', 'M.W.W.',
-                            'U_stat', alternative='greater')
-
-        elif test_name == 'Mann-Whitney-ls':
-            return StatTest(stats.mannwhitneyu,
-                            'Mann-Whitney-Wilcoxon test smaller', 'M.W.W.',
-                            'U_stat', alternative='less')
-
-        elif test_name == 't-test_ind':
-            return StatTest(stats.ttest_ind,
-                            't-test independent samples', 't-test_ind',
-                            't')
-
-        elif test_name == 't-test_welch':
-            return StatTest(stats.ttest_ind,
-                            'Welch\'s t-test independent samples',
-                            't-test_welch', 't', equal_var=False)
-
-        elif test_name == 't-test_paired':
-            return StatTest(stats.ttest_rel,
-                            't-test paired samples', 't-test_rel',
-                            't')
-
-        elif test_name == 'Wilcoxon':
-            return StatTest(stats.wilcoxon,
-                            'Wilcoxon test (paired samples)', 'Wilcoxon')
-
-        elif test_name == 'Wilcoxon-legacy':
-            return StatTest(wilcoxon,
-                            'Wilcoxon test (paired samples)', 'Wilcoxon')
-
-        elif test_name == 'Kruskal':
-            return StatTest(stats.kruskal,
-                            'Kruskal-Wallis paired samples', 'Kruskal')
-
-        raise NotImplementedError(
-            f"Test named {test_name} is not implemented, or wrongly spelled")
+        test = STATTEST_LIBRARY.get(test_name)
+        if test is None:
+            raise NotImplementedError(f"Test named {test_name} is not "
+                                      f"implemented, or wrongly spelled")
+        return test
 
     def __init__(self, func: Callable, test_long_name: str,
                  test_short_name: str, stat_name: str = "Stat",
@@ -127,3 +83,42 @@ class StatTest:
     @property
     def short_name(self):
         return self._test_short_name
+
+
+STATTEST_LIBRARY = {
+    'Levene':           StatTest(stats.levene,
+                                 'Levene test of variance', 'levene'),
+
+    'Mann-Whitney':     StatTest(stats.mannwhitneyu,
+                                 'Mann-Whitney-Wilcoxon test two-sided',
+                                 'M.W.W.', 'U_stat', alternative='two-sided'),
+
+    'Mann-Whitney-gt':  StatTest(stats.mannwhitneyu,
+                                 'Mann-Whitney-Wilcoxon test greater',
+                                 'M.W.W.', 'U_stat', alternative='greater'),
+
+    'Mann-Whitney-ls':  StatTest(stats.mannwhitneyu,
+                                 'Mann-Whitney-Wilcoxon test smaller',
+                                 'M.W.W.', 'U_stat', alternative='less'),
+
+    't-test_ind':       StatTest(stats.ttest_ind,
+                                 't-test independent samples',
+                                 't-test_ind', 't'),
+
+    't-test_welch':     StatTest(stats.ttest_ind,
+                                 'Welch\'s t-test independent samples',
+                                 't-test_welch', 't', equal_var=False),
+
+    't-test_paired':    StatTest(stats.ttest_rel,
+                                 't-test paired samples', 't-test_rel', 't'),
+
+    'Wilcoxon':         StatTest(stats.wilcoxon,
+                                 'Wilcoxon test (paired samples)', 'Wilcoxon'),
+
+    'Wilcoxon-legacy':  StatTest(wilcoxon,
+                                 'Wilcoxon test (paired samples)', 'Wilcoxon'),
+
+
+    'Kruskal':          StatTest(stats.kruskal,
+                                 'Kruskal-Wallis paired samples', 'Kruskal')
+}

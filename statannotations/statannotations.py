@@ -16,7 +16,7 @@ from statannotations.stats.StatTest import StatTest
 from statannotations.stats.tests import stat_test, IMPLEMENTED_TESTS
 from statannotations.stats.utils import check_valid_correction_name
 from statannotations.utils import check_is_in, remove_null, \
-    check_order_box_pairs_in_data, check_not_none, check_valid_text_format
+    check_box_pairs_in_data, check_not_none, check_valid_text_format, check_order_in_data
 
 DEFAULT = object()
 
@@ -116,7 +116,8 @@ class Annotator:
             order=None, hue_order=None, **plot_params):
 
         check_not_none("box_pairs", box_pairs)
-        check_order_box_pairs_in_data(box_pairs, data, x, order, hue, hue_order)
+        check_order_in_data(data, x, order)
+        check_box_pairs_in_data(box_pairs, data, x, hue, hue_order)
 
         box_plotter = _get_box_plotter(plot, x, y, hue, data, order, hue_order,
                                        **plot_params)
@@ -612,6 +613,37 @@ def _get_xpos_location(pos, xranges):
             return xrange[2]
 
 
+def _get_ypos_for_line2d_or_rectangle(xpositions, data_to_ax, ax, fig, child):
+    xunits = (max(list(xpositions.keys())) + 1) / len(xpositions)
+    xranges = {(pos - xunits / 2, pos + xunits / 2, pos): box_name
+               for pos, box_name in xpositions.items()}
+    box = ax.transData.inverted().transform(
+        child.get_window_extent(fig.canvas.get_renderer()))
+
+    if (box[:, 0].max() - box[:, 0].min()) > 1.1 * xunits:
+        return None, None
+    raw_xpos = np.round(box[:, 0].mean(), 1)
+    xpos = _get_xpos_location(raw_xpos, xranges)
+    if xpos not in xpositions:
+        return None, None
+    xname = xpositions[xpos]
+    ypos = box[:, 1].max()
+    ypos = data_to_ax.transform((0, ypos))[1]
+
+    return xname, ypos
+
+
+def _get_ypos_for_path_collection(xpositions, data_to_ax, child):
+    ymax = child.properties()['offsets'][:, 1].max()
+    xpos = float(np.round(np.nanmean(
+        child.properties()['offsets'][:, 0]), 1))
+
+    xname = xpositions[xpos]
+    ypos = data_to_ax.transform((0, ymax))[1]
+
+    return xname, ypos
+
+
 def _generate_ymaxes(ax, fig, box_plotter, box_names):
     """
     given box plotter and the names of two categorical variables,
@@ -624,40 +656,27 @@ def _generate_ymaxes(ax, fig, box_plotter, box_names):
     xpositions = {
         np.round(_get_box_x_position(box_plotter, box_name), 1): box_name
         for box_name in box_names}
+
     ymaxes = {name: 0 for name in box_names}
+
     data_to_ax = _get_transform_func(ax, 'data_to_ax')
+
     for child in ax.get_children():
         if ((type(child) == PathCollection)
                 and len(child.properties()['offsets'])):
-
-            ymax = child.properties()['offsets'][:, 1].max()
-            xpos = float(np.round(np.nanmean(
-                child.properties()['offsets'][:, 0]), 1))
-
-            xname = xpositions[xpos]
-            ypos = data_to_ax.transform((0, ymax))[1]
-            if ypos > ymaxes[xname]:
-                ymaxes[xname] = ypos
+            xname, ypos = _get_ypos_for_path_collection(
+                xpositions, data_to_ax, child)
 
         elif (type(child) == lines.Line2D) or (type(child) == Rectangle):
-            xunits = (max(list(xpositions.keys())) + 1) / len(xpositions)
-            xranges = {(pos - xunits / 2, pos + xunits / 2, pos): box_name
-                       for pos, box_name in xpositions.items()}
-            box = ax.transData.inverted().transform(
-                child.get_window_extent(fig.canvas.get_renderer()))
-
-            if (box[:, 0].max() - box[:, 0].min()) > 1.1 * xunits:
+            xname, ypos = _get_ypos_for_line2d_or_rectangle(
+                xpositions, data_to_ax, ax, fig, child)
+            if xname is None:
                 continue
-            raw_xpos = np.round(box[:, 0].mean(), 1)
-            xpos = _get_xpos_location(raw_xpos, xranges)
-            if xpos not in xpositions:
-                continue
-            xname = xpositions[xpos]
-            ypos = box[:, 1].max()
-            ypos = data_to_ax.transform((0, ypos))[1]
-            if ypos > ymaxes[xname]:
-                ymaxes[xname] = ypos
+        else:
+            continue
 
+        if ypos > ymaxes[xname]:
+            ymaxes[xname] = ypos
     return ymaxes
 
 
@@ -910,11 +929,12 @@ def _get_pvalue_thresholds(pvalue_thresholds, text_format):
 def _get_box_plotter(plot, x, y, hue, data, order, hue_order,
                      **plot_params):
     if plot_params.pop("dodge", None) is False:
-        raise ValueError(f"`dodge` must be true in statannotations")
+        raise ValueError("`dodge` must be true in statannotations")
 
     if plot == 'boxplot':
         # noinspection PyProtectedMember
         box_plotter = sns.categorical._BoxPlotter(
+
             x, y, hue, data, order, hue_order,
             orient=plot_params.get("orient"),
             width=plot_params.get("width", 0.8),

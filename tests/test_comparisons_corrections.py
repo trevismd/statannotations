@@ -161,8 +161,8 @@ class TestBenjaminiHochberg(unittest.TestCase):
 
     def setUp(self) -> None:
         self.benjamini_hochberg = ComparisonsCorrection("Benjamini-Hochberg")
-        self.benjamini_hochberg_006 = ComparisonsCorrection("Benjamini-Hochberg",
-                                                            alpha=0.06)
+        self.benjamini_hochberg_006 = ComparisonsCorrection(
+            "Benjamini-Hochberg", alpha=0.06)
 
         self.benjamini_hochberg_006_man_diff_api = ComparisonsCorrection(
             self.my_bh_from_sm, name="Benjamini-Hochberg (manual)",

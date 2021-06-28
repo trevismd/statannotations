@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Union
+from typing import Union, List
 
 import numpy as np
 
@@ -109,10 +109,14 @@ class ComparisonsCorrection(object):
         self.alpha = alpha
         self.statsmodels_api = statsmodels_api
         self.name = methods_names.get(self.name, self.name)
+
         func = self.func
         while isinstance(func, partial):
             func = func.func
 
+        self.document(func)
+
+    def document(self, func):
         self.__doc__ = (
             f"ComparisonCorrection wrapper for the function "
             f"'{func.__name__}', providing the attributes\n"
@@ -121,7 +125,6 @@ class ComparisonsCorrection(object):
             f"    `alpha (FWER)`: {self.alpha} \n")
 
         if self.method is not None:
-            # Used as multipletests parameter
             self.__doc__ += f"    `method`: {self.method} \n"
 
         self.__doc__ += (
@@ -132,37 +135,36 @@ class ComparisonsCorrection(object):
             f"------ Original function documentation ------ \n"
             f"{func.__doc__}")
 
-    def __call__(self, pvalues, m=None):
+    def __call__(self, pvalues: Union[List[float], float],
+                 num_comparisons=None):
         try:
             # Will raise TypeError if scalar value
             n_vals = len(pvalues)
-            is_array = True
+            got_pvalues_in_array = True
 
         except TypeError:
             n_vals = 1
             pvalues = np.array([pvalues])
-            is_array = False
+            got_pvalues_in_array = False
 
-        # m is number of comparisons
         # If specified, as many "1" as needed will be added to the pvalues list
-        if m is not None and m != n_vals:
-            if isinstance(m, float):
-                m = int(m)
-            if m < n_vals:
+        if num_comparisons is not None and num_comparisons != n_vals:
+            if isinstance(num_comparisons, float):
+                num_comparisons = int(num_comparisons)
+            if num_comparisons < n_vals:
                 raise ValueError("Number of comparisons must be at least "
                                  "as long as the passed number of pvalues")
-            else:
-                n_pvalues = np.ones(m)
-                n_pvalues[:n_vals] = pvalues
-                result = self.func(n_pvalues)
+            n_pvalues = np.ones(num_comparisons)
+            n_pvalues[:n_vals] = pvalues
+            result = self.func(n_pvalues)
         else:
             result = self.func(pvalues)
 
         # See multipletests return values for reject and pvals_corrected
         if self.statsmodels_api:
-            result = result[1] if self.type == 0 else result[0]
+            result = result[int(not self.type)]
 
-        if m is not None and m > n_vals:
+        if num_comparisons is not None and num_comparisons > n_vals:
             result = result[:n_vals]
 
-        return result if is_array else result[0]
+        return result if got_pvalues_in_array else result[0]

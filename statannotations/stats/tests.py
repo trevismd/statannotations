@@ -49,7 +49,6 @@ def stat_test(
     Used for pvalue interpretation in case of comparisons_correction.
     :param stats_params: Additional keyword arguments to pass to the test function
 
-    
     """
     # Check arguments.
     if (isinstance(comparisons_correction, ComparisonsCorrection)

@@ -4,12 +4,14 @@ import numpy as np
 import pandas as pd
 
 
-def pval_annotation_text(result: Union[List[StatResult], StatResult], pvalue_thresholds):
+def pval_annotation_text(result: Union[List[StatResult], StatResult],
+                         pvalue_thresholds: List):
     """
 
     :param result: StatResult instance or list thereof
     :param pvalue_thresholds: thresholds to use for formatting
-
+    :returns: A Series of rendered annotations if a list of StatResults was
+        provided, a string otherwise.
     """
     single_value = False
 
@@ -48,7 +50,7 @@ def simple_text(result: StatResult, pvalue_format, pvalue_thresholds, test_short
     :param pvalue_format: format string for pvalue
     :param test_short_name: Short name of test to show (Default value = None)
     :param pvalue_thresholds: String to display per pvalue range
-    :param result: StatResult: 
+    :param result: StatResult
     :returns: simple annotation
 
     """
