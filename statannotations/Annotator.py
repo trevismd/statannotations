@@ -25,6 +25,7 @@ from statannotations.utils import check_is_in, remove_null, \
 DEFAULT = object()
 
 CONFIGURABLE_PARAMETERS = [
+    'alpha',
     'comparisons_correction',
     'loc',
     'pvalue_format_string',
@@ -44,7 +45,7 @@ CONFIGURABLE_PARAMETERS = [
     'fontsize'
 ]
 
-IMPLEMENTED_PLOTTERS = ['boxplot', 'stripplot', 'barplot', 'swarmplot']
+IMPLEMENTED_PLOTTERS = ['barplot', 'boxplot', 'stripplot', 'swarmplot']
 
 
 def check_implemented_plotters(plot):

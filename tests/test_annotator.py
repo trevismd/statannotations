@@ -4,7 +4,7 @@ import unittest
 import pandas as pd
 import seaborn as sns
 
-from statannotations.Annotator import Annotator
+from statannotations.Annotator import Annotator, DEFAULT
 
 
 class TestAnnotator(unittest.TestCase):
@@ -101,3 +101,16 @@ class TestAnnotator(unittest.TestCase):
     def test_not_implemented_plot(self):
         with self.assertRaises(NotImplementedError):
             Annotator(self.ax, [(0, 1)], data=self.data, plot="violinplot")
+
+    def test_reconfigure_alpha(self):
+        self.test_init()
+        with self.assertWarnsRegex(UserWarning, "pvalue_thresholds"):
+            self.annot.configure(alpha=0.1)
+        self.annot.reset_configuration()
+        self.assertEqual(0.05, self.annot.alpha)
+
+    def test_reconfigure_alpha_with_thresholds(self):
+        self.test_init()
+        self.annot.configure(alpha=0.1, pvalue_thresholds=DEFAULT)
+        self.annot.reset_configuration()
+        self.assertEqual(0.05, self.annot.alpha)
