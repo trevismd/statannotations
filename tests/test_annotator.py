@@ -1,16 +1,19 @@
+import re
 import unittest
 
 import pandas as pd
 import seaborn as sns
 
-from statannotations.statannotations import Annotator
+from statannotations.Annotator import Annotator
 
 
-class TestParametersValidation(unittest.TestCase):
+class TestAnnotator(unittest.TestCase):
     """Test validation of parameters"""
+
     def setUp(self):
         self.data = [[1, 2, 3], [2, 5, 7]]
         self.ax = sns.boxplot(data=self.data)
+        # noinspection DuplicatedCode
         self.df = pd.DataFrame.from_dict(
             {1: {'x': "a", 'y': 15, 'color': 'blue'},
              2: {'x': "a", 'y': 16, 'color': 'blue'},
@@ -24,6 +27,10 @@ class TestParametersValidation(unittest.TestCase):
 
     def test_init(self):
         self.annot = Annotator(self.ax, [(0, 1)], data=self.data)
+
+    def test_init_barplot(self):
+        ax = sns.barplot(data=self.data)
+        self.annot = Annotator(ax, [(0, 1)], plot="barplot", data=self.data)
 
     def test_test_name_provided(self):
         self.test_init()
@@ -40,14 +47,12 @@ class TestParametersValidation(unittest.TestCase):
                                    order=[0, 1, 2])
 
     def test_working_hue_orders(self):
-
         self.annot = Annotator(self.ax, [(("a", "blue"), ("b", "blue"))],
                                data=self.df, x="x", y="y",
                                order=["a", "b"], hue='color',
                                hue_order=['red', 'blue'])
 
     def test_unmatched_hue_in_hue_order(self):
-
         with self.assertRaisesRegex(ValueError, "(specified in `hue_order`)"):
             self.annot = Annotator(self.ax, [(("a", "blue"), ("b", "blue"))],
                                    data=self.df, x="x", y="y",
@@ -75,7 +80,8 @@ class TestParametersValidation(unittest.TestCase):
 
     def test_unknown_parameter(self):
         self.test_init()
-        with self.assertRaisesRegex(ValueError, "Parameter `that`"):
+        with self.assertRaisesRegex(
+                ValueError, re.escape("parameter(s) `that`")):
             self.annot.configure(that="this")
 
     def test_format(self):
@@ -91,3 +97,7 @@ class TestParametersValidation(unittest.TestCase):
         self.test_init()
         with self.assertRaisesRegex(ValueError, "same length"):
             self.annot.set_custom_annotation(["One", "Two"])
+
+    def test_not_implemented_plot(self):
+        with self.assertRaises(NotImplementedError):
+            Annotator(self.ax, [(0, 1)], data=self.data, plot="violinplot")

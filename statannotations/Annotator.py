@@ -1,4 +1,5 @@
 import warnings
+from typing import List
 
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
@@ -9,14 +10,17 @@ from matplotlib.collections import PathCollection
 from matplotlib.font_manager import FontProperties
 from matplotlib.patches import Rectangle
 
-from statannotations.format_annotations import pval_annotation_text, simple_text
-from statannotations.stats.ComparisonsCorrection import ComparisonsCorrection
+from statannotations.format_annotations import pval_annotation_text, \
+    simple_text
+from statannotations.stats.ComparisonsCorrection import \
+    get_validated_comparisons_correction
 from statannotations.stats.StatResult import StatResult
 from statannotations.stats.StatTest import StatTest
 from statannotations.stats.tests import stat_test, IMPLEMENTED_TESTS
-from statannotations.stats.utils import check_valid_correction_name
+from statannotations.stats.utils import check_alpha
 from statannotations.utils import check_is_in, remove_null, \
-    check_box_pairs_in_data, check_not_none, check_valid_text_format, check_order_in_data
+    check_box_pairs_in_data, check_not_none, check_valid_text_format, \
+    check_order_in_data, render_collection
 
 DEFAULT = object()
 
@@ -39,6 +43,14 @@ CONFIGURABLE_PARAMETERS = [
     'line_width',
     'fontsize'
 ]
+
+IMPLEMENTED_PLOTTERS = ['boxplot', 'stripplot', 'barplot', 'swarmplot']
+
+
+def check_implemented_plotters(plot):
+    if plot not in IMPLEMENTED_PLOTTERS:
+        raise NotImplementedError(
+            f"Only {render_collection(IMPLEMENTED_PLOTTERS)} are supported.")
 
 
 class Annotator:
@@ -82,19 +94,21 @@ class Annotator:
         self.y_stack_arr = basic_plot[0]
         self.box_struct_pairs = basic_plot[1]
         self.fig = basic_plot[2]
+        self.reordering = self._sort_box_struct_pairs()
         self.ax = ax
 
         self._test = None
         self.perform_stat_test = None
         self.test_short_name = None
-        self._pvalue_thresholds = Annotator._get_pvalue_thresholds(DEFAULT,
-                                                                   "star")
-        self.annotations = None
         self._text_format = "star"
-        self._comparisons_correction = None
-
+        self._default_pvalue_thresholds = True
         self._pvalue_format_string = '{:.3e}'
         self._simple_format_string = '{:.2f}'
+        self._alpha = 0.05
+        self._pvalue_thresholds = self._get_pvalue_thresholds(DEFAULT)
+
+        self.annotations = None
+        self._comparisons_correction = None
 
         self._loc = "inside"
         self.verbose = 1
@@ -118,21 +132,23 @@ class Annotator:
     def get_basic_plot(
             ax, box_pairs, plot='boxplot', data=None, x=None, y=None, hue=None,
             order=None, hue_order=None, **plot_params):
-
+        check_implemented_plotters(plot)
         check_not_none("box_pairs", box_pairs)
         check_order_in_data(data, x, order)
         check_box_pairs_in_data(box_pairs, data, x, hue, hue_order)
 
-        box_plotter = Annotator._get_box_plotter(plot, x, y, hue, data, order, hue_order,
-                                                 **plot_params)
+        box_plotter = Annotator._get_plotter(plot, x, y, hue, data, order,
+                                             hue_order, **plot_params)
 
         box_names, labels = Annotator._get_box_names_and_labels(box_plotter)
 
         fig = plt.gcf()
         ymaxes = Annotator._generate_ymaxes(ax, fig, box_plotter, box_names)
-        box_structs = Annotator._get_box_structs(box_plotter, box_names, labels, ymaxes)
+        box_structs = Annotator._get_box_structs(
+            box_plotter, box_names, labels, ymaxes)
 
-        box_struct_pairs = Annotator._get_box_struct_pairs(box_pairs, box_structs)
+        box_struct_pairs = Annotator._get_box_struct_pairs(
+            box_pairs, box_structs)
 
         y_stack_arr = np.array(
             [[box_struct['x'], box_struct['ymax'], 0]
@@ -154,6 +170,8 @@ class Annotator:
         self.box_struct_pairs = basic_plot[1]
         self.fig = basic_plot[2]
 
+        self.reordering = self._sort_box_struct_pairs()
+
         self.line_offset = None
         self.line_offset_to_box = None
         self.perform_stat_test = None
@@ -162,15 +180,15 @@ class Annotator:
     def reset_configuration(self):
         self._test = None
         self.test_short_name = None
-        self._pvalue_thresholds = Annotator._get_pvalue_thresholds(DEFAULT,
-                                                                   "star")
-        self.annotations = None
         self._text_format = "star"
-        self._comparisons_correction = None
-
+        self._default_pvalue_thresholds = True
         self._pvalue_format_string = '{:.3e}'
         self._simple_format_string = '{:.2f}'
+        self._alpha = 0.05
+        self._pvalue_thresholds = self._get_pvalue_thresholds(DEFAULT)
 
+        self.annotations = None
+        self._comparisons_correction = None
         self._loc = "inside"
         self.verbose = 1
         self._just_configured = True
@@ -189,8 +207,8 @@ class Annotator:
 
         if self.should_warn_about_configuration:
             warnings.warn("Annotator was reconfigured without applying the "
-                          "test (again) which will probably lead to unexpected "
-                          "results")
+                          "test (again) which will probably lead to "
+                          "unexpected results")
 
         self.update_y_for_loc()
 
@@ -208,7 +226,10 @@ class Annotator:
 
         ax_to_data = Annotator._get_transform_func(self.ax, 'ax_to_data')
 
-        for box_structs, result in zip(self.box_struct_pairs, self.annotations):
+        self.validate_test_short_name()
+
+        for box_structs, result in zip(self.box_struct_pairs,
+                                       self.annotations):
             self._annotate_pair(box_structs, result,
                                 ax_to_data=ax_to_data,
                                 ann_list=ann_list,
@@ -229,15 +250,24 @@ class Annotator:
         return self.ax, self.annotations
 
     @property
+    def alpha(self):
+        return self._alpha
+
+    @alpha.setter
+    def alpha(self, alpha):
+        check_alpha(alpha)
+        self._alpha = alpha
+
+    @property
     def comparisons_correction(self):
         return self._comparisons_correction
 
     @comparisons_correction.setter
     def comparisons_correction(self, comparisons_correction):
         """
-        :param comparisons_correction: Method for multiple comparisons correction.
-            One of `statsmodels` `multipletests` methods (w/ default FWER), or a
-            `ComparisonsCorrection` instance.
+        :param comparisons_correction: Method for multiple comparisons
+            correction. One of `statsmodels` `multipletests` methods
+            (w/ default FWER), or a `ComparisonsCorrection` instance.
         """
         self._comparisons_correction = get_validated_comparisons_correction(
             comparisons_correction)
@@ -320,8 +350,8 @@ class Annotator:
                 [5e-2, "0.05"]
             ]`
         """
-        self._pvalue_thresholds = Annotator._get_pvalue_thresholds(
-            pvalue_thresholds, text_format=self.text_format)
+        self._pvalue_thresholds = self._get_pvalue_thresholds(
+            pvalue_thresholds)
 
     def configure(self, **parameters):
         """
@@ -331,15 +361,27 @@ class Annotator:
         * `line_height`: in axes fraction coordinates
         * `text_offset`: in points
         """
-        for parameter in parameters:
-            if parameter not in CONFIGURABLE_PARAMETERS:
-                raise ValueError(f"Parameter `{parameter}` is invalid to "
-                                 f"configure annotator.")
+        unmatched_parameters = parameters.keys() - set(CONFIGURABLE_PARAMETERS)
+        if unmatched_parameters:
+            raise ValueError(f"Invalid parameter(s) "
+                             f"`{render_collection(unmatched_parameters)}` "
+                             f"to configure annotator.")
 
         for parameter, value in parameters.items():
             setattr(self, parameter, value)
 
         self.activate_configured_warning()
+
+        new_threshold = parameters.get("pvalue_thresholds")
+        if new_threshold is not None:
+            self._default_pvalue_thresholds = new_threshold == DEFAULT
+
+        elif parameters.get("alpha"):
+            warnings.warn("Changing alpha without updating pvalue_thresholds"
+                          "can result in inconsistent plotting results")
+
+        if parameters.get("text_format") is not None:
+            self._update_pvalue_thresholds()
 
         return self
 
@@ -420,8 +462,8 @@ class Annotator:
                                                pvalue_thresholds[i][0]))
         print()
 
-    def _get_results(self, num_comparisons='auto', test_short_name=None,
-                     pvalues=None, **stats_params):
+    def _get_results(self, num_comparisons='auto', pvalues=None,
+                     **stats_params) -> List[StatResult]:
 
         test_result_list = []
 
@@ -433,14 +475,10 @@ class Annotator:
             box2 = box_struct2['box']
 
             if self.perform_stat_test:
-                result = Annotator._get_stat_result_from_test(
-                    box_struct1, box_struct2, self.test,
-                    self.comparisons_correction,
-                    num_comparisons, self.pvalue_thresholds,
-                    **stats_params)
+                result = self._get_stat_result_from_test(
+                    box_struct1, box_struct2, num_comparisons, **stats_params)
             else:
-                result = Annotator._get_custom_results(box_struct1, test_short_name,
-                                                       self.pvalue_thresholds, pvalues)
+                result = self._get_custom_results(box_struct1, pvalues)
 
             result.box1 = box1
             result.box2 = box2
@@ -453,7 +491,7 @@ class Annotator:
 
         return test_result_list
 
-    def _get_text(self, result, test_short_name, show_test_name):
+    def _get_text(self, result):
 
         if self.text_format == 'full':
             text = ("{} p = {}{}"
@@ -465,15 +503,8 @@ class Annotator:
             text = pval_annotation_text(result, self.pvalue_thresholds)
 
         elif self.text_format == 'simple':
-            if show_test_name:
-                if test_short_name is None:
-                    test_short_name = (self.test
-                                       if isinstance(self.test, str)
-                                       else self.test.short_name)
-            else:
-                test_short_name = ""
             text = simple_text(result, self.simple_format_string,
-                               self.pvalue_thresholds, test_short_name)
+                               self.pvalue_thresholds, self.test_short_name)
         else:
             text = None
 
@@ -495,9 +526,9 @@ class Annotator:
             if self.verbose >= 1:
                 _print_result_line(box_structs, result.formatted_output)
 
-            text = self._get_text(result, self.test_short_name, self.show_test_name)
+            text = self._get_text(result)
 
-        # Find y maximum for all the y_stacks *in between* the box1 and the box2
+        # Find y maximum for all the y_stacks *in between* box1 and box2
         i_ymax_in_range_x1_x2 = xi1 + np.nanargmax(
             self.y_stack_arr[1, np.where((x1 <= self.y_stack_arr[0, :])
                                          & (self.y_stack_arr[0, :] <= x2))])
@@ -506,8 +537,9 @@ class Annotator:
         yref = ymax_in_range_x1_x2
         yref2 = yref
 
-        # Choose the best offset depending on whether there is an annotation below
-        # at the x position in the range [x1, x2] where the stack is the highest
+        # Choose the best offset depending on whether there is an annotation
+        # below at the x position in the range [x1, x2] where the stack is the
+        # highest
         if self.y_stack_arr[2, i_ymax_in_range_x1_x2] == 0:
             # there is only a box below
             offset = self.line_offset_to_box
@@ -561,17 +593,21 @@ class Annotator:
             if self.use_fixed_offset or got_mpl_error:
                 if self.verbose >= 1:
                     print("Warning: cannot get the text bounding box. Falling "
-                          "back to a fixed y offset. Layout may be not optimal.")
+                          "back to a fixed y offset. Layout may be not "
+                          "optimal.")
 
                 # We will apply a fixed offset in points,
                 # based on the font size of the annotation.
-                fontsize_points = FontProperties(size='medium').get_size_in_points()
+                fontsize_points = FontProperties(
+                    size='medium').get_size_in_points()
                 offset_trans = mtransforms.offset_copy(
                     self.ax.transAxes, fig=self.fig, x=0,
                     y=1.0 * fontsize_points + self.text_offset, units='points')
 
-                y_top_display = offset_trans.transform((0, y + self.line_height))
-                y_top_annot = self.ax.transAxes.inverted().transform(y_top_display)[1]
+                y_top_display = offset_trans.transform(
+                    (0, y + self.line_height))
+                y_top_annot = (self.ax.transAxes.inverted()
+                               .transform(y_top_display)[1])
         else:
             y_top_annot = y + self.line_height
 
@@ -620,7 +656,8 @@ class Annotator:
                 return xrange[2]
 
     @staticmethod
-    def _get_ypos_for_line2d_or_rectangle(xpositions, data_to_ax, ax, fig, child):
+    def _get_ypos_for_line2d_or_rectangle(
+            xpositions, data_to_ax, ax, fig, child):
         xunits = (max(list(xpositions.keys())) + 1) / len(xpositions)
         xranges = {(pos - xunits / 2, pos + xunits / 2, pos): box_name
                    for pos, box_name in xpositions.items()}
@@ -661,7 +698,8 @@ class Annotator:
         (eg, error bars and/or bar charts).
         """
         xpositions = {
-            np.round(Annotator._get_box_x_position(box_plotter, box_name), 1): box_name
+            np.round(Annotator._get_box_x_position(box_plotter, box_name),
+                     1): box_name
             for box_name in box_names}
 
         ymaxes = {name: 0 for name in box_names}
@@ -761,9 +799,6 @@ class Annotator:
         if self.test is None:
             raise ValueError("If `perform_stat_test` is True, "
                              "`test` must be specified.")
-        if self.test_short_name is not None:
-            raise ValueError("If `perform_stat_test` is True"
-                             "and `test_short_name` must be `None`.")
 
         if self.test not in IMPLEMENTED_TESTS and \
                 not isinstance(self.test, StatTest):
@@ -796,10 +831,10 @@ class Annotator:
         original_pvalues = [result.pval for result in test_result_list]
 
         significant_pvalues = comparisons_correction(original_pvalues)
-
+        correction_name = comparisons_correction.name
         for is_significant, result in zip(significant_pvalues,
                                           test_result_list):
-            result.correction_method = comparisons_correction.name
+            result.correction_method = correction_name
             result.corrected_significance = is_significant
 
     @staticmethod
@@ -813,17 +848,18 @@ class Annotator:
                     or np.isclose(result.pval, alpha))
 
     @staticmethod
-    def _apply_comparisons_correction(comparisons_correction, test_result_list):
+    def _apply_comparisons_correction(comparisons_correction,
+                                      test_result_list):
         if comparisons_correction is None:
             return
 
         if comparisons_correction.type == 1:
-            Annotator._apply_type1_comparisons_correction(comparisons_correction,
-                                                          test_result_list)
+            Annotator._apply_type1_comparisons_correction(
+                comparisons_correction, test_result_list)
 
         else:
-            Annotator._apply_type0_comparisons_correction(comparisons_correction,
-                                                          test_result_list)
+            Annotator._apply_type0_comparisons_correction(
+                comparisons_correction, test_result_list)
 
     @staticmethod
     def _get_pvalue_and_simple_formats(pvalue_format_string):
@@ -835,10 +871,8 @@ class Annotator:
 
         return pvalue_format_string, simple_format_string
 
-    @staticmethod
-    def _get_stat_result_from_test(box_struct1, box_struct2, test,
-                                   comparisons_correction, num_comparisons,
-                                   pvalue_thresholds,
+    def _get_stat_result_from_test(self, box_struct1, box_struct2,
+                                   num_comparisons,
                                    **stats_params) -> StatResult:
         box_data1 = box_struct1['box_data']
         box_data2 = box_struct2['box_data']
@@ -846,27 +880,29 @@ class Annotator:
         result = stat_test(
             box_data1,
             box_data2,
-            test,
-            comparisons_correction=comparisons_correction,
+            self.test,
+            comparisons_correction=self.comparisons_correction,
             num_comparisons=num_comparisons,
-            alpha=pvalue_thresholds[-2][0],
+            alpha=self.alpha,
             **stats_params
         )
 
         return result
 
-    @staticmethod
-    def _get_custom_results(box_struct1, test_short_name, pvalue_thresholds,
+    def _get_custom_results(self, box_struct1,
                             pvalues) -> StatResult:
-        i_box_pair = box_struct1['i_box_pair']
+        pvalue = pvalues[box_struct1['i_box_pair']]
+
+        if self.has_type0_comparisons_correction():
+            pvalue = self.comparisons_correction(pvalue, len(pvalues))
 
         result = StatResult(
             'Custom statistical test',
-            test_short_name,
+            self.test_short_name,
             None,
             None,
-            pval=pvalues[i_box_pair],
-            alpha=pvalue_thresholds[-2][0]
+            pval=pvalue,
+            alpha=self.alpha
         )
 
         return result
@@ -887,17 +923,29 @@ class Annotator:
             else:
                 box_struct_pairs.append((box_struct2, box_struct1))
 
-        # Draw first the annotations with the shortest between-boxes distance, in
-        # order to reduce overlapping between annotations.
-        box_struct_pairs = sorted(box_struct_pairs,
-                                  key=lambda a: abs(a[1]['x'] - a[0]['x']))
-
         return box_struct_pairs
 
     @staticmethod
-    def _get_pvalue_thresholds(pvalue_thresholds, text_format):
-        if pvalue_thresholds is DEFAULT:
-            if text_format == "star":
+    def absolute_box_struct_pair_in_tuple_x_diff(box_struct_pair):
+        return abs(box_struct_pair[1][1]['x'] - box_struct_pair[1][0]['x'])
+
+    def _sort_box_struct_pairs(self):
+        # Draw first the annotations with the shortest between-boxes distance,
+        # in order to reduce overlapping between annotations.
+        new_box_struct_pairs = sorted(
+            enumerate(self.box_struct_pairs),
+            key=self.absolute_box_struct_pair_in_tuple_x_diff)
+
+        self.box_struct_pairs = [box_struct_pair
+                                 for index, box_struct_pair
+                                 in new_box_struct_pairs]
+
+        reordering = [index for index, box_struct_pair in new_box_struct_pairs]
+        return reordering
+
+    def _get_pvalue_thresholds(self, pvalue_thresholds):
+        if self._default_pvalue_thresholds:
+            if self.text_format == "star":
                 return [[1e-4, "****"], [1e-3, "***"],
                         [1e-2, "**"], [0.05, "*"], [1, "ns"]]
             else:
@@ -908,10 +956,10 @@ class Annotator:
         return pvalue_thresholds
 
     @staticmethod
-    def _get_box_plotter(plot, x, y, hue, data, order, hue_order,
-                         **plot_params):
-        if plot_params.pop("dodge", None) is False:
-            raise ValueError("`dodge` must be true in statannotations")
+    def _get_plotter(plot, x, y, hue, data, order, hue_order,
+                     **plot_params):
+        if not plot_params.pop("dodge", True):
+            raise ValueError("`dodge` must be True in statannotations")
 
         if plot == 'boxplot':
             # noinspection PyProtectedMember
@@ -924,6 +972,21 @@ class Annotator:
                 fliersize=plot_params.get("fliersize", 5),
                 linewidth=plot_params.get("linewidth"),
                 saturation=.75, color=None, palette=None)
+
+        elif plot == 'swarmplot':
+            # noinspection PyProtectedMember
+            box_plotter = sns.categorical._SwarmPlotter(
+                x, y, hue, data, order, hue_order,
+                orient=plot_params.get("orient"),
+                dodge=True, color=None, palette=None)
+
+        elif plot == 'stripplot':
+            # noinspection PyProtectedMember
+            box_plotter = sns.categorical._StripPlotter(
+                x, y, hue, data, order, hue_order,
+                jitter=plot_params.get("jitter", True),
+                orient=plot_params.get("orient"),
+                dodge=True, color=None, palette=None)
 
         elif plot == 'barplot':
             # noinspection PyProtectedMember
@@ -941,7 +1004,9 @@ class Annotator:
                 dodge=True)
 
         else:
-            raise NotImplementedError("Only boxplots and barplots are supported.")
+            raise NotImplementedError(
+                f"Only {render_collection(IMPLEMENTED_PLOTTERS)} are "
+                f"supported.")
 
         return box_plotter
 
@@ -1005,6 +1070,23 @@ class Annotator:
 
         return box_names, labels
 
+    def validate_test_short_name(self):
+        if self.show_test_name:
+            if self.test_short_name is None:
+                self.test_short_name = (self.test
+                                        if isinstance(self.test, str)
+                                        else self.test.short_name)
+        else:
+            self.test_short_name = ""
+
+    def has_type0_comparisons_correction(self):
+        return self.comparisons_correction is not None \
+               and not self.comparisons_correction.type
+
+    def _update_pvalue_thresholds(self):
+        self._pvalue_thresholds = self._get_pvalue_thresholds(
+            self._pvalue_thresholds)
+
 
 def _print_result_line(box_structs, formatted_output):
     label1 = box_structs[0]['label']
@@ -1015,29 +1097,3 @@ def _print_result_line(box_structs, formatted_output):
 def sort_pvalue_thresholds(pvalue_thresholds):
     return sorted(pvalue_thresholds,
                   key=lambda threshold_notation: threshold_notation[0])
-
-
-def get_validated_comparisons_correction(comparisons_correction):
-    if comparisons_correction is None:
-        return
-
-    if isinstance(comparisons_correction, str):
-        check_valid_correction_name(comparisons_correction)
-        try:
-            comparisons_correction = ComparisonsCorrection(
-                comparisons_correction)
-        except ImportError as e:
-            raise ImportError(f"{e} Please install statsmodels or pass "
-                              f"`comparisons_correction=None`.")
-
-        except NotImplementedError as e:
-            raise NotImplementedError(e)
-
-        except ValueError as e:
-            raise NotImplementedError(e)
-
-    if not (isinstance(comparisons_correction, ComparisonsCorrection)):
-        raise ValueError("comparisons_correction must be a statmodels "
-                         "method name or a ComparisonCorrection instance")
-
-    return comparisons_correction

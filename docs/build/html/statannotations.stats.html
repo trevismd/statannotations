@@ -51,8 +51,18 @@
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="statannotations.stats.ComparisonsCorrection.check_valid_correction_name">
+<span class="sig-prename descclassname"><span class="pre">statannotations.stats.ComparisonsCorrection.</span></span><span class="sig-name descname"><span class="pre">check_valid_correction_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.stats.ComparisonsCorrection.check_valid_correction_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="statannotations.stats.ComparisonsCorrection.get_correction_parameters">
 <span class="sig-prename descclassname"><span class="pre">statannotations.stats.ComparisonsCorrection.</span></span><span class="sig-name descname"><span class="pre">get_correction_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.stats.ComparisonsCorrection.get_correction_parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="statannotations.stats.ComparisonsCorrection.get_validated_comparisons_correction">
+<span class="sig-prename descclassname"><span class="pre">statannotations.stats.ComparisonsCorrection.</span></span><span class="sig-name descname"><span class="pre">get_validated_comparisons_correction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">comparisons_correction</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.stats.ComparisonsCorrection.get_validated_comparisons_correction" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </section>
@@ -133,7 +143,8 @@ Either a <cite>StatTest</cite> instance or one of:
 - <cite>t-test_paired</cite>
 - <cite>Wilcoxon</cite>
 - <cite>Kruskal</cite></p></li>
-<li><p><strong>comparisons_correction</strong> – Union[ComparisonsCorrection, str]: (Default value = None)
+<li><p><strong>comparisons_correction</strong> – Union[ComparisonsCorrection, str]:
+(Default value = None)
 Method to use for multiple comparisons correction. Either a
 <cite>ComparisonsCorrection</cite> instance or one of (interfacing statsmodels):
 - Bonferroni
@@ -144,7 +155,8 @@ Method to use for multiple comparisons correction. Either a
 Number of comparisons to use for multiple comparisons correction.</p></li>
 <li><p><strong>alpha</strong> – float:  (Default value = 0.05)
 Used for pvalue interpretation in case of comparisons_correction.</p></li>
-<li><p><strong>stats_params</strong> – Additional keyword arguments to pass to the test function</p></li>
+<li><p><strong>stats_params</strong> – Additional keyword arguments to pass to the test
+function</p></li>
 </ul>
 </dd>
 </dl>
@@ -161,11 +173,6 @@ Used for pvalue interpretation in case of comparisons_correction.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="statannotations.stats.utils.check_pval_correction_input_values">
 <span class="sig-prename descclassname"><span class="pre">statannotations.stats.utils.</span></span><span class="sig-name descname"><span class="pre">check_pval_correction_input_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_comparisons</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.stats.utils.check_pval_correction_input_values" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="statannotations.stats.utils.check_valid_correction_name">
-<span class="sig-prename descclassname"><span class="pre">statannotations.stats.utils.</span></span><span class="sig-name descname"><span class="pre">check_valid_correction_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.stats.utils.check_valid_correction_name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">

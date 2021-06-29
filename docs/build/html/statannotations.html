@@ -55,6 +55,189 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </section>
+<section id="module-statannotations.Annotator">
+<span id="statannotations-annotator-module"></span><h2>statannotations.Annotator module<a class="headerlink" href="#module-statannotations.Annotator" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">statannotations.Annotator.</span></span><span class="sig-name descname"><span class="pre">Annotator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box_pairs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'boxplot'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hue_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">plot_params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Optionally computes statistical test between pairs of data series, and add
+statistical annotation on top of the boxes/bars. The same exact arguments
+<cite>data</cite>, <cite>x</cite>, <cite>y</cite>, <cite>hue</cite>, <cite>order</cite>, <cite>width</cite>, <cite>hue_order</cite> (and <cite>units</cite>) as in
+the seaborn boxplot/barplot function must be passed to this function.</p>
+<p>This function works in one of the two following modes:
+a) <cite>perform_stat_test</cite> is True (default):
+* statistical test as given by argument <cite>test</cite> is performed.
+* The <cite>test_short_name</cite> argument can be used to customize what appears
+before the pvalues if test is a string.
+b) <cite>perform_stat_test</cite> is False: no statistical test is performed, list of
+custom p-values <cite>pvalues</cite> are used for each pair of boxes.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.absolute_box_struct_pair_in_tuple_x_diff">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">absolute_box_struct_pair_in_tuple_x_diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box_struct_pair</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.absolute_box_struct_pair_in_tuple_x_diff" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.activate_configured_warning">
+<span class="sig-name descname"><span class="pre">activate_configured_warning</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.activate_configured_warning" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.alpha">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">alpha</span></span><a class="headerlink" href="#statannotations.Annotator.Annotator.alpha" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.annotate">
+<span class="sig-name descname"><span class="pre">annotate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_offset_to_box</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.annotate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.apply_test">
+<span class="sig-name descname"><span class="pre">apply_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_comparisons</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">stats_params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.apply_test" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stats_params</strong> – Parameters for statistical test functions.</p></li>
+<li><p><strong>num_comparisons</strong> – Override number of comparisons otherwise
+calculated with number of box_pairs</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.comparisons_correction">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">comparisons_correction</span></span><a class="headerlink" href="#statannotations.Annotator.Annotator.comparisons_correction" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.configure">
+<span class="sig-name descname"><span class="pre">configure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.configure" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li><dl class="simple">
+<dt><cite>show_test_name</cite>: Set to False to not show the (short) name of</dt><dd><p>test</p>
+</dd>
+</dl>
+</li>
+<li><p><cite>line_height</cite>: in axes fraction coordinates</p></li>
+<li><p><cite>text_offset</cite>: in points</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.deactivate_configured_warning">
+<span class="sig-name descname"><span class="pre">deactivate_configured_warning</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.deactivate_configured_warning" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.get_basic_plot">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_basic_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box_pairs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'boxplot'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hue_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">plot_params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.get_basic_plot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.has_type0_comparisons_correction">
+<span class="sig-name descname"><span class="pre">has_type0_comparisons_correction</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.has_type0_comparisons_correction" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.loc">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">loc</span></span><a class="headerlink" href="#statannotations.Annotator.Annotator.loc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.new_plot">
+<span class="sig-name descname"><span class="pre">new_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box_pairs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'boxplot'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hue_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">plot_params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.new_plot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.print_pvalue_legend">
+<span class="sig-name descname"><span class="pre">print_pvalue_legend</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.print_pvalue_legend" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.pvalue_format_string">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">pvalue_format_string</span></span><a class="headerlink" href="#statannotations.Annotator.Annotator.pvalue_format_string" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.pvalue_thresholds">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">pvalue_thresholds</span></span><a class="headerlink" href="#statannotations.Annotator.Annotator.pvalue_thresholds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.reset_configuration">
+<span class="sig-name descname"><span class="pre">reset_configuration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.reset_configuration" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.set_custom_annotation">
+<span class="sig-name descname"><span class="pre">set_custom_annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text_annot_custom</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.set_custom_annotation" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>text_annot_custom</strong> – List of values to annotate for each
+<cite>box_pair</cite></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.set_pvalues">
+<span class="sig-name descname"><span class="pre">set_pvalues</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pvalues</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_comparisons</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.set_pvalues" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pvalues</strong> – list or array of p-values for each box pair comparison.</p></li>
+<li><p><strong>num_comparisons</strong> – Override number of comparisons otherwise
+calculated with number of box_pairs</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.should_warn_about_configuration">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">should_warn_about_configuration</span></span><a class="headerlink" href="#statannotations.Annotator.Annotator.should_warn_about_configuration" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.simple_format_string">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">simple_format_string</span></span><a class="headerlink" href="#statannotations.Annotator.Annotator.simple_format_string" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.test">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">test</span></span><a class="headerlink" href="#statannotations.Annotator.Annotator.test" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.text_format">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">text_format</span></span><a class="headerlink" href="#statannotations.Annotator.Annotator.text_format" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.update_y_for_loc">
+<span class="sig-name descname"><span class="pre">update_y_for_loc</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.update_y_for_loc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.validate_test_short_name">
+<span class="sig-name descname"><span class="pre">validate_test_short_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.validate_test_short_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="statannotations.Annotator.check_implemented_plotters">
+<span class="sig-prename descclassname"><span class="pre">statannotations.Annotator.</span></span><span class="sig-name descname"><span class="pre">check_implemented_plotters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.check_implemented_plotters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="statannotations.Annotator.sort_pvalue_thresholds">
+<span class="sig-prename descclassname"><span class="pre">statannotations.Annotator.</span></span><span class="sig-name descname"><span class="pre">sort_pvalue_thresholds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pvalue_thresholds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.sort_pvalue_thresholds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
 <section id="module-statannotations.format_annotations">
 <span id="statannotations-format-annotations-module"></span><h2>statannotations.format_annotations module<a class="headerlink" href="#module-statannotations.format_annotations" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
@@ -76,7 +259,7 @@ provided, a string otherwise.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="statannotations.format_annotations.simple_text">
-<span class="sig-prename descclassname"><span class="pre">statannotations.format_annotations.</span></span><span class="sig-name descname"><span class="pre">simple_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="statannotations.stats.html#statannotations.stats.StatResult.StatResult" title="statannotations.stats.StatResult.StatResult"><span class="pre">statannotations.stats.StatResult.StatResult</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pvalue_format</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pvalue_thresholds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_short_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.format_annotations.simple_text" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">statannotations.format_annotations.</span></span><span class="sig-name descname"><span class="pre">simple_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="statannotations.stats.html#statannotations.stats.StatResult.StatResult" title="statannotations.stats.StatResult.StatResult"><span class="pre">statannotations.stats.StatResult.StatResult</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pvalue_format</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pvalue_thresholds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_short_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#statannotations.format_annotations.simple_text" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates simple text for test name and pvalue.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -93,169 +276,6 @@ provided, a string otherwise.</p>
 </dd>
 </dl>
 </dd></dl>
-
-</section>
-<section id="module-statannotations.statannotations">
-<span id="statannotations-statannotations-module"></span><h2>statannotations.statannotations module<a class="headerlink" href="#module-statannotations.statannotations" title="Permalink to this headline">¶</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="statannotations.statannotations.Annotator">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">statannotations.statannotations.</span></span><span class="sig-name descname"><span class="pre">Annotator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box_pairs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'boxplot'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hue_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">plot_params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.statannotations.Annotator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Optionally computes statistical test between pairs of data series, and add
-statistical annotation on top of the boxes/bars. The same exact arguments
-<cite>data</cite>, <cite>x</cite>, <cite>y</cite>, <cite>hue</cite>, <cite>order</cite>, <cite>width</cite>, <cite>hue_order</cite> (and <cite>units</cite>) as in
-the seaborn boxplot/barplot function must be passed to this function.</p>
-<p>This function works in one of the two following modes:
-a) <cite>perform_stat_test</cite> is True (default):
-* statistical test as given by argument <cite>test</cite> is performed.
-* The <cite>test_short_name</cite> argument can be used to customize what appears
-before the pvalues if test is a string.
-b) <cite>perform_stat_test</cite> is False: no statistical test is performed, list of
-custom p-values <cite>pvalues</cite> are used for each pair of boxes.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="statannotations.statannotations.Annotator.activate_configured_warning">
-<span class="sig-name descname"><span class="pre">activate_configured_warning</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.statannotations.Annotator.activate_configured_warning" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="statannotations.statannotations.Annotator.annotate">
-<span class="sig-name descname"><span class="pre">annotate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_offset_to_box</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.statannotations.Annotator.annotate" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="statannotations.statannotations.Annotator.apply_test">
-<span class="sig-name descname"><span class="pre">apply_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_comparisons</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">stats_params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.statannotations.Annotator.apply_test" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>stats_params</strong> – Parameters for statistical test functions.</p></li>
-<li><p><strong>num_comparisons</strong> – Override number of comparisons otherwise
-calculated with number of box_pairs</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="statannotations.statannotations.Annotator.comparisons_correction">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">comparisons_correction</span></span><a class="headerlink" href="#statannotations.statannotations.Annotator.comparisons_correction" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="statannotations.statannotations.Annotator.configure">
-<span class="sig-name descname"><span class="pre">configure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.statannotations.Annotator.configure" title="Permalink to this definition">¶</a></dt>
-<dd><ul class="simple">
-<li><dl class="simple">
-<dt><cite>show_test_name</cite>: Set to False to not show the (short) name of</dt><dd><p>test</p>
-</dd>
-</dl>
-</li>
-<li><p><cite>line_height</cite>: in axes fraction coordinates</p></li>
-<li><p><cite>text_offset</cite>: in points</p></li>
-</ul>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="statannotations.statannotations.Annotator.deactivate_configured_warning">
-<span class="sig-name descname"><span class="pre">deactivate_configured_warning</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.statannotations.Annotator.deactivate_configured_warning" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="statannotations.statannotations.Annotator.get_basic_plot">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_basic_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box_pairs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'boxplot'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hue_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">plot_params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.statannotations.Annotator.get_basic_plot" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="statannotations.statannotations.Annotator.loc">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">loc</span></span><a class="headerlink" href="#statannotations.statannotations.Annotator.loc" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="statannotations.statannotations.Annotator.new_plot">
-<span class="sig-name descname"><span class="pre">new_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box_pairs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'boxplot'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hue_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">plot_params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.statannotations.Annotator.new_plot" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="statannotations.statannotations.Annotator.print_pvalue_legend">
-<span class="sig-name descname"><span class="pre">print_pvalue_legend</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.statannotations.Annotator.print_pvalue_legend" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="statannotations.statannotations.Annotator.pvalue_format_string">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">pvalue_format_string</span></span><a class="headerlink" href="#statannotations.statannotations.Annotator.pvalue_format_string" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="statannotations.statannotations.Annotator.pvalue_thresholds">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">pvalue_thresholds</span></span><a class="headerlink" href="#statannotations.statannotations.Annotator.pvalue_thresholds" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="statannotations.statannotations.Annotator.reset_configuration">
-<span class="sig-name descname"><span class="pre">reset_configuration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.statannotations.Annotator.reset_configuration" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="statannotations.statannotations.Annotator.set_custom_annotation">
-<span class="sig-name descname"><span class="pre">set_custom_annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text_annot_custom</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.statannotations.Annotator.set_custom_annotation" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>text_annot_custom</strong> – List of values to annotate for each
-<cite>box_pair</cite></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="statannotations.statannotations.Annotator.set_pvalues">
-<span class="sig-name descname"><span class="pre">set_pvalues</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pvalues</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_comparisons</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.statannotations.Annotator.set_pvalues" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>pvalues</strong> – list or array of p-values for each box pair comparison.</p></li>
-<li><p><strong>num_comparisons</strong> – Override number of comparisons otherwise
-calculated with number of box_pairs</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="statannotations.statannotations.Annotator.should_warn_about_configuration">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">should_warn_about_configuration</span></span><a class="headerlink" href="#statannotations.statannotations.Annotator.should_warn_about_configuration" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="statannotations.statannotations.Annotator.simple_format_string">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">simple_format_string</span></span><a class="headerlink" href="#statannotations.statannotations.Annotator.simple_format_string" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="statannotations.statannotations.Annotator.test">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">test</span></span><a class="headerlink" href="#statannotations.statannotations.Annotator.test" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="statannotations.statannotations.Annotator.text_format">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">text_format</span></span><a class="headerlink" href="#statannotations.statannotations.Annotator.text_format" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="statannotations.statannotations.Annotator.update_y_for_loc">
-<span class="sig-name descname"><span class="pre">update_y_for_loc</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.statannotations.Annotator.update_y_for_loc" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="statannotations.statannotations.get_validated_comparisons_correction">
-<span class="sig-prename descclassname"><span class="pre">statannotations.statannotations.</span></span><span class="sig-name descname"><span class="pre">get_validated_comparisons_correction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">comparisons_correction</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.statannotations.get_validated_comparisons_correction" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="statannotations.statannotations.sort_pvalue_thresholds">
-<span class="sig-prename descclassname"><span class="pre">statannotations.statannotations.</span></span><span class="sig-name descname"><span class="pre">sort_pvalue_thresholds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pvalue_thresholds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.statannotations.sort_pvalue_thresholds" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 </section>
 <section id="module-statannotations.utils">
@@ -310,163 +330,13 @@ calculated with number of box_pairs</p></li>
 <dd></dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="statannotations.utils.render_set">
-<span class="sig-prename descclassname"><span class="pre">statannotations.utils.</span></span><span class="sig-name descname"><span class="pre">render_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a_set</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.utils.render_set" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="statannotations.utils.render_collection">
+<span class="sig-prename descclassname"><span class="pre">statannotations.utils.</span></span><span class="sig-name descname"><span class="pre">render_collection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">collection</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.utils.render_collection" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </section>
 <section id="module-statannotations">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-statannotations" title="Permalink to this headline">¶</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="statannotations.Annotator">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">statannotations.</span></span><span class="sig-name descname"><span class="pre">Annotator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box_pairs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'boxplot'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hue_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">plot_params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Optionally computes statistical test between pairs of data series, and add
-statistical annotation on top of the boxes/bars. The same exact arguments
-<cite>data</cite>, <cite>x</cite>, <cite>y</cite>, <cite>hue</cite>, <cite>order</cite>, <cite>width</cite>, <cite>hue_order</cite> (and <cite>units</cite>) as in
-the seaborn boxplot/barplot function must be passed to this function.</p>
-<p>This function works in one of the two following modes:
-a) <cite>perform_stat_test</cite> is True (default):
-* statistical test as given by argument <cite>test</cite> is performed.
-* The <cite>test_short_name</cite> argument can be used to customize what appears
-before the pvalues if test is a string.
-b) <cite>perform_stat_test</cite> is False: no statistical test is performed, list of
-custom p-values <cite>pvalues</cite> are used for each pair of boxes.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="statannotations.Annotator.activate_configured_warning">
-<span class="sig-name descname"><span class="pre">activate_configured_warning</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.activate_configured_warning" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="statannotations.Annotator.annotate">
-<span class="sig-name descname"><span class="pre">annotate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_offset_to_box</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.annotate" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="statannotations.Annotator.apply_test">
-<span class="sig-name descname"><span class="pre">apply_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_comparisons</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">stats_params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.apply_test" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>stats_params</strong> – Parameters for statistical test functions.</p></li>
-<li><p><strong>num_comparisons</strong> – Override number of comparisons otherwise
-calculated with number of box_pairs</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="statannotations.Annotator.comparisons_correction">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">comparisons_correction</span></span><a class="headerlink" href="#statannotations.Annotator.comparisons_correction" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="statannotations.Annotator.configure">
-<span class="sig-name descname"><span class="pre">configure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.configure" title="Permalink to this definition">¶</a></dt>
-<dd><ul class="simple">
-<li><dl class="simple">
-<dt><cite>show_test_name</cite>: Set to False to not show the (short) name of</dt><dd><p>test</p>
-</dd>
-</dl>
-</li>
-<li><p><cite>line_height</cite>: in axes fraction coordinates</p></li>
-<li><p><cite>text_offset</cite>: in points</p></li>
-</ul>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="statannotations.Annotator.deactivate_configured_warning">
-<span class="sig-name descname"><span class="pre">deactivate_configured_warning</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.deactivate_configured_warning" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="statannotations.Annotator.get_basic_plot">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_basic_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box_pairs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'boxplot'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hue_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">plot_params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.get_basic_plot" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="statannotations.Annotator.loc">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">loc</span></span><a class="headerlink" href="#statannotations.Annotator.loc" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="statannotations.Annotator.new_plot">
-<span class="sig-name descname"><span class="pre">new_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box_pairs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'boxplot'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hue_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">plot_params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.new_plot" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="statannotations.Annotator.print_pvalue_legend">
-<span class="sig-name descname"><span class="pre">print_pvalue_legend</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.print_pvalue_legend" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="statannotations.Annotator.pvalue_format_string">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">pvalue_format_string</span></span><a class="headerlink" href="#statannotations.Annotator.pvalue_format_string" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="statannotations.Annotator.pvalue_thresholds">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">pvalue_thresholds</span></span><a class="headerlink" href="#statannotations.Annotator.pvalue_thresholds" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="statannotations.Annotator.reset_configuration">
-<span class="sig-name descname"><span class="pre">reset_configuration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.reset_configuration" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="statannotations.Annotator.set_custom_annotation">
-<span class="sig-name descname"><span class="pre">set_custom_annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text_annot_custom</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.set_custom_annotation" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>text_annot_custom</strong> – List of values to annotate for each
-<cite>box_pair</cite></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="statannotations.Annotator.set_pvalues">
-<span class="sig-name descname"><span class="pre">set_pvalues</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pvalues</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_comparisons</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.set_pvalues" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>pvalues</strong> – list or array of p-values for each box pair comparison.</p></li>
-<li><p><strong>num_comparisons</strong> – Override number of comparisons otherwise
-calculated with number of box_pairs</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="statannotations.Annotator.should_warn_about_configuration">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">should_warn_about_configuration</span></span><a class="headerlink" href="#statannotations.Annotator.should_warn_about_configuration" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="statannotations.Annotator.simple_format_string">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">simple_format_string</span></span><a class="headerlink" href="#statannotations.Annotator.simple_format_string" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="statannotations.Annotator.test">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">test</span></span><a class="headerlink" href="#statannotations.Annotator.test" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="statannotations.Annotator.text_format">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">text_format</span></span><a class="headerlink" href="#statannotations.Annotator.text_format" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="statannotations.Annotator.update_y_for_loc">
-<span class="sig-name descname"><span class="pre">update_y_for_loc</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.update_y_for_loc" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
 </section>
 </section>
 

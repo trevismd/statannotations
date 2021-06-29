@@ -12,18 +12,18 @@ Subpackages
 Submodules
 ----------
 
-statannotations.format\_annotations module
-------------------------------------------
+statannotations.Annotator module
+--------------------------------
 
-.. automodule:: statannotations.format_annotations
+.. automodule:: statannotations.Annotator
    :members:
    :undoc-members:
    :show-inheritance:
 
-statannotations.statannotations module
---------------------------------------
+statannotations.format\_annotations module
+------------------------------------------
 
-.. automodule:: statannotations.statannotations
+.. automodule:: statannotations.format_annotations
    :members:
    :undoc-members:
    :show-inheritance:

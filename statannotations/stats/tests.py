@@ -2,10 +2,10 @@ from typing import Union
 
 import numpy as np
 
-from statannotations.stats.ComparisonsCorrection import ComparisonsCorrection
+from statannotations.stats.ComparisonsCorrection import \
+    ComparisonsCorrection, check_valid_correction_name
 from statannotations.stats.StatResult import StatResult
 from statannotations.stats.StatTest import StatTest
-from statannotations.stats.utils import check_valid_correction_name
 
 IMPLEMENTED_TESTS = ['t-test_ind', 't-test_welch', 't-test_paired',
                      'Mann-Whitney', 'Mann-Whitney-gt', 'Mann-Whitney-ls',
@@ -37,7 +37,8 @@ def stat_test(
         - `Wilcoxon`
         - `Kruskal`
 
-    :param comparisons_correction: Union[ComparisonsCorrection, str]: (Default value = None)
+    :param comparisons_correction: Union[ComparisonsCorrection, str]:
+        (Default value = None)
         Method to use for multiple comparisons correction. Either a
         `ComparisonsCorrection` instance or one of (interfacing statsmodels):
         - Bonferroni
@@ -49,8 +50,8 @@ def stat_test(
         Number of comparisons to use for multiple comparisons correction.
     :param alpha: float:  (Default value = 0.05)
         Used for pvalue interpretation in case of comparisons_correction.
-    :param stats_params: Additional keyword arguments to pass to the test function
-
+    :param stats_params: Additional keyword arguments to pass to the test
+        function
     """
     # Check arguments.
     if (isinstance(comparisons_correction, ComparisonsCorrection)

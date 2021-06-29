@@ -11,20 +11,20 @@ class TestFormatAnnotations(unittest.TestCase):
         self.result = StatResult("This long description", "desc.", "stat", 3,
                                  0.3, alpha=0.05)
 
-    def test_format_simple1(self):
+    def test_format_simple_setting_threshold(self):
 
         self.assertEqual(
             simple_text(self.result, "{:.2f}", [(0.5, 0.5)], "This"),
             "This p ≤ 0.5")
 
-    def test_format_simple2(self):
+    def test_format_simple_setting_multiple_thresholds(self):
 
         self.assertEqual(
             simple_text(self.result,
                         "{:.2f}", [(0.1, 0.1), (0.5, 0.5)], "This"),
             "This p ≤ 0.5")
 
-    def test_format_simple3(self):
+    def test_format_simple_non_significant(self):
 
         self.assertEqual(
             simple_text(self.result, "{:.2f}", [(0.2, 0.2)], "This"),

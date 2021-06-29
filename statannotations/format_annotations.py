@@ -24,25 +24,30 @@ def pval_annotation_text(result: Union[List[StatResult], StatResult],
         single_value = True
 
     # Sort the threshold array
-    pvalue_thresholds = pd.DataFrame(pvalue_thresholds).sort_values(by=0, ascending=False).values
+    pvalue_thresholds = (pd.DataFrame(pvalue_thresholds)
+                         .sort_values(by=0, ascending=False)
+                         .values)
     x_annot = pd.Series(["" for _ in range(len(x1_pval))])
 
     for i in range(0, len(pvalue_thresholds)):
 
         if i < len(pvalue_thresholds) - 1:
-            condition = (x1_pval <= pvalue_thresholds[i][0]) & (pvalue_thresholds[i + 1][0] < x1_pval)
+            condition = (x1_pval <= pvalue_thresholds[i][0])\
+                        & (pvalue_thresholds[i + 1][0] < x1_pval)
             x_annot[condition] = pvalue_thresholds[i][1]
 
         else:
             condition = x1_pval < pvalue_thresholds[i][0]
             x_annot[condition] = pvalue_thresholds[i][1]
 
-    x_annot = pd.Series([f"{star}{signif}" for star, signif in zip(x_annot, x1_signif_suff)])
+    x_annot = pd.Series([f"{star}{signif}"
+                         for star, signif in zip(x_annot, x1_signif_suff)])
 
     return x_annot if not single_value else x_annot.iloc[0]
 
 
-def simple_text(result: StatResult, pvalue_format, pvalue_thresholds, test_short_name=None):
+def simple_text(result: StatResult, pvalue_format, pvalue_thresholds,
+                test_short_name=None) -> str:
     """
     Generates simple text for test name and pvalue.
 

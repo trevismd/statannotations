@@ -1,4 +1,3 @@
-__all__ = ["__version__", "stats", "statannotations", "Annotator"]
+__all__ = ["__version__", "stats", "Annotator.py", "Annotator"]
 
-from .statannotations import Annotator
 from ._version import __version__

@@ -48,7 +48,7 @@ def check_order_in_data(data, x, order) -> None:
 
     if unmatched_in_order:
         raise ValueError(f"Missing x value(s) "
-                         f"`{render_set(unmatched_in_order)}` in {x} "
+                         f"`{render_collection(unmatched_in_order)}` in {x} "
                          f"(specified in `order`)")
 
 
@@ -61,7 +61,7 @@ def _check_box_pairs_in_data_no_hue(box_pairs: Union[list, tuple],
     unmatched_x_values = pairs_x_values - x_values
     if unmatched_x_values:
         raise ValueError(f"Missing x value(s) "
-                         f"`{render_set(unmatched_x_values)}` in {x}"
+                         f"`{render_collection(unmatched_x_values)}` in {x}"
                          f" (specified in `box_pairs`) in data")
 
 
@@ -95,7 +95,7 @@ def _check_hue_order_in_data(hue, hue_values: set,
         unmatched = set(hue_order) - set(hue_values)
         if unmatched:
             raise ValueError(f"Missing hue value(s) "
-                             f"`{render_set(unmatched)}`"
+                             f"`{render_collection(unmatched)}`"
                              f" in {hue} (specified in `hue_order`)")
 
 
@@ -128,5 +128,5 @@ def check_valid_text_format(text_format):
     )
 
 
-def render_set(a_set):
-    return '","'.join(map(str, a_set))
+def render_collection(collection):
+    return '","'.join(map(str, collection))
