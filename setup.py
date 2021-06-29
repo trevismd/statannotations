@@ -31,7 +31,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/trevismd/statannotations",
-    packages=find_packages(exclude=("tests", "doc")),
+    packages=find_packages(exclude=("tests", "usage", "docs", "build", "dist")),
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

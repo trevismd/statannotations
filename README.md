@@ -1,4 +1,5 @@
-[![Active Development](https://img.shields.io/badge/Maintenance%20Level-Actively%20Developed-brightgreen.svg)](https://gist.github.com/cheerfulstoic/d107229326a01ff0f333a1d3476e068d) ![coverage](https://raw.githubusercontent.com/trevismd/statannotations/master/coverage.svg)  ![Python](https://img.shields.io/badge/Python-3.6%2B-blue)
+[![Active Development](https://img.shields.io/badge/Maintenance%20Level-Actively%20Developed-brightgreen.svg)](https://gist.github.com/cheerfulstoic/d107229326a01ff0f333a1d3476e068d) ![coverage](https://raw.githubusercontent.com/trevismd/statannotations/master/coverage.svg)  ![Python](https://img.shields.io/badge/Python-3.6%2B-blue)[![Documentation Status](https://readthedocs.org/projects/statannotations/badge/?version=latest)](https://statannotations.readthedocs.io/en/refactoring/?badge=latest)
+
 ## What is it
 
 Python package to optionally compute statistical test and add statistical
@@ -59,7 +60,7 @@ pip install -r requirements.txt .
 
 ## Documentation
 
-See example jupyter notebook [doc/example.ipynb](`https://raw.githubusercontent.com/trevismd/statannotations/master/doc/example.ipynb).
+See example jupyter notebook [usage/example.ipynb](`https://raw.githubusercontent.com/trevismd/statannotations/master/usage/example.ipynb).
 
 ## Usage
 
@@ -83,9 +84,9 @@ add_stat_annotation(
 
 ## Examples
 
-![Example 1](https://raw.githubusercontent.com/trevismd/statannotations/master/doc/example_non-hue_outside.png)
+![Example 1](https://raw.githubusercontent.com/trevismd/statannotations/master/usage/example_non-hue_outside.png)
 
-![Example 2](https://raw.githubusercontent.com/trevismd/statannotations/master/doc/example_hue_layout.png)
+![Example 2](https://raw.githubusercontent.com/trevismd/statannotations/master/usage/example_hue_layout.png)
 
 ## Requirements
 

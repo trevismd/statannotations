@@ -1,3 +1,9 @@
+## v0.4
+### v0.4.0
+ - Major refactoring, change to an Annotator `class` to prepare and add annotations
+ - Fixes in rendering of non significant tests results after multiple comparisons correction
+ - Many unit and integration tests
+
 ## v0.3
 ### v0.3.2
  - Fix `simple` format outputs
