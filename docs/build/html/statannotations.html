@@ -97,8 +97,10 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-statannotations.Annotator">statannotations.Annotator module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-statannotations.PValueFormat">statannotations.PValueFormat module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-statannotations.format_annotations">statannotations.format_annotations module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-statannotations.utils">statannotations.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-statannotations">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -295,13 +297,8 @@ calculated with number of box_pairs</p></li>
 <dd></dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.pvalue_format_string">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">pvalue_format_string</span></span><a class="headerlink" href="#statannotations.Annotator.Annotator.pvalue_format_string" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.pvalue_thresholds">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">pvalue_thresholds</span></span><a class="headerlink" href="#statannotations.Annotator.Annotator.pvalue_thresholds" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.pvalue_format">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">pvalue_format</span></span><a class="headerlink" href="#statannotations.Annotator.Annotator.pvalue_format" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -340,18 +337,8 @@ calculated with number of box_pairs</p></li>
 <dd></dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.simple_format_string">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">simple_format_string</span></span><a class="headerlink" href="#statannotations.Annotator.Annotator.simple_format_string" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
 <dt class="sig sig-object py" id="statannotations.Annotator.Annotator.test">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">test</span></span><a class="headerlink" href="#statannotations.Annotator.Annotator.test" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.text_format">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">text_format</span></span><a class="headerlink" href="#statannotations.Annotator.Annotator.text_format" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -371,9 +358,53 @@ calculated with number of box_pairs</p></li>
 <span class="sig-prename descclassname"><span class="pre">statannotations.Annotator.</span></span><span class="sig-name descname"><span class="pre">check_implemented_plotters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.check_implemented_plotters" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+</div>
+<div class="section" id="module-statannotations.PValueFormat">
+<span id="statannotations-pvalueformat-module"></span><h2>statannotations.PValueFormat module<a class="headerlink" href="#module-statannotations.PValueFormat" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="statannotations.PValueFormat.PValueFormat">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">statannotations.PValueFormat.</span></span><span class="sig-name descname"><span class="pre">PValueFormat</span></span><a class="headerlink" href="#statannotations.PValueFormat.PValueFormat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="statannotations.PValueFormat.PValueFormat.config">
+<span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.PValueFormat.PValueFormat.config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="statannotations.PValueFormat.PValueFormat.format_result">
+<span class="sig-name descname"><span class="pre">format_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.PValueFormat.PValueFormat.format_result" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="statannotations.PValueFormat.PValueFormat.print_legend_if_used">
+<span class="sig-name descname"><span class="pre">print_legend_if_used</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.PValueFormat.PValueFormat.print_legend_if_used" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="statannotations.PValueFormat.PValueFormat.pvalue_format_string">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">pvalue_format_string</span></span><a class="headerlink" href="#statannotations.PValueFormat.PValueFormat.pvalue_format_string" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="statannotations.PValueFormat.PValueFormat.pvalue_thresholds">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">pvalue_thresholds</span></span><a class="headerlink" href="#statannotations.PValueFormat.PValueFormat.pvalue_thresholds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="statannotations.PValueFormat.PValueFormat.simple_format_string">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">simple_format_string</span></span><a class="headerlink" href="#statannotations.PValueFormat.PValueFormat.simple_format_string" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="statannotations.PValueFormat.PValueFormat.text_format">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">text_format</span></span><a class="headerlink" href="#statannotations.PValueFormat.PValueFormat.text_format" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 <dl class="py function">
-<dt class="sig sig-object py" id="statannotations.Annotator.sort_pvalue_thresholds">
-<span class="sig-prename descclassname"><span class="pre">statannotations.Annotator.</span></span><span class="sig-name descname"><span class="pre">sort_pvalue_thresholds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pvalue_thresholds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.sort_pvalue_thresholds" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="statannotations.PValueFormat.sort_pvalue_thresholds">
+<span class="sig-prename descclassname"><span class="pre">statannotations.PValueFormat.</span></span><span class="sig-name descname"><span class="pre">sort_pvalue_thresholds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pvalue_thresholds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.PValueFormat.sort_pvalue_thresholds" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -398,14 +429,13 @@ provided, a string otherwise.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="statannotations.format_annotations.simple_text">
-<span class="sig-prename descclassname"><span class="pre">statannotations.format_annotations.</span></span><span class="sig-name descname"><span class="pre">simple_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="statannotations.stats.html#statannotations.stats.StatResult.StatResult" title="statannotations.stats.StatResult.StatResult"><span class="pre">statannotations.stats.StatResult.StatResult</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pvalue_format</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pvalue_thresholds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_short_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#statannotations.format_annotations.simple_text" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">statannotations.format_annotations.</span></span><span class="sig-name descname"><span class="pre">simple_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="statannotations.stats.html#statannotations.stats.StatResult.StatResult" title="statannotations.stats.StatResult.StatResult"><span class="pre">statannotations.stats.StatResult.StatResult</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pvalue_format</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pvalue_thresholds</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#statannotations.format_annotations.simple_text" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates simple text for test name and pvalue.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>result</strong> – StatResult instance</p></li>
 <li><p><strong>pvalue_format</strong> – format string for pvalue</p></li>
-<li><p><strong>test_short_name</strong> – Short name of test to show (Default value = None)</p></li>
 <li><p><strong>pvalue_thresholds</strong> – String to display per pvalue range</p></li>
 <li><p><strong>result</strong> – StatResult</p></li>
 </ul>
@@ -473,6 +503,9 @@ provided, a string otherwise.</p>
 <span class="sig-prename descclassname"><span class="pre">statannotations.utils.</span></span><span class="sig-name descname"><span class="pre">render_collection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">collection</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.utils.render_collection" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+</div>
+<div class="section" id="module-statannotations">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-statannotations" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 

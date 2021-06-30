@@ -46,14 +46,12 @@ def pval_annotation_text(result: Union[List[StatResult], StatResult],
     return x_annot if not single_value else x_annot.iloc[0]
 
 
-def simple_text(result: StatResult, pvalue_format, pvalue_thresholds,
-                test_short_name=None) -> str:
+def simple_text(result: StatResult, pvalue_format, pvalue_thresholds) -> str:
     """
     Generates simple text for test name and pvalue.
 
     :param result: StatResult instance
     :param pvalue_format: format string for pvalue
-    :param test_short_name: Short name of test to show (Default value = None)
     :param pvalue_thresholds: String to display per pvalue range
     :param result: StatResult
     :returns: simple annotation
@@ -63,7 +61,7 @@ def simple_text(result: StatResult, pvalue_format, pvalue_thresholds,
     thresholds = sorted(pvalue_thresholds, key=lambda x: x[0])
 
     # Test name if passed
-    text = test_short_name and test_short_name + " " or ""
+    text = result.test_short_name and result.test_short_name + " " or ""
 
     for threshold in thresholds:
         if result.pval < threshold[0]:

@@ -4,7 +4,8 @@ import unittest
 import pandas as pd
 import seaborn as sns
 
-from statannotations.Annotator import Annotator, DEFAULT
+from statannotations.Annotator import Annotator
+from statannotations.utils import DEFAULT
 
 
 class TestAnnotator(unittest.TestCase):
@@ -88,7 +89,7 @@ class TestAnnotator(unittest.TestCase):
         self.test_init()
 
         with self.assertRaisesRegex(ValueError, "argument `text_format`"):
-            self.annot.configure(text_format="that")
+            self.annot.configure(pvalue_format={'text_format': 'that'})
 
     def test_apply_comparisons_correction(self):
         self.assertIsNone(Annotator._apply_comparisons_correction(None, []))
@@ -111,6 +112,7 @@ class TestAnnotator(unittest.TestCase):
 
     def test_reconfigure_alpha_with_thresholds(self):
         self.test_init()
-        self.annot.configure(alpha=0.1, pvalue_thresholds=DEFAULT)
+        self.annot.configure(alpha=0.1,
+                             pvalue_format={"pvalue_thresholds": DEFAULT})
         self.annot.reset_configuration()
         self.assertEqual(0.05, self.annot.alpha)

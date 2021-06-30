@@ -20,6 +20,14 @@ statannotations.Annotator module
    :undoc-members:
    :show-inheritance:
 
+statannotations.PValueFormat module
+-----------------------------------
+
+.. automodule:: statannotations.PValueFormat
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 statannotations.format\_annotations module
 ------------------------------------------
 
@@ -32,6 +40,14 @@ statannotations.utils module
 ----------------------------
 
 .. automodule:: statannotations.utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: statannotations
    :members:
    :undoc-members:
    :show-inheritance:

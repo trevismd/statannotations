@@ -7,6 +7,7 @@ from statannotations.Annotator import Annotator
 from statannotations.stats.ComparisonsCorrection import ComparisonsCorrection
 
 
+# noinspection DuplicatedCode
 class Test(unittest.TestCase):
     """Test that the annotations match the pvalues and format."""
 
@@ -37,18 +38,30 @@ class Test(unittest.TestCase):
         self.pvalues = [0.03, 0.04, 0.9]
 
     def test_ns_without_correction_star(self):
-        results = self.annotator._get_results(pvalues=self.pvalues)
+        results = self.annotator._get_results("auto", pvalues=self.pvalues)
         self.assertEqual(["*", "*", "ns"],
                          [self.annotator._get_text(result)
                           for result in results])
 
-    def test_signif_with_type1_correctio_star(self):
+    def test_signif_with_type1_correction_star(self):
         bh = ComparisonsCorrection("BH")
         self.annotator.configure(comparisons_correction=bh)
         self.annotator.set_pvalues(self.pvalues)
         self.assertEqual(["* (ns)", "* (ns)", "ns"],
                          [self.annotator._get_text(result)
                           for result in self.annotator.annotations])
+
+    def test_signif_with_type1_correction_star_incorrect_num_comparisons(self):
+        bh = ComparisonsCorrection("BH")
+        self.annotator.configure(comparisons_correction=bh)
+        with self.assertRaisesRegex(ValueError, "positive"):
+            self.annotator.set_pvalues(self.pvalues, num_comparisons=0)
+
+    def test_signif_with_type1_correction_star_abnormal_num_comparisons(self):
+        bh = ComparisonsCorrection("BH")
+        self.annotator.configure(comparisons_correction=bh)
+        with self.assertWarnsRegex(UserWarning, "Manually-specified"):
+            self.annotator.set_pvalues(self.pvalues, num_comparisons=1)
 
     def test_signif_with_type0_correction_star(self):
         bonferroni = ComparisonsCorrection("bonferroni")
@@ -60,17 +73,10 @@ class Test(unittest.TestCase):
                          [self.annotator._get_text(result)
                           for result in self.annotator.annotations])
 
-    def test_ns_without_correction_simple(self):
-        self.annotator.configure(text_format="simple")
-        results = self.annotator._get_results(pvalues=self.pvalues)
-        self.assertEqual(["p ≤ 0.05", "p ≤ 0.05", "p = 0.90"],
-                         [self.annotator._get_text(result)
-                          for result in results])
-
     def test_signif_with_type1_correction_simple(self):
         bh = ComparisonsCorrection("BH")
         self.annotator.configure(comparisons_correction=bh,
-                                 text_format="simple")
+                                 pvalue_format={'text_format': 'simple'})
         self.annotator.set_pvalues(self.pvalues)
         reordering = self.annotator.reordering
 
@@ -84,7 +90,7 @@ class Test(unittest.TestCase):
     def test_signif_with_type0_correction_simple(self):
         bonferroni = ComparisonsCorrection("bonferroni")
         self.annotator.configure(comparisons_correction=bonferroni,
-                                 text_format="simple")
+                                 pvalue_format={'text_format': 'simple'})
 
         self.annotator.set_pvalues(self.pvalues)
         reordering = self.annotator.reordering

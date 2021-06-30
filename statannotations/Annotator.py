@@ -10,39 +10,34 @@ from matplotlib.collections import PathCollection
 from matplotlib.font_manager import FontProperties
 from matplotlib.patches import Rectangle
 
-from statannotations.format_annotations import pval_annotation_text, \
-    simple_text
+from statannotations.PValueFormat import PValueFormat, \
+    CONFIGURABLE_PARAMETERS as PVALUE_CONFIGURABLE_PARAMETERS
 from statannotations.stats.ComparisonsCorrection import \
     get_validated_comparisons_correction
 from statannotations.stats.StatResult import StatResult
 from statannotations.stats.StatTest import StatTest
 from statannotations.stats.tests import stat_test, IMPLEMENTED_TESTS
-from statannotations.stats.utils import check_alpha
-from statannotations.utils import check_is_in, remove_null, \
-    check_box_pairs_in_data, check_not_none, check_valid_text_format, \
-    check_order_in_data, render_collection
-
-DEFAULT = object()
+from statannotations.stats.utils import check_alpha, check_pvalues, \
+    check_num_comparisons, get_num_comparisons
+from statannotations.utils import check_is_in, remove_null, check_not_none, \
+    check_box_pairs_in_data, check_order_in_data, render_collection
 
 CONFIGURABLE_PARAMETERS = [
     'alpha',
+    'color',
     'comparisons_correction',
+    'line_height',
+    'line_offset',
+    'line_offset_to_box',
+    'line_width',
     'loc',
-    'pvalue_format_string',
-    'pvalue_thresholds',
+    'pvalue_format',
+    'show_test_name',
     'test',
     'test_short_name',
-    'text_format',
-    'verbose',
-    'show_test_name',
-    'use_fixed_offset',
-    'line_offset_to_box',
-    'line_offset',
-    'line_height',
     'text_offset',
-    'color',
-    'line_width',
-    'fontsize'
+    'use_fixed_offset',
+    'verbose',
 ]
 
 IMPLEMENTED_PLOTTERS = ['barplot', 'boxplot', 'stripplot', 'swarmplot']
@@ -101,12 +96,8 @@ class Annotator:
         self._test = None
         self.perform_stat_test = None
         self.test_short_name = None
-        self._text_format = "star"
-        self._default_pvalue_thresholds = True
-        self._pvalue_format_string = '{:.3e}'
-        self._simple_format_string = '{:.2f}'
+        self._pvalue_format = PValueFormat()
         self._alpha = 0.05
-        self._pvalue_thresholds = self._get_pvalue_thresholds(DEFAULT)
 
         self.annotations = None
         self._comparisons_correction = None
@@ -122,7 +113,6 @@ class Annotator:
         self.text_offset = 1
         self.color = '0.2'
         self.line_width = 1.5
-        self.fontsize = 'medium'
         self.y_offset = None
         self.custom_annotations = None
 
@@ -181,13 +171,8 @@ class Annotator:
     def reset_configuration(self):
         self._test = None
         self.test_short_name = None
-        self._text_format = "star"
-        self._default_pvalue_thresholds = True
-        self._pvalue_format_string = '{:.3e}'
-        self._simple_format_string = '{:.2f}'
+        self._pvalue_format = PValueFormat()
         self._alpha = 0.05
-        self._pvalue_thresholds = self._get_pvalue_thresholds(DEFAULT)
-
         self.annotations = None
         self._comparisons_correction = None
         self._loc = "inside"
@@ -199,7 +184,6 @@ class Annotator:
         self.text_offset = 1
         self.color = '0.2'
         self.line_width = 1.5
-        self.fontsize = 'medium'
         self.custom_annotations = None
 
         return self
@@ -222,7 +206,7 @@ class Annotator:
         self.y_offset, self.line_offset_to_box = offset_func(
             line_offset, line_offset_to_box)
 
-        if self.verbose and self.text_format == 'star':
+        if self.verbose:
             self.print_pvalue_legend()
 
         ax_to_data = Annotator._get_transform_func(self.ax, 'ax_to_data')
@@ -285,18 +269,6 @@ class Annotator:
         self._loc = loc
 
     @property
-    def text_format(self):
-        return self._text_format
-
-    @text_format.setter
-    def text_format(self, text_format):
-        """
-        :param text_format: `star`, `simple` or `full`
-        """
-        check_valid_text_format(text_format)
-        self._text_format = text_format
-
-    @property
     def test(self):
         return self._test
 
@@ -308,52 +280,6 @@ class Annotator:
         """
         self._test = test
 
-    @property
-    def pvalue_format_string(self):
-        return self._pvalue_format_string
-
-    @property
-    def simple_format_string(self):
-        return self._simple_format_string
-
-    @pvalue_format_string.setter
-    def pvalue_format_string(self, pvalue_format_string):
-        """
-        :param pvalue_format_string: By default is `"{:.3e}"`, or `"{:.2f}"`
-            for `"simple"` format
-        """
-        self._pvalue_format_string, self._simple_format_string = (
-            Annotator._get_pvalue_and_simple_formats(pvalue_format_string)
-        )
-
-    @property
-    def pvalue_thresholds(self):
-        return self._pvalue_thresholds
-
-    @pvalue_thresholds.setter
-    def pvalue_thresholds(self, pvalue_thresholds):
-        """
-        :param pvalue_thresholds: list of lists, or tuples.
-            Default is:
-            For "star" text_format: `[
-                [1e-4, "****"],
-                [1e-3, "***"],
-                [1e-2, "**"],
-                [0.05, "*"],
-                [1, "ns"]
-            ]`.
-
-            For "simple" text_format : `[
-                [1e-5, "1e-5"],
-                [1e-4, "1e-4"],
-                [1e-3, "0.001"],
-                [1e-2, "0.01"],
-                [5e-2, "0.05"]
-            ]`
-        """
-        self._pvalue_thresholds = self._get_pvalue_thresholds(
-            pvalue_thresholds)
-
     def configure(self, **parameters):
         """
 
@@ -362,7 +288,17 @@ class Annotator:
         * `line_height`: in axes fraction coordinates
         * `text_offset`: in points
         """
+
+        if parameters.get("pvalue_format") is None:
+            parameters["pvalue_format"] = {
+                item: value
+                for item, value in parameters.items()
+                if item in PVALUE_CONFIGURABLE_PARAMETERS
+            }
+
         unmatched_parameters = parameters.keys() - set(CONFIGURABLE_PARAMETERS)
+        unmatched_parameters -= parameters["pvalue_format"].keys()
+
         if unmatched_parameters:
             raise ValueError(f"Invalid parameter(s) "
                              f"`{render_collection(unmatched_parameters)}` "
@@ -373,18 +309,22 @@ class Annotator:
 
         self.activate_configured_warning()
 
-        new_threshold = parameters.get("pvalue_thresholds")
-        if new_threshold is not None:
-            self._default_pvalue_thresholds = new_threshold == DEFAULT
-
-        elif parameters.get("alpha"):
-            warnings.warn("Changing alpha without updating pvalue_thresholds"
-                          "can result in inconsistent plotting results")
-
-        if parameters.get("text_format") is not None:
-            self._update_pvalue_thresholds()
-
+        if parameters.get("alpha"):
+            pvalue_format = parameters.get("pvalue_format")
+            if (pvalue_format is None
+                    or pvalue_format.get("pvalue_thresholds") is None):
+                warnings.warn("Changing alpha without updating "
+                              "pvalue_thresholds can result in inconsistent "
+                              "plotting results")
         return self
+
+    @property
+    def pvalue_format(self):
+        return self._pvalue_format
+
+    @pvalue_format.setter
+    def pvalue_format(self, pvalue_format_config):
+        self._pvalue_format.config(**pvalue_format_config)
 
     def apply_test(self, num_comparisons='auto', **stats_params):
         """
@@ -418,14 +358,15 @@ class Annotator:
         :param num_comparisons: Override number of comparisons otherwise
             calculated with number of box_pairs
         """
-
-        self._check_test_pvalues_no_perform(pvalues)
-
         self.perform_stat_test = False
 
+        self._check_pvalues_no_perform(pvalues)
+        self._check_test_no_perform()
+        check_num_comparisons(num_comparisons)
+
         self.annotations = self._get_results(
-            test_short_name=self.test_short_name,
-            num_comparisons=num_comparisons, pvalues=pvalues)
+            num_comparisons=get_num_comparisons(pvalues, num_comparisons),
+            pvalues=pvalues, test_short_name=self.test_short_name)
 
         self.deactivate_configured_warning()
 
@@ -448,22 +389,9 @@ class Annotator:
         self._just_configured = False
 
     def print_pvalue_legend(self):
-        print("p-value annotation legend:")
+        self._pvalue_format.print_legend_if_used()
 
-        pvalue_thresholds = sort_pvalue_thresholds(self.pvalue_thresholds)
-
-        for i in range(0, len(pvalue_thresholds)):
-            if i < len(pvalue_thresholds) - 1:
-                print('{}: {:.2e} < p <= {:.2e}'
-                      .format(pvalue_thresholds[i][1],
-                              pvalue_thresholds[i + 1][0],
-                              pvalue_thresholds[i][0]))
-            else:
-                print('{}: p <= {:.2e}'.format(pvalue_thresholds[i][1],
-                                               pvalue_thresholds[i][0]))
-        print()
-
-    def _get_results(self, num_comparisons='auto', pvalues=None,
+    def _get_results(self, num_comparisons, pvalues=None,
                      **stats_params) -> List[StatResult]:
 
         test_result_list = []
@@ -493,23 +421,7 @@ class Annotator:
         return test_result_list
 
     def _get_text(self, result):
-
-        if self.text_format == 'full':
-            text = ("{} p = {}{}"
-                    .format('{}', self.pvalue_format_string, '{}')
-                    .format(result.test_short_name, result.pval,
-                            result.significance_suffix))
-
-        elif self.text_format == 'star':
-            text = pval_annotation_text(result, self.pvalue_thresholds)
-
-        elif self.text_format == 'simple':
-            text = simple_text(result, self.simple_format_string,
-                               self.pvalue_thresholds, self.test_short_name)
-        else:
-            text = None
-
-        return text
+        return self._pvalue_format.format_result(result)
 
     def _annotate_pair(self, box_structs, result, ax_to_data,
                        ann_list, ymaxs, y_stack, orig_ylim):
@@ -573,7 +485,8 @@ class Annotator:
                 text, xy=(np.mean([x1, x2]), line_y[2]),
                 xytext=(0, self.text_offset), textcoords='offset points',
                 xycoords='data', ha='center', va='bottom',
-                fontsize=self.fontsize, clip_on=False, annotation_clip=False)
+                fontsize=self._pvalue_format.fontsize, clip_on=False,
+                annotation_clip=False)
             ann_list.append(ann)
 
             plt.draw()
@@ -807,16 +720,19 @@ class Annotator:
                              "or one of the following strings: {}."
                              .format(', '.join(IMPLEMENTED_TESTS)))
 
-    def _check_test_pvalues_no_perform(self, pvalues):
+    def _check_pvalues_no_perform(self, pvalues):
         if pvalues is None:
             raise ValueError("If `perform_stat_test` is False, "
                              "custom `pvalues` must be specified.")
-        if self.test is not None:
-            raise ValueError("If `perform_stat_test` is False, "
-                             "`test` must be None.")
+        check_pvalues(pvalues)
         if len(pvalues) != len(self.box_pairs):
             raise ValueError("`pvalues` should be of the same length as "
                              "`box_pairs`.")
+
+    def _check_test_no_perform(self):
+        if self.test is not None:
+            raise ValueError("If `perform_stat_test` is False, "
+                             "`test` must be None.")
 
     def _check_correct_number_custom_annotations(self, text_annot_custom):
         if text_annot_custom is None:
@@ -861,16 +777,6 @@ class Annotator:
         else:
             Annotator._apply_type0_comparisons_correction(
                 comparisons_correction, test_result_list)
-
-    @staticmethod
-    def _get_pvalue_and_simple_formats(pvalue_format_string):
-        if pvalue_format_string is DEFAULT:
-            pvalue_format_string = '{:.3e}'
-            simple_format_string = '{:.2f}'
-        else:
-            simple_format_string = pvalue_format_string
-
-        return pvalue_format_string, simple_format_string
 
     def _get_stat_result_from_test(self, box_struct1, box_struct2,
                                    num_comparisons,
@@ -943,18 +849,6 @@ class Annotator:
 
         reordering = [index for index, box_struct_pair in new_box_struct_pairs]
         return reordering
-
-    def _get_pvalue_thresholds(self, pvalue_thresholds):
-        if self._default_pvalue_thresholds:
-            if self.text_format == "star":
-                return [[1e-4, "****"], [1e-3, "***"],
-                        [1e-2, "**"], [0.05, "*"], [1, "ns"]]
-            else:
-                return [[1e-5, "1e-5"], [1e-4, "1e-4"],
-                        [1e-3, "0.001"], [1e-2, "0.01"],
-                        [5e-2, "0.05"]]
-
-        return pvalue_thresholds
 
     @staticmethod
     def _get_plotter(plot, x, y, hue, data, order, hue_order,
@@ -1084,17 +978,8 @@ class Annotator:
         return self.comparisons_correction is not None \
                and not self.comparisons_correction.type
 
-    def _update_pvalue_thresholds(self):
-        self._pvalue_thresholds = self._get_pvalue_thresholds(
-            self._pvalue_thresholds)
-
 
 def _print_result_line(box_structs, formatted_output):
     label1 = box_structs[0]['label']
     label2 = box_structs[1]['label']
     print(f"{label1} v.s. {label2}: {formatted_output}")
-
-
-def sort_pvalue_thresholds(pvalue_thresholds):
-    return sorted(pvalue_thresholds,
-                  key=lambda threshold_notation: threshold_notation[0])

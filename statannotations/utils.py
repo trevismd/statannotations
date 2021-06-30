@@ -4,6 +4,9 @@ from typing import List, Union
 import pandas as pd
 
 
+DEFAULT = object()
+
+
 def raise_expected_got(expected, for_, got, error_type=ValueError):
     """Raise a standardized error message.
 

@@ -5,20 +5,28 @@ import numpy as np
 from statannotations.utils import raise_expected_got
 
 
-def check_pval_correction_input_values(p_values, num_comparisons):
+def check_pvalues(p_values):
     if np.ndim(p_values) > 1:
         raise_expected_got(
             'Scalar or list-like', 'argument `p_values`', p_values
         )
 
+
+def check_num_comparisons(num_comparisons):
     if num_comparisons != 'auto':
         try:
             # Raise a TypeError if num_comparisons is not numeric, and raise
             # an AssertionError if it isn't int-like.
             assert np.ceil(num_comparisons) == num_comparisons
+            if not num_comparisons:
+                raise ValueError
         except (AssertionError, TypeError):
             raise_expected_got(
-                'Int or `auto`', 'argument `num_comparisons`', num_comparisons
+                'Int or `auto`', '`num_comparisons`', num_comparisons
+            )
+        except ValueError:
+            raise_expected_got(
+                'a positive value', '`num_comparisons`', num_comparisons
             )
 
 
@@ -28,18 +36,18 @@ def check_alpha(alpha):
                          "smaller than one.")
 
 
-def get_num_comparisons(p_values_array, num_comparisons):
+def get_num_comparisons(p_values, num_comparisons):
     if num_comparisons == 'auto':
         # Infer number of comparisons
-        num_comparisons = len(p_values_array)
+        num_comparisons = len(p_values)
 
-    elif 1 < len(p_values_array) != num_comparisons:
+    elif num_comparisons < len(p_values):
         # Warn if multiple p_values have been passed and num_comparisons is
         # set manually.
         warnings.warn(
-            'Manually-specified `num_comparisons={}` differs from number of '
-            'p_values to correct ({}).'.format(
-                num_comparisons, len(p_values_array)
+            'Manually-specified `num_comparisons={}` to a smaller value than '
+            'the number of p_values to correct ({}).'.format(
+                num_comparisons, len(p_values)
             )
         )
     return num_comparisons
