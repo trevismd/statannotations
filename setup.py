@@ -24,8 +24,8 @@ setup(
     version=version,
     maintainer="Florian Charlier",
     maintainer_email="trevis@cascliniques.be",
-    description=("add statistical significance annotations on seaborn "
-                 "boxplot/barplot. Based on statannot 0.2.3"),
+    description=("add statistical significance or custom annotations on "
+                 "seaborn plots. Based on statannot 0.2.3"),
     license="MIT License",
     license_file="LICENSE",
     long_description=long_description,

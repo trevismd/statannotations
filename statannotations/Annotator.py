@@ -42,6 +42,24 @@ CONFIGURABLE_PARAMETERS = [
 
 IMPLEMENTED_PLOTTERS = ['barplot', 'boxplot', 'stripplot', 'swarmplot']
 
+_DEFAULT_VALUES = {
+    "alpha": 0.05,
+    "test_short_name": None,
+    "annotations": None,
+    "_comparisons_correction": None,
+    "_loc": "inside",
+    "verbose": 1,
+    "_just_configured": True,
+    "show_test_name": True,
+    "use_fixed_offset": False,
+    "line_height": 0.02,
+    "_test": None,
+    "text_offset": 1,
+    "color": '0.2',
+    "line_width": 1.5,
+    "custom_annotations": None
+}
+
 
 def check_implemented_plotters(plot):
     if plot not in IMPLEMENTED_PLOTTERS:
@@ -83,6 +101,7 @@ class Annotator:
         :param hue_order: seaborn plot's hue_order
         :param plot_params: Other parameters for seaborn plotter
         """
+
         basic_plot = self.get_basic_plot(ax, box_pairs, plot, data, x, y, hue,
                                          order, hue_order, **plot_params)
         self.box_pairs = box_pairs
@@ -90,14 +109,16 @@ class Annotator:
         self.y_stack_arr = basic_plot[0]
         self.box_struct_pairs = basic_plot[1]
         self.fig = basic_plot[2]
-        self.reordering = self._sort_box_struct_pairs()
+
+        self.reordering = None
+        self._sort_box_struct_pairs()
         self.ax = ax
 
         self._test = None
         self.perform_stat_test = None
         self.test_short_name = None
         self._pvalue_format = PValueFormat()
-        self._alpha = 0.05
+        self._alpha = _DEFAULT_VALUES["alpha"]
 
         self.annotations = None
         self._comparisons_correction = None
@@ -109,7 +130,7 @@ class Annotator:
         self.use_fixed_offset = False
         self.line_offset_to_box = None
         self.line_offset = None
-        self.line_height = 0.02
+        self.line_height = _DEFAULT_VALUES["line_height"]
         self.text_offset = 1
         self.color = '0.2'
         self.line_width = 1.5
@@ -161,41 +182,29 @@ class Annotator:
         self.box_struct_pairs = basic_plot[1]
         self.fig = basic_plot[2]
 
-        self.reordering = self._sort_box_struct_pairs()
+        self._sort_box_struct_pairs()
 
         self.line_offset = None
         self.line_offset_to_box = None
         self.perform_stat_test = None
+
         return self
 
     def reset_configuration(self):
-        self._test = None
-        self.test_short_name = None
+
+        self._reset_default_values()
         self._pvalue_format = PValueFormat()
-        self._alpha = 0.05
-        self.annotations = None
-        self._comparisons_correction = None
-        self._loc = "inside"
-        self.verbose = 1
-        self._just_configured = True
-        self.show_test_name = True
-        self.use_fixed_offset = False
-        self.line_height = 0.02
-        self.text_offset = 1
-        self.color = '0.2'
-        self.line_width = 1.5
-        self.custom_annotations = None
 
         return self
 
     def annotate(self, line_offset=None, line_offset_to_box=None):
 
-        if self.should_warn_about_configuration:
+        if self._should_warn_about_configuration:
             warnings.warn("Annotator was reconfigured without applying the "
                           "test (again) which will probably lead to "
                           "unexpected results")
 
-        self.update_y_for_loc()
+        self._update_y_for_loc()
 
         ann_list = []
         ymaxs = []
@@ -233,6 +242,119 @@ class Annotator:
         self.ax.set_ylim(ax_to_data.transform(ylims)[:, 1])
 
         return self.ax, self.annotations
+
+    def apply_and_annotate(self):
+        self.apply_test()
+        return self.annotate()
+
+    def configure(self, **parameters):
+        """
+        * 'alpha'
+        * 'color
+        * 'comparisons_correction'
+        * `line_height`: in axes fraction coordinates
+        * 'line_offset'
+        * 'line_offset_to_box'
+        * 'line_width'
+        * 'loc'
+        * 'pvalue_format'
+        * 'show_test_name'
+        * 'test'
+        * 'test_short_name'
+        * 'text_offset'
+        * `show_test_name`: Set to False to not show the (short) name of
+            test
+        * `text_offset`: in points
+        * 'use_fixed_offset'
+        * 'verbose'
+        """
+
+        if parameters.get("pvalue_format") is None:
+            parameters["pvalue_format"] = {
+                item: value
+                for item, value in parameters.items()
+                if item in PVALUE_CONFIGURABLE_PARAMETERS
+            }
+
+        unmatched_parameters = parameters.keys() - set(CONFIGURABLE_PARAMETERS)
+        unmatched_parameters -= parameters["pvalue_format"].keys()
+
+        if unmatched_parameters:
+            raise ValueError(f"Invalid parameter(s) "
+                             f"`{render_collection(unmatched_parameters)}` "
+                             f"to configure annotator.")
+
+        for parameter, value in parameters.items():
+            setattr(self, parameter, value)
+
+        self._activate_configured_warning()
+
+        if parameters.get("alpha"):
+            pvalue_format = parameters.get("pvalue_format")
+            if (pvalue_format is None
+                    or pvalue_format.get("pvalue_thresholds") is None):
+                warnings.warn("Changing alpha without updating "
+                              "pvalue_thresholds can result in inconsistent "
+                              "plotting results")
+        return self
+
+    def apply_test(self, num_comparisons='auto', **stats_params):
+        """
+        :param stats_params: Parameters for statistical test functions.
+
+        :param num_comparisons: Override number of comparisons otherwise
+            calculated with number of box_pairs
+        """
+
+        self._check_test_pvalues_perform()
+
+        if stats_params is None:
+            stats_params = dict()
+
+        self.perform_stat_test = True
+
+        self.annotations = self._get_results(num_comparisons=num_comparisons,
+                                             **stats_params)
+        self._deactivate_configured_warning()
+
+        return self
+
+    def set_pvalues(self, pvalues,
+                    num_comparisons='auto'):
+        """
+        :param pvalues: list or array of p-values for each box pair comparison.
+        :param num_comparisons: Override number of comparisons otherwise
+            calculated with number of box_pairs
+        """
+        self.perform_stat_test = False
+
+        self._check_pvalues_no_perform(pvalues)
+        self._check_test_no_perform()
+        check_num_comparisons(num_comparisons)
+
+        self.annotations = self._get_results(
+            num_comparisons=get_num_comparisons(pvalues, num_comparisons),
+            pvalues=pvalues, test_short_name=self.test_short_name)
+
+        self._deactivate_configured_warning()
+
+        return self
+
+    def set_custom_annotation(self, text_annot_custom):
+        """
+        :param text_annot_custom: List of strings to annotate for each
+            `box_pair`
+        """
+        self._check_correct_number_custom_annotations(text_annot_custom)
+        self.custom_annotations = text_annot_custom
+        self._deactivate_configured_warning()
+        return self
+
+    def get_configuration(self):
+        configuration = {key: getattr(self, key)
+                         for key in CONFIGURABLE_PARAMETERS}
+        configuration["pvalue_format"] = self.pvalue_format.get_configuration()
+        return configuration
 
     @property
     def alpha(self):
@@ -280,44 +402,6 @@ class Annotator:
         """
         self._test = test
 
-    def configure(self, **parameters):
-        """
-
-        * `show_test_name`: Set to False to not show the (short) name of
-            test
-        * `line_height`: in axes fraction coordinates
-        * `text_offset`: in points
-        """
-
-        if parameters.get("pvalue_format") is None:
-            parameters["pvalue_format"] = {
-                item: value
-                for item, value in parameters.items()
-                if item in PVALUE_CONFIGURABLE_PARAMETERS
-            }
-
-        unmatched_parameters = parameters.keys() - set(CONFIGURABLE_PARAMETERS)
-        unmatched_parameters -= parameters["pvalue_format"].keys()
-
-        if unmatched_parameters:
-            raise ValueError(f"Invalid parameter(s) "
-                             f"`{render_collection(unmatched_parameters)}` "
-                             f"to configure annotator.")
-
-        for parameter, value in parameters.items():
-            setattr(self, parameter, value)
-
-        self.activate_configured_warning()
-
-        if parameters.get("alpha"):
-            pvalue_format = parameters.get("pvalue_format")
-            if (pvalue_format is None
-                    or pvalue_format.get("pvalue_thresholds") is None):
-                warnings.warn("Changing alpha without updating "
-                              "pvalue_thresholds can result in inconsistent "
-                              "plotting results")
-        return self
-
     @property
     def pvalue_format(self):
         return self._pvalue_format
@@ -326,66 +410,14 @@ class Annotator:
     def pvalue_format(self, pvalue_format_config):
         self._pvalue_format.config(**pvalue_format_config)
 
-    def apply_test(self, num_comparisons='auto', **stats_params):
-        """
-        :param stats_params: Parameters for statistical test functions.
-
-        :param num_comparisons: Override number of comparisons otherwise
-            calculated with number of box_pairs
-        """
-
-        self._check_test_pvalues_perform()
-
-        if stats_params is None:
-            stats_params = dict()
-
-        self.perform_stat_test = True
-
-        self.annotations = self._get_results(num_comparisons=num_comparisons,
-                                             **stats_params)
-        self.deactivate_configured_warning()
-
-        return self
-
     @property
-    def should_warn_about_configuration(self):
+    def _should_warn_about_configuration(self):
         return self._just_configured
 
-    def set_pvalues(self, pvalues,
-                    num_comparisons='auto'):
-        """
-        :param pvalues: list or array of p-values for each box pair comparison.
-        :param num_comparisons: Override number of comparisons otherwise
-            calculated with number of box_pairs
-        """
-        self.perform_stat_test = False
-
-        self._check_pvalues_no_perform(pvalues)
-        self._check_test_no_perform()
-        check_num_comparisons(num_comparisons)
-
-        self.annotations = self._get_results(
-            num_comparisons=get_num_comparisons(pvalues, num_comparisons),
-            pvalues=pvalues, test_short_name=self.test_short_name)
-
-        self.deactivate_configured_warning()
-
-        return self
-
-    def set_custom_annotation(self, text_annot_custom):
-        """
-        :param text_annot_custom: List of values to annotate for each
-            `box_pair`
-        """
-        self._check_correct_number_custom_annotations(text_annot_custom)
-        self.custom_annotations = text_annot_custom
-        self.deactivate_configured_warning()
-        return self
-
-    def activate_configured_warning(self):
+    def _activate_configured_warning(self):
         self._just_configured = True
 
-    def deactivate_configured_warning(self):
+    def _deactivate_configured_warning(self):
         self._just_configured = False
 
     def print_pvalue_legend(self):
@@ -426,11 +458,6 @@ class Annotator:
     def _annotate_pair(self, box_structs, result, ax_to_data,
                        ann_list, ymaxs, y_stack, orig_ylim):
 
-        x1 = box_structs[0]['x']
-        x2 = box_structs[1]['x']
-        xi1 = box_structs[0]['xi']
-        xi2 = box_structs[1]['xi']
-
         if self.custom_annotations is not None:
             i_box_pair = box_structs[0]['i_box_pair']
             text = self.custom_annotations[i_box_pair]
@@ -440,6 +467,11 @@ class Annotator:
                 _print_result_line(box_structs, result.formatted_output)
 
             text = self._get_text(result)
+
+        x1 = box_structs[0]['x']
+        x2 = box_structs[1]['x']
+        xi1 = box_structs[0]['xi']
+        xi2 = box_structs[1]['xi']
 
         # Find y maximum for all the y_stacks *in between* box1 and box2
         i_ymax_in_range_x1_x2 = xi1 + np.nanargmax(
@@ -470,15 +502,8 @@ class Annotator:
                   for x, y
                   in zip(ax_line_x, ax_line_y)]
 
-        line_x, line_y = [x for x, y in points], [y for x, y in points]
-
-        if self.loc == 'inside':
-            self.ax.plot(line_x, line_y, lw=self.line_width, c=self.color)
-        else:
-            line = lines.Line2D(line_x, line_y, lw=self.line_width,
-                                c=self.color, transform=self.ax.transData)
-            line.set_clip_on(False)
-            self.ax.add_line(line)
+        line_x, line_y = zip(*points)
+        self._plot_line(line_x, line_y)
 
         if text is not None:
             ann = self.ax.annotate(
@@ -488,40 +513,10 @@ class Annotator:
                 fontsize=self._pvalue_format.fontsize, clip_on=False,
                 annotation_clip=False)
             ann_list.append(ann)
-
             plt.draw()
             self.ax.set_ylim(orig_ylim)
-            data_to_ax, ax_to_data, pix_to_ax = Annotator._get_transform_func(
-                self.ax, 'all')
 
-            y_top_annot = None
-            got_mpl_error = False
-            if not self.use_fixed_offset:
-                try:
-                    bbox = ann.get_window_extent()
-                    bbox_ax = bbox.transformed(pix_to_ax)
-                    y_top_annot = bbox_ax.ymax
-                except RuntimeError:
-                    got_mpl_error = True
-
-            if self.use_fixed_offset or got_mpl_error:
-                if self.verbose >= 1:
-                    print("Warning: cannot get the text bounding box. Falling "
-                          "back to a fixed y offset. Layout may be not "
-                          "optimal.")
-
-                # We will apply a fixed offset in points,
-                # based on the font size of the annotation.
-                fontsize_points = FontProperties(
-                    size='medium').get_size_in_points()
-                offset_trans = mtransforms.offset_copy(
-                    self.ax.transAxes, fig=self.fig, x=0,
-                    y=1.0 * fontsize_points + self.text_offset, units='points')
-
-                y_top_display = offset_trans.transform(
-                    (0, y + self.line_height))
-                y_top_annot = (self.ax.transAxes.inverted()
-                               .transform(y_top_display)[1])
+            y_top_annot = self._annotate_pair_text(ann, y)
         else:
             y_top_annot = y + self.line_height
 
@@ -538,7 +533,7 @@ class Annotator:
         # Increment the counter of annotations in the y_stack array
         self.y_stack_arr[2, xi1:xi2 + 1] = self.y_stack_arr[2, xi1:xi2 + 1] + 1
 
-    def update_y_for_loc(self):
+    def _update_y_for_loc(self):
         if self._loc == 'outside':
             self.y_stack_arr[1, :] = 1
 
@@ -781,12 +776,10 @@ class Annotator:
     def _get_stat_result_from_test(self, box_struct1, box_struct2,
                                    num_comparisons,
                                    **stats_params) -> StatResult:
-        box_data1 = box_struct1['box_data']
-        box_data2 = box_struct2['box_data']
 
         result = stat_test(
-            box_data1,
-            box_data2,
+            box_struct1['box_data'],
+            box_struct2['box_data'],
             self.test,
             comparisons_correction=self.comparisons_correction,
             num_comparisons=num_comparisons,
@@ -796,8 +789,7 @@ class Annotator:
 
         return result
 
-    def _get_custom_results(self, box_struct1,
-                            pvalues) -> StatResult:
+    def _get_custom_results(self, box_struct1, pvalues) -> StatResult:
         pvalue = pvalues[box_struct1['i_box_pair']]
 
         if self.has_type0_comparisons_correction():
@@ -843,12 +835,7 @@ class Annotator:
             enumerate(self.box_struct_pairs),
             key=self.absolute_box_struct_pair_in_tuple_x_diff)
 
-        self.box_struct_pairs = [box_struct_pair
-                                 for index, box_struct_pair
-                                 in new_box_struct_pairs]
-
-        reordering = [index for index, box_struct_pair in new_box_struct_pairs]
-        return reordering
+        self.reordering, self.box_struct_pairs = zip(*new_box_struct_pairs)
 
     @staticmethod
     def _get_plotter(plot, x, y, hue, data, order, hue_order,
@@ -977,6 +964,54 @@ class Annotator:
     def has_type0_comparisons_correction(self):
         return self.comparisons_correction is not None \
                and not self.comparisons_correction.type
+
+    def _plot_line(self, line_x, line_y):
+        if self.loc == 'inside':
+            self.ax.plot(line_x, line_y, lw=self.line_width, c=self.color)
+        else:
+            line = lines.Line2D(line_x, line_y, lw=self.line_width,
+                                c=self.color, transform=self.ax.transData)
+            line.set_clip_on(False)
+            self.ax.add_line(line)
+
+    def _annotate_pair_text(self, ann, y):
+
+        y_top_annot = None
+        got_mpl_error = False
+
+        if not self.use_fixed_offset:
+            try:
+                bbox = ann.get_window_extent()
+                pix_to_ax = Annotator._get_transform_func(self.ax, 'pix_to_ax')
+                bbox_ax = bbox.transformed(pix_to_ax)
+                y_top_annot = bbox_ax.ymax
+            except RuntimeError:
+                got_mpl_error = True
+
+        if self.use_fixed_offset or got_mpl_error:
+            if self.verbose >= 1:
+                print("Warning: cannot get the text bounding box. Falling "
+                      "back to a fixed y offset. Layout may be not "
+                      "optimal.")
+
+            # We will apply a fixed offset in points,
+            # based on the font size of the annotation.
+            fontsize_points = FontProperties(
+                size='medium').get_size_in_points()
+            offset_trans = mtransforms.offset_copy(
+                self.ax.transAxes, fig=self.fig, x=0,
+                y=1.0 * fontsize_points + self.text_offset, units='points')
+
+            y_top_display = offset_trans.transform(
+                (0, y + self.line_height))
+            y_top_annot = (self.ax.transAxes.inverted()
+                           .transform(y_top_display)[1])
+
+        return y_top_annot
+
+    def _reset_default_values(self):
+        for attribute, default_value in _DEFAULT_VALUES.items():
+            setattr(self, attribute, default_value)
 
 
 def _print_result_line(box_structs, formatted_output):

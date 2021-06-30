@@ -157,6 +157,9 @@ class PValueFormat:
 
         return text
 
+    def get_configuration(self):
+        return {key: getattr(self, key) for key in CONFIGURABLE_PARAMETERS}
+
 
 def sort_pvalue_thresholds(pvalue_thresholds):
     return sorted(pvalue_thresholds,
