@@ -1,7 +1,7 @@
 import unittest
 
 from statannotations.utils import \
-    raise_expected_got, check_is_in, check_not_none
+    raise_expected_got, check_is_in, check_not_none, get_x_values
 
 
 class TestUtils(unittest.TestCase):
@@ -27,3 +27,6 @@ class TestUtils(unittest.TestCase):
             check_not_none("this", None)
 
         check_not_none("this", "that")
+
+    def test_get_x_values(self):
+        self.assertSetEqual({1, 2, 3}, get_x_values(None, [1, 3, 2]))

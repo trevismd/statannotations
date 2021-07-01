@@ -378,9 +378,7 @@ class Annotator:
 
     @loc.setter
     def loc(self, loc):
-        check_is_in(
-            loc, ['inside', 'outside'], label='argument `loc`'
-        )
+        check_is_in(loc, ['inside', 'outside'], label='argument `loc`')
         self._loc = loc
 
     @property
@@ -470,22 +468,8 @@ class Annotator:
         i_ymax_in_range_x1_x2 = xi1 + np.nanargmax(
             self.y_stack_arr[1, np.where((x1 <= self.y_stack_arr[0, :])
                                          & (self.y_stack_arr[0, :] <= x2))])
-        ymax_in_range_x1_x2 = self.y_stack_arr[1, i_ymax_in_range_x1_x2]
 
-        yref = ymax_in_range_x1_x2
-        yref2 = yref
-
-        # Choose the best offset depending on whether there is an annotation
-        # below at the x position in the range [x1, x2] where the stack is the
-        # highest
-        if self.y_stack_arr[2, i_ymax_in_range_x1_x2] == 0:
-            # there is only a box below
-            offset = self.line_offset_to_box
-        else:
-            # there is an annotation below
-            offset = self.y_offset
-
-        y = yref2 + offset
+        y = self._get_y_for_pair(i_ymax_in_range_x1_x2)
 
         # Determine lines in axes coordinates
         ax_line_x = [x1, x1, x2, x2]
@@ -520,7 +504,7 @@ class Annotator:
                          & (self.y_stack_arr[0, :] <= x2)] = y_top_annot
 
         # Increment the counter of annotations in the y_stack array
-        self.y_stack_arr[2, xi1:xi2 + 1] = self.y_stack_arr[2, xi1:xi2 + 1] + 1
+        self.y_stack_arr[2, xi1:xi2 + 1] += 1
 
     def _update_y_for_loc(self):
         if self._loc == 'outside':
@@ -605,22 +589,28 @@ class Annotator:
         data_to_ax = Annotator._get_transform_func(ax, 'data_to_ax')
 
         for child in ax.get_children():
-            if ((type(child) == PathCollection)
-                    and len(child.properties()['offsets'])):
-                xname, ypos = Annotator._get_ypos_for_path_collection(
-                    xpositions, data_to_ax, child)
 
-            elif (type(child) == lines.Line2D) or (type(child) == Rectangle):
-                xname, ypos = Annotator._get_ypos_for_line2d_or_rectangle(
-                    xpositions, data_to_ax, ax, fig, child)
-                if xname is None:
-                    continue
-            else:
-                continue
+            xname, ypos = Annotator._get_child_ypos(
+                child, ax, fig, xpositions, data_to_ax)
 
-            if ypos > ymaxes[xname]:
+            if ypos is not None and ypos > ymaxes[xname]:
                 ymaxes[xname] = ypos
+
         return ymaxes
+
+    @staticmethod
+    def _get_child_ypos(child, ax, fig, xpositions, data_to_ax):
+
+        if ((type(child) == PathCollection)
+                and len(child.properties()['offsets'])):
+            return Annotator._get_ypos_for_path_collection(
+                xpositions, data_to_ax, child)
+
+        elif (type(child) == lines.Line2D) or (type(child) == Rectangle):
+            return Annotator._get_ypos_for_line2d_or_rectangle(
+                xpositions, data_to_ax, ax, fig, child)
+
+        return None, None
 
     @staticmethod
     def _get_group_data(b_plotter, cat):
@@ -1001,6 +991,22 @@ class Annotator:
     def _reset_default_values(self):
         for attribute, default_value in _DEFAULT_VALUES.items():
             setattr(self, attribute, default_value)
+
+    def _get_y_for_pair(self, i_ymax_in_range_x1_x2):
+
+        ymax_in_range_x1_x2 = self.y_stack_arr[1, i_ymax_in_range_x1_x2]
+
+        # Choose the best offset depending on whether there is an annotation
+        # below at the x position in the range [x1, x2] where the stack is the
+        # highest
+        if self.y_stack_arr[2, i_ymax_in_range_x1_x2] == 0:
+            # there is only a box below
+            offset = self.line_offset_to_box
+        else:
+            # there is an annotation below
+            offset = self.y_offset
+
+        return ymax_in_range_x1_x2 + offset
 
 
 def _print_result_line(box_structs, formatted_output):

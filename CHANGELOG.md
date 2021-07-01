@@ -2,6 +2,7 @@
 ### v0.4.0
  - Major refactoring, change to an Annotator `class` to prepare and add annotations
  - Fixes in rendering of non significant tests results after multiple comparisons correction
+ - Fix the printout of the star annotation legend
  - Many unit and integration tests
 
 ## v0.3
