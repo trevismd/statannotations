@@ -101,18 +101,16 @@ class Annotator:
         :param hue_order: seaborn plot's hue_order
         :param plot_params: Other parameters for seaborn plotter
         """
+        self.box_pairs = box_pairs
+        self.ax = ax
 
         basic_plot = self.get_basic_plot(ax, box_pairs, plot, data, x, y, hue,
                                          order, hue_order, **plot_params)
-        self.box_pairs = box_pairs
 
-        self.y_stack_arr = basic_plot[0]
-        self.box_struct_pairs = basic_plot[1]
-        self.fig = basic_plot[2]
+        self.y_stack_arr, self.box_struct_pairs, self.fig = basic_plot
 
         self.reordering = None
         self._sort_box_struct_pairs()
-        self.ax = ax
 
         self._test = None
         self.perform_stat_test = None
@@ -178,9 +176,8 @@ class Annotator:
 
         basic_plot = self.get_basic_plot(ax, box_pairs, plot, data, x, y, hue,
                                          order, hue_order, **plot_params)
-        self.y_stack_arr = basic_plot[0]
-        self.box_struct_pairs = basic_plot[1]
-        self.fig = basic_plot[2]
+
+        self.y_stack_arr, self.box_struct_pairs, self.fig = basic_plot
 
         self._sort_box_struct_pairs()
 
@@ -207,8 +204,6 @@ class Annotator:
         self._update_y_for_loc()
 
         ann_list = []
-        ymaxs = []
-        y_stack = []
         orig_ylim = self.ax.get_ylim()
 
         offset_func = self.OFFSET_FUNCS[self.loc]
@@ -227,8 +222,6 @@ class Annotator:
             self._annotate_pair(box_structs, result,
                                 ax_to_data=ax_to_data,
                                 ann_list=ann_list,
-                                ymaxs=ymaxs,
-                                y_stack=y_stack,
                                 orig_ylim=orig_ylim)
 
         y_stack_max = max(self.y_stack_arr[1, :])
@@ -456,7 +449,7 @@ class Annotator:
         return self._pvalue_format.format_result(result)
 
     def _annotate_pair(self, box_structs, result, ax_to_data,
-                       ann_list, ymaxs, y_stack, orig_ylim):
+                       ann_list, orig_ylim):
 
         if self.custom_annotations is not None:
             i_box_pair = box_structs[0]['i_box_pair']
@@ -519,10 +512,6 @@ class Annotator:
             y_top_annot = self._annotate_pair_text(ann, y)
         else:
             y_top_annot = y + self.line_height
-
-        # remark: y_stack is not really necessary if we have the stack_array
-        y_stack.append(y_top_annot)
-        ymaxs.append(max(y_stack))
 
         # Fill the highest y position of the annotation into the y_stack array
         # for all positions in the range x1 to x2

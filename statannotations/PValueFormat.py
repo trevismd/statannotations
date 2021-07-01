@@ -4,6 +4,7 @@ from statannotations.utils import DEFAULT, check_valid_text_format, \
     render_collection
 
 CONFIGURABLE_PARAMETERS = [
+    'fontsize',
     'pvalue_format_string',
     'simple_format_string',
     'text_format',
@@ -105,6 +106,9 @@ class PValueFormat:
                 [5e-2, "0.05"]
             ]`
         """
+        if pvalue_thresholds != DEFAULT:
+            self._default_pvalue_thresholds = False
+
         self._pvalue_thresholds = self._get_pvalue_thresholds(
             pvalue_thresholds)
 
@@ -123,16 +127,17 @@ class PValueFormat:
             print("p-value annotation legend:")
 
             pvalue_thresholds = sort_pvalue_thresholds(self.pvalue_thresholds)
+            print(f"{pvalue_thresholds[-1][1]}: p "
+                  f"<= {pvalue_thresholds[-1][0]:.2e}")
 
-            for i in range(0, len(pvalue_thresholds)):
-                if i < len(pvalue_thresholds) - 1:
-                    print('{}: {:.2e} < p <= {:.2e}'
-                          .format(pvalue_thresholds[i][1],
-                                  pvalue_thresholds[i + 1][0],
-                                  pvalue_thresholds[i][0]))
-                else:
-                    print('{}: p <= {:.2e}'.format(pvalue_thresholds[i][1],
-                                                   pvalue_thresholds[i][0]))
+            for i in range(len(pvalue_thresholds)-2, 0, -1):
+                print(f"{pvalue_thresholds[i][1]}: "
+                      f"{pvalue_thresholds[i-1][0]:.2e} < p "
+                      f"<= {pvalue_thresholds[i][0]:.2e}")
+
+            print(f"{pvalue_thresholds[0][1]}: p "
+                  f"<= {pvalue_thresholds[0][0]:.2e}")
+
             print()
 
     def _update_pvalue_thresholds(self):
@@ -141,21 +146,17 @@ class PValueFormat:
 
     def format_result(self, result):
         if self.text_format == 'full':
-            text = ("{} p = {}{}"
+            return ("{} p = {}{}"
                     .format('{}', self.pvalue_format_string, '{}')
                     .format(result.test_short_name, result.pval,
                             result.significance_suffix))
 
         elif self.text_format == 'star':
-            text = pval_annotation_text(result, self.pvalue_thresholds)
+            return pval_annotation_text(result, self.pvalue_thresholds)
 
         elif self.text_format == 'simple':
-            text = simple_text(result, self.simple_format_string,
+            return simple_text(result, self.simple_format_string,
                                self.pvalue_thresholds)
-        else:
-            text = None
-
-        return text
 
     def get_configuration(self):
         return {key: getattr(self, key) for key in CONFIGURABLE_PARAMETERS}
