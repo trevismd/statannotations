@@ -1,6 +1,9 @@
 import re
 import unittest
 
+import scipy
+from packaging import version
+
 import pandas as pd
 import seaborn as sns
 
@@ -28,20 +31,22 @@ class TestAnnotator(unittest.TestCase):
 
         self.box_pairs_df = [(("a", "blue"), ("b", "blue")),
                              (("a", "blue"), ("a", "red"))]
+        self.df.y = self.df.y.astype(float)
         self.params_df = {
             "data": self.df,
-             "x": "x",
-             "y": "y",
-             "hue": "color",
-             "order": ["a", "b"],
-             "hue_order": ['red', 'blue']}
+            "x": "x",
+            "y": "y",
+            "hue": "color",
+            "order": ["a", "b"],
+            "hue_order": ['red', 'blue']}
 
     def test_init_simple(self):
         self.annot = Annotator(self.ax, [(0, 1)], data=self.data)
 
     def test_init_df(self):
         self.ax = sns.boxplot(**self.params_df)
-        self.annot = Annotator(self.ax, box_pairs=self.box_pairs_df, **self.params_df)
+        self.annot = Annotator(self.ax, box_pairs=self.box_pairs_df,
+                               **self.params_df)
 
     def test_init_barplot(self):
         ax = sns.barplot(data=self.data)
@@ -145,8 +150,11 @@ class TestAnnotator(unittest.TestCase):
         self.test_init_df()
         self.annot.configure(test="Mann-Whitney", text_format="simple")
         self.annot.apply_test()
-        self.assertEqual(['M.W.W. p = 0.25', 'M.W.W. p = 0.67'],
-                         self.annot.get_annotations_text())
+
+        expected = (['M.W.W. p = 0.25', 'M.W.W. p = 0.67']
+                    if version.parse(scipy.__version__) < version.parse("1.7")
+                    else ['M.W.W. p = 0.33', 'M.W.W. p = 1.00'])
+        self.assertEqual(expected, self.annot.get_annotations_text())
 
     def test_init_df_inverted(self):
         box_pairs = self.box_pairs_df[::-1]
@@ -157,5 +165,8 @@ class TestAnnotator(unittest.TestCase):
         self.test_init_df_inverted()
         self.annot.configure(test="Mann-Whitney", text_format="simple")
         self.annot.apply_test()
-        self.assertEqual(['M.W.W. p = 0.67', 'M.W.W. p = 0.25'],
-                         self.annot.get_annotations_text())
+
+        expected = (['M.W.W. p = 0.67', 'M.W.W. p = 0.25']
+                    if version.parse(scipy.__version__) < version.parse("1.7")
+                    else ['M.W.W. p = 1.00', 'M.W.W. p = 0.33'])
+        self.assertEqual(expected, self.annot.get_annotations_text())
