@@ -48,8 +48,7 @@ class Test(unittest.TestCase):
         self.annotator.configure(comparisons_correction=bh)
         self.annotator.set_pvalues(self.pvalues)
         self.assertEqual(["* (ns)", "* (ns)", "ns"],
-                         [self.annotator._get_text(result)
-                          for result in self.annotator.annotations])
+                         self.annotator.get_annotations_text())
 
     def test_signif_with_type1_correction_star_incorrect_num_comparisons(self):
         bh = ComparisonsCorrection("BH")
@@ -70,22 +69,17 @@ class Test(unittest.TestCase):
         self.annotator.set_pvalues(self.pvalues)
 
         self.assertEqual(["ns", "ns", "ns"],
-                         [self.annotator._get_text(result)
-                          for result in self.annotator.annotations])
+                         self.annotator.get_annotations_text())
 
     def test_signif_with_type1_correction_simple(self):
         bh = ComparisonsCorrection("BH")
         self.annotator.configure(comparisons_correction=bh,
                                  pvalue_format={'text_format': 'simple'})
         self.annotator.set_pvalues(self.pvalues)
-        reordering = self.annotator.reordering
 
-        expected = [["p ≤ 0.05 (ns)", "p ≤ 0.05 (ns)", "p = 0.90"][index]
-                    for index in reordering]
+        expected = ["p ≤ 0.05 (ns)", "p ≤ 0.05 (ns)", "p = 0.90"]
 
-        self.assertEqual(expected,
-                         [self.annotator._get_text(result)
-                          for result in self.annotator.annotations])
+        self.assertEqual(expected, self.annotator.get_annotations_text())
 
     def test_signif_with_type0_correction_simple(self):
         bonferroni = ComparisonsCorrection("bonferroni")
@@ -93,11 +87,10 @@ class Test(unittest.TestCase):
                                  pvalue_format={'text_format': 'simple'})
 
         self.annotator.set_pvalues(self.pvalues)
-        reordering = self.annotator.reordering
 
-        expected = [["p = 0.09", "p = 0.12", "p = 1.00"][index]
-                    for index in reordering]
+        expected = ["p = 0.09", "p = 0.12", "p = 1.00"]
 
-        self.assertEqual(expected,
-                         [self.annotator._get_text(result)
-                          for result in self.annotator.annotations])
+        self.assertEqual(expected, self.annotator.get_annotations_text())
+
+    def test_reapply_annotations(self):
+        pass

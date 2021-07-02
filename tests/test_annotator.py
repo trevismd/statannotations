@@ -26,15 +26,29 @@ class TestAnnotator(unittest.TestCase):
              8: {'x': "b", 'y': 18, 'color': 'red'}
              }).T
 
-    def test_init(self):
+        self.box_pairs_df = [(("a", "blue"), ("b", "blue")),
+                             (("a", "blue"), ("a", "red"))]
+        self.params_df = {
+            "data": self.df,
+             "x": "x",
+             "y": "y",
+             "hue": "color",
+             "order": ["a", "b"],
+             "hue_order": ['red', 'blue']}
+
+    def test_init_simple(self):
         self.annot = Annotator(self.ax, [(0, 1)], data=self.data)
+
+    def test_init_df(self):
+        self.ax = sns.boxplot(**self.params_df)
+        self.annot = Annotator(self.ax, box_pairs=self.box_pairs_df, **self.params_df)
 
     def test_init_barplot(self):
         ax = sns.barplot(data=self.data)
         self.annot = Annotator(ax, [(0, 1)], plot="barplot", data=self.data)
 
     def test_test_name_provided(self):
-        self.test_init()
+        self.test_init_simple()
         with self.assertRaisesRegex(ValueError, "test"):
             self.annot.apply_test()
 
@@ -75,18 +89,18 @@ class TestAnnotator(unittest.TestCase):
                                    hue_order=['red', 'blue'])
 
     def test_location(self):
-        self.test_init()
+        self.test_init_simple()
         with self.assertRaisesRegex(ValueError, "argument `loc`"):
             self.annot.configure(loc="somewhere")
 
     def test_unknown_parameter(self):
-        self.test_init()
+        self.test_init_simple()
         with self.assertRaisesRegex(
                 ValueError, re.escape("parameter(s) `that`")):
             self.annot.configure(that="this")
 
     def test_format(self):
-        self.test_init()
+        self.test_init_simple()
 
         with self.assertRaisesRegex(ValueError, "argument `text_format`"):
             self.annot.configure(pvalue_format={'text_format': 'that'})
@@ -95,24 +109,53 @@ class TestAnnotator(unittest.TestCase):
         self.assertIsNone(Annotator._apply_comparisons_correction(None, []))
 
     def test_correct_num_custom_annotations(self):
-        self.test_init()
+        self.test_init_simple()
         with self.assertRaisesRegex(ValueError, "same length"):
             self.annot.set_custom_annotation(["One", "Two"])
 
     def test_not_implemented_plot(self):
         with self.assertRaises(NotImplementedError):
-            Annotator(self.ax, [(0, 1)], data=self.data, plot="violinplot")
+            Annotator(self.ax, [(0, 1)], data=self.data, plot="thatplot")
 
     def test_reconfigure_alpha(self):
-        self.test_init()
+        self.test_init_simple()
         with self.assertWarnsRegex(UserWarning, "pvalue_thresholds"):
             self.annot.configure(alpha=0.1)
         self.annot.reset_configuration()
         self.assertEqual(0.05, self.annot.alpha)
 
     def test_reconfigure_alpha_with_thresholds(self):
-        self.test_init()
+        self.test_init_simple()
         self.annot.configure(alpha=0.1,
                              pvalue_format={"pvalue_thresholds": DEFAULT})
         self.annot.reset_configuration()
         self.assertEqual(0.05, self.annot.alpha)
+
+    def test_get_annotation_text_undefined(self):
+        self.test_init_simple()
+        self.assertIsNone(self.annot.get_annotations_text())
+
+    def test_get_annotation_text_calculated(self):
+        self.test_init_simple()
+        self.annot.configure(test="Mann-Whitney", verbose=2)
+        self.annot.apply_test()
+        self.assertEqual(["ns"], self.annot.get_annotations_text())
+
+    def test_get_annotation_text_in_input_order(self):
+        self.test_init_df()
+        self.annot.configure(test="Mann-Whitney", text_format="simple")
+        self.annot.apply_test()
+        self.assertEqual(['M.W.W. p = 0.25', 'M.W.W. p = 0.67'],
+                         self.annot.get_annotations_text())
+
+    def test_init_df_inverted(self):
+        box_pairs = self.box_pairs_df[::-1]
+        self.ax = sns.boxplot(**self.params_df)
+        self.annot = Annotator(self.ax, box_pairs=box_pairs, **self.params_df)
+
+    def test_get_annotation_text_in_input_order_inverted(self):
+        self.test_init_df_inverted()
+        self.annot.configure(test="Mann-Whitney", text_format="simple")
+        self.annot.apply_test()
+        self.assertEqual(['M.W.W. p = 0.67', 'M.W.W. p = 0.25'],
+                         self.annot.get_annotations_text())

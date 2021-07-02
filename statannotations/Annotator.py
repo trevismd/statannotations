@@ -40,7 +40,8 @@ CONFIGURABLE_PARAMETERS = [
     'verbose',
 ]
 
-IMPLEMENTED_PLOTTERS = ['barplot', 'boxplot', 'stripplot', 'swarmplot']
+IMPLEMENTED_PLOTTERS = ['barplot', 'boxplot', 'stripplot', 'swarmplot',
+                        'violinplot']
 
 _DEFAULT_VALUES = {
     "alpha": 0.05,
@@ -109,7 +110,7 @@ class Annotator:
 
         self.y_stack_arr, self.box_struct_pairs, self.fig = basic_plot
 
-        self.reordering = None
+        self._reordering = None
         self._sort_box_struct_pairs()
 
         self._test = None
@@ -147,15 +148,15 @@ class Annotator:
         check_order_in_data(data, x, order)
         check_box_pairs_in_data(box_pairs, data, x, hue, hue_order)
 
-        box_plotter = Annotator._get_plotter(plot, x, y, hue, data, order,
-                                             hue_order, **plot_params)
+        plotter = Annotator._get_plotter(plot, x, y, hue, data, order,
+                                         hue_order, **plot_params)
 
-        box_names, labels = Annotator._get_box_names_and_labels(box_plotter)
+        box_names, labels = Annotator._get_box_names_and_labels(plotter)
 
         fig = plt.gcf()
-        ymaxes = Annotator._generate_ymaxes(ax, fig, box_plotter, box_names)
+        ymaxes = Annotator._generate_ymaxes(ax, fig, plotter, box_names)
         box_structs = Annotator._get_box_structs(
-            box_plotter, box_names, labels, ymaxes)
+            plotter, box_names, labels, ymaxes)
 
         box_struct_pairs = Annotator._get_box_struct_pairs(
             box_pairs, box_structs)
@@ -195,7 +196,7 @@ class Annotator:
         return self
 
     def annotate(self, line_offset=None, line_offset_to_box=None):
-
+        """Add configured annotations to the plot."""
         if self._should_warn_about_configuration:
             warnings.warn("Annotator was reconfigured without applying the "
                           "test (again) which will probably lead to "
@@ -237,29 +238,30 @@ class Annotator:
         return self.ax, self.annotations
 
     def apply_and_annotate(self):
+        """Applies a configured statistical test and annotates the plot"""
         self.apply_test()
         return self.annotate()
 
     def configure(self, **parameters):
         """
-        * 'alpha'
-        * 'color
-        * 'comparisons_correction'
+        * `alpha`: Acceptable type 1 error for statistical tests, default 0.05
+        * `color`
+        * `comparisons_correction`
         * `line_height`: in axes fraction coordinates
-        * 'line_offset'
-        * 'line_offset_to_box'
-        * 'line_width'
-        * 'loc'
-        * 'pvalue_format'
-        * 'show_test_name'
-        * 'test'
-        * 'test_short_name'
-        * 'text_offset'
+        * `line_offset`
+        * `line_offset_to_box`
+        * `line_width`
+        * `loc`
+        * `pvalue_format`
+        * `show_test_name`
+        * `test`
+        * `test_short_name`
+        * `text_offset`
         * `show_test_name`: Set to False to not show the (short) name of
             test
         * `text_offset`: in points
-        * 'use_fixed_offset'
-        * 'verbose'
+        * `use_fixed_offset`
+        * `verbose`
         """
 
         if parameters.get("pvalue_format") is None:
@@ -348,6 +350,17 @@ class Annotator:
                          for key in CONFIGURABLE_PARAMETERS}
         configuration["pvalue_format"] = self.pvalue_format.get_configuration()
         return configuration
+
+    def get_annotations_text(self):
+        if self.annotations is not None:
+            return [self._get_text(self.annotations[new_idx])
+                    for new_idx in self._reordering]
+
+        if self.custom_annotations is not None:
+            return [self.custom_annotations[new_idx]
+                    for new_idx in self._reordering]
+
+        return None
 
     @property
     def alpha(self):
@@ -570,7 +583,7 @@ class Annotator:
         return xname, ypos
 
     @staticmethod
-    def _generate_ymaxes(ax, fig, box_plotter, box_names):
+    def _generate_ymaxes(ax, fig, plotter, box_names):
         """
         given box plotter and the names of two categorical variables,
         returns highest y point drawn between those two variables before
@@ -580,27 +593,30 @@ class Annotator:
         (eg, error bars and/or bar charts).
         """
         xpositions = {
-            np.round(Annotator._get_box_x_position(box_plotter, box_name),
+            np.round(Annotator._get_box_x_position(plotter, box_name),
                      1): box_name
             for box_name in box_names}
 
         ymaxes = {name: 0 for name in box_names}
 
         data_to_ax = Annotator._get_transform_func(ax, 'data_to_ax')
+        # noinspection PyProtectedMember
+        if isinstance(plotter, sns.categorical._ViolinPlotter):
+            ymaxes = Annotator._get_ymaxes_violin(plotter, ymaxes, data_to_ax)
 
-        for child in ax.get_children():
+        else:
+            for child in ax.get_children():
 
-            xname, ypos = Annotator._get_child_ypos(
-                child, ax, fig, xpositions, data_to_ax)
+                xname, ypos = Annotator._get_child_ypos(
+                    child, ax, fig, xpositions, data_to_ax)
 
-            if ypos is not None and ypos > ymaxes[xname]:
-                ymaxes[xname] = ypos
+                if ypos is not None and ypos > ymaxes[xname]:
+                    ymaxes[xname] = ypos
 
         return ymaxes
 
     @staticmethod
     def _get_child_ypos(child, ax, fig, xpositions, data_to_ax):
-
         if ((type(child) == PathCollection)
                 and len(child.properties()['offsets'])):
             return Annotator._get_ypos_for_path_collection(
@@ -611,6 +627,19 @@ class Annotator:
                 xpositions, data_to_ax, ax, fig, child)
 
         return None, None
+
+    @staticmethod
+    def _get_ymaxes_violin(plotter, ymaxes, data_to_ax):
+        for group_idx, group_name in enumerate(plotter.group_names):
+            if plotter.hue_names:
+                for hue_idx, hue_name in enumerate(plotter.hue_names):
+                    ypos = max(plotter.support[group_idx][hue_idx])
+                    ymaxes[(group_name, hue_name)] = \
+                        data_to_ax.transform((0, ypos))[1]
+            else:
+                ypos = max(plotter.support[group_idx])
+                ymaxes[group_name] = data_to_ax.transform((0, ypos))[1]
+        return ymaxes
 
     @staticmethod
     def _get_group_data(b_plotter, cat):
@@ -814,8 +843,9 @@ class Annotator:
             enumerate(self.box_struct_pairs),
             key=self.absolute_box_struct_pair_in_tuple_x_diff)
 
-        self.reordering, self.box_struct_pairs = zip(*new_box_struct_pairs)
+        self._reordering, self.box_struct_pairs = zip(*new_box_struct_pairs)
 
+    # noinspection PyProtectedMember
     @staticmethod
     def _get_plotter(plot, x, y, hue, data, order, hue_order,
                      **plot_params):
@@ -823,8 +853,7 @@ class Annotator:
             raise ValueError("`dodge` must be True in statannotations")
 
         if plot == 'boxplot':
-            # noinspection PyProtectedMember
-            box_plotter = sns.categorical._BoxPlotter(
+            plotter = sns.categorical._BoxPlotter(
 
                 x, y, hue, data, order, hue_order,
                 orient=plot_params.get("orient"),
@@ -835,23 +864,20 @@ class Annotator:
                 saturation=.75, color=None, palette=None)
 
         elif plot == 'swarmplot':
-            # noinspection PyProtectedMember
-            box_plotter = sns.categorical._SwarmPlotter(
+            plotter = sns.categorical._SwarmPlotter(
                 x, y, hue, data, order, hue_order,
                 orient=plot_params.get("orient"),
                 dodge=True, color=None, palette=None)
 
         elif plot == 'stripplot':
-            # noinspection PyProtectedMember
-            box_plotter = sns.categorical._StripPlotter(
+            plotter = sns.categorical._StripPlotter(
                 x, y, hue, data, order, hue_order,
                 jitter=plot_params.get("jitter", True),
                 orient=plot_params.get("orient"),
                 dodge=True, color=None, palette=None)
 
         elif plot == 'barplot':
-            # noinspection PyProtectedMember
-            box_plotter = sns.categorical._BarPlotter(
+            plotter = sns.categorical._BarPlotter(
                 x, y, hue, data, order, hue_order,
                 estimator=plot_params.get("estimator", np.mean),
                 ci=plot_params.get("ci", 95),
@@ -864,12 +890,27 @@ class Annotator:
                 capsize=None,
                 dodge=True)
 
+        elif plot == "violinplot":
+            plotter = sns.categorical._ViolinPlotter(
+                x, y, hue, data, order, hue_order,
+                bw=plot_params.get("bw", "scott"),
+                cut=plot_params.get("cut", 2),
+                scale=plot_params.get("scale", "area"),
+                scale_hue=plot_params.get("scale_hue", True),
+                gridsize=plot_params.get("gridsize", 100),
+                width=plot_params.get("width", 0.8),
+                inner=plot_params.get("inner", None),
+                split=plot_params.get("split", False),
+                dodge=True, orient=plot_params.get("orient"),
+                linewidth=plot_params.get("linewidth"), color=None,
+                palette=None, saturation=.75)
+
         else:
             raise NotImplementedError(
                 f"Only {render_collection(IMPLEMENTED_PLOTTERS)} are "
                 f"supported.")
 
-        return box_plotter
+        return plotter
 
     @staticmethod
     def _get_offsets_inside(line_offset, line_offset_to_box):

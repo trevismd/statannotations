@@ -226,12 +226,14 @@ custom p-values <cite>pvalues</cite> are used for each pair of boxes.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="statannotations.Annotator.Annotator.annotate">
 <span class="sig-name descname"><span class="pre">annotate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_offset_to_box</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.annotate" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Add configured annotations to the plot.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="statannotations.Annotator.Annotator.apply_and_annotate">
 <span class="sig-name descname"><span class="pre">apply_and_annotate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.apply_and_annotate" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Applies a configured statistical test and annotates the plot</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="statannotations.Annotator.Annotator.apply_test">
@@ -256,29 +258,34 @@ calculated with number of box_pairs</p></li>
 <dt class="sig sig-object py" id="statannotations.Annotator.Annotator.configure">
 <span class="sig-name descname"><span class="pre">configure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.configure" title="Permalink to this definition">¶</a></dt>
 <dd><ul class="simple">
-<li><p>‘alpha’</p></li>
-<li><p>‘color</p></li>
-<li><p>‘comparisons_correction’</p></li>
+<li><p><cite>alpha</cite>: Acceptable type 1 error for statistical tests, default 0.05</p></li>
+<li><p><cite>color</cite></p></li>
+<li><p><cite>comparisons_correction</cite></p></li>
 <li><p><cite>line_height</cite>: in axes fraction coordinates</p></li>
-<li><p>‘line_offset’</p></li>
-<li><p>‘line_offset_to_box’</p></li>
-<li><p>‘line_width’</p></li>
-<li><p>‘loc’</p></li>
-<li><p>‘pvalue_format’</p></li>
-<li><p>‘show_test_name’</p></li>
-<li><p>‘test’</p></li>
-<li><p>‘test_short_name’</p></li>
-<li><p>‘text_offset’</p></li>
+<li><p><cite>line_offset</cite></p></li>
+<li><p><cite>line_offset_to_box</cite></p></li>
+<li><p><cite>line_width</cite></p></li>
+<li><p><cite>loc</cite></p></li>
+<li><p><cite>pvalue_format</cite></p></li>
+<li><p><cite>show_test_name</cite></p></li>
+<li><p><cite>test</cite></p></li>
+<li><p><cite>test_short_name</cite></p></li>
+<li><p><cite>text_offset</cite></p></li>
 <li><dl class="simple">
 <dt><cite>show_test_name</cite>: Set to False to not show the (short) name of</dt><dd><p>test</p>
 </dd>
 </dl>
 </li>
 <li><p><cite>text_offset</cite>: in points</p></li>
-<li><p>‘use_fixed_offset’</p></li>
-<li><p>‘verbose’</p></li>
+<li><p><cite>use_fixed_offset</cite></p></li>
+<li><p><cite>verbose</cite></p></li>
 </ul>
 </dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.get_annotations_text">
+<span class="sig-name descname"><span class="pre">get_annotations_text</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.get_annotations_text" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="statannotations.Annotator.Annotator.get_basic_plot">
