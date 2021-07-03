@@ -84,6 +84,36 @@ def check_valid_correction_name(name):
                 label='argument `comparisons_correction`')
 
 
+def _get_correction_attributes(method: Union[str, callable], alpha, name,
+                               method_type, corr_kwargs):
+    if isinstance(method, str):
+        if multipletests is None:
+            raise ImportError("The statsmodels package is required to use "
+                              "one of the multiple comparisons correction "
+                              "methods proposed in statannotations.")
+
+        name = name if name is not None else method
+        method, method_type = get_correction_parameters(method)
+        if corr_kwargs is None:
+            corr_kwargs = {}
+        func = partial(multipletests, alpha=alpha, method=method,
+                       **corr_kwargs)
+
+    else:
+        if name is None:
+            raise ValueError("A method name must be provided if passing a "
+                             "function")
+        if method_type is None:
+            raise ValueError("A method type must be provided if passing a "
+                             "function")
+        func = method
+        method = None
+        if corr_kwargs is not None:
+            func = partial(func, **corr_kwargs)
+
+    return name, method, method_type, func
+
+
 class ComparisonsCorrection(object):
     def __init__(self, method: Union[str, callable], alpha: float = 0.05,
                  name: str = None, method_type: int = None,
@@ -111,33 +141,9 @@ class ComparisonsCorrection(object):
         :param corr_kwargs: additional parameters for correction method
         """
 
-        if isinstance(method, str):
-            if multipletests is None:
-                raise ImportError("The statsmodels package is required to use "
-                                  "one of the multiple comparisons correction "
-                                  "methods proposed in statannotations.")
-
-            self.name = name if name is not None else method
-            self.method, self.type = get_correction_parameters(method)
-            if corr_kwargs is None:
-                corr_kwargs = {}
-            self.func = partial(multipletests, alpha=alpha, method=self.method,
-                                **corr_kwargs)
-
-        elif callable(method):
-            if name is None:
-                raise ValueError("A method name must be provided if passing a "
-                                 "function")
-            if method_type is None:
-                raise ValueError("A method type must be provided if passing a "
-                                 "function")
-            self.method = None
-            self.name = name
-            self.type = method_type
-            self.func = method
-            if corr_kwargs is not None:
-                self.func = partial(self.func, **corr_kwargs)
-
+        self.name, self.method, self.type, self.func = \
+            _get_correction_attributes(method, alpha, name, method_type,
+                                       corr_kwargs)
         self.alpha = alpha
         self.statsmodels_api = statsmodels_api
         self.name = methods_names.get(self.name, self.name)

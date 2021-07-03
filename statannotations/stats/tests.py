@@ -3,7 +3,7 @@ from typing import Union
 import numpy as np
 
 from statannotations.stats.ComparisonsCorrection import \
-    ComparisonsCorrection, check_valid_correction_name
+    ComparisonsCorrection
 from statannotations.stats.StatResult import StatResult
 from statannotations.stats.StatTest import StatTest
 
@@ -58,7 +58,6 @@ def stat_test(
             or comparisons_correction is None):
         pass
     else:
-        check_valid_correction_name(comparisons_correction)
         comparisons_correction = ComparisonsCorrection(comparisons_correction)
 
     if test is None:

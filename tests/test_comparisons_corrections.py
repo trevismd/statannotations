@@ -257,3 +257,12 @@ class TestBenjaminiHochberg(unittest.TestCase):
             warnings.simplefilter('ignore')
             observed = self.benjamini_hochberg(raw_p_values)
         npt.assert_allclose(observed, expected)
+
+    def test_min_num_comparisons(self):
+        raw_p_values = [6.477e-01, 4.690e-02, 2.680e-02]
+        with self.assertRaisesRegex(ValueError, "be at least "):
+            self.benjamini_hochberg(raw_p_values, num_comparisons=2)
+
+    def test_raises_not_implemented(self):
+        with self.assertRaises(NotImplementedError):
+            ComparisonsCorrection('that method')
