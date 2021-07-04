@@ -87,22 +87,22 @@ class Test(unittest.TestCase):
         pvalue_format = PValueFormat()
         self.assert_print_pvalue(pvalue_format,
                                  "p-value annotation legend:\n"
-                                 "ns: p <= 1.00e+00\n"
-                                 "*: 1.00e-02 < p <= 5.00e-02\n"
-                                 "**: 1.00e-03 < p <= 1.00e-02\n"
-                                 "***: 1.00e-04 < p <= 1.00e-03\n"
-                                 "****: p <= 1.00e-04\n\n")
+                                 "      ns: p <= 1.00e+00\n"
+                                 "       *: 1.00e-02 < p <= 5.00e-02\n"
+                                 "      **: 1.00e-03 < p <= 1.00e-02\n"
+                                 "     ***: 1.00e-04 < p <= 1.00e-03\n"
+                                 "    ****: p <= 1.00e-04\n\n")
 
     def test_print_pvalue_star(self):
         pvalue_format = PValueFormat()
         pvalue_format.config(text_format="star")
         self.assert_print_pvalue(pvalue_format,
                                  "p-value annotation legend:\n"
-                                 "ns: p <= 1.00e+00\n"
-                                 "*: 1.00e-02 < p <= 5.00e-02\n"
-                                 "**: 1.00e-03 < p <= 1.00e-02\n"
-                                 "***: 1.00e-04 < p <= 1.00e-03\n"
-                                 "****: p <= 1.00e-04\n\n")
+                                 "      ns: p <= 1.00e+00\n"
+                                 "       *: 1.00e-02 < p <= 5.00e-02\n"
+                                 "      **: 1.00e-03 < p <= 1.00e-02\n"
+                                 "     ***: 1.00e-04 < p <= 1.00e-03\n"
+                                 "    ****: p <= 1.00e-04\n\n")
 
     def test_print_pvalue_other(self):
         pvalue_format = PValueFormat()
@@ -132,6 +132,6 @@ class Test(unittest.TestCase):
         ])
         self.assert_print_pvalue(pvalue_format,
                                  "p-value annotation legend:\n"
-                                 "ns: p <= 1.00e+00\n"
-                                 "<= 0.05: 1.00e-03 < p <= 5.00e-02\n"
+                                 "      ns: p <= 1.00e+00\n"
+                                 " <= 0.05: 1.00e-03 < p <= 5.00e-02\n"
                                  "<= 0.001: p <= 1.00e-03\n\n")

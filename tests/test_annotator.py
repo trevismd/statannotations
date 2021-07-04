@@ -11,13 +11,13 @@ from statannotations.Annotator import Annotator
 from statannotations.utils import DEFAULT
 
 
+# noinspection DuplicatedCode
 class TestAnnotator(unittest.TestCase):
     """Test validation of parameters"""
 
     def setUp(self):
         self.data = [[1, 2, 3], [2, 5, 7]]
         self.ax = sns.boxplot(data=self.data)
-        # noinspection DuplicatedCode
         self.df = pd.DataFrame.from_dict(
             {1: {'x': "a", 'y': 15, 'color': 'blue'},
              2: {'x': "a", 'y': 16, 'color': 'blue'},
@@ -116,7 +116,7 @@ class TestAnnotator(unittest.TestCase):
     def test_correct_num_custom_annotations(self):
         self.test_init_simple()
         with self.assertRaisesRegex(ValueError, "same length"):
-            self.annot.set_custom_annotation(["One", "Two"])
+            self.annot.set_custom_annotations(["One", "Two"])
 
     def test_not_implemented_plot(self):
         with self.assertRaises(NotImplementedError):
@@ -170,3 +170,24 @@ class TestAnnotator(unittest.TestCase):
                     if version.parse(scipy.__version__) < version.parse("1.7")
                     else ['M.W.W. p = 1.00', 'M.W.W. p = 0.33'])
         self.assertEqual(expected, self.annot.get_annotations_text())
+
+    def test_apply_no_apply_warns(self):
+        self.test_init_df_inverted()
+        self.annot.configure(test="Mann-Whitney", text_format="simple")
+        self.annot.apply_and_annotate()
+
+        self.ax = sns.boxplot(**self.params_df)
+        self.annot.new_plot(self.ax, self.box_pairs_df, **self.params_df)
+        self.annot.configure(test="Levene", text_format="simple")
+        with self.assertWarns(UserWarning):
+            self.annot.annotate()
+
+    def test_apply_apply_no_warns(self):
+        self.test_init_df_inverted()
+        self.annot.configure(test="Mann-Whitney", text_format="simple")
+        self.annot.apply_and_annotate()
+
+        self.ax = sns.boxplot(**self.params_df)
+        self.annot.new_plot(self.ax, self.box_pairs_df, **self.params_df)
+        self.annot.configure(test="Mann-Whitney-gt", text_format="simple")
+        self.annot.apply_and_annotate()

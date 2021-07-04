@@ -127,16 +127,16 @@ class PValueFormat:
             print("p-value annotation legend:")
 
             pvalue_thresholds = sort_pvalue_thresholds(self.pvalue_thresholds)
-            print(f"{pvalue_thresholds[-1][1]}: p "
-                  f"<= {pvalue_thresholds[-1][0]:.2e}")
+            print(f"{pvalue_thresholds[-1][1]}: ".rjust(10)
+                  + f"p <= {pvalue_thresholds[-1][0]:.2e}")
 
             for i in range(len(pvalue_thresholds)-2, 0, -1):
-                print(f"{pvalue_thresholds[i][1]}: "
-                      f"{pvalue_thresholds[i-1][0]:.2e} < p "
-                      f"<= {pvalue_thresholds[i][0]:.2e}")
+                print(f"{pvalue_thresholds[i][1]}: ".rjust(10)
+                      + f"{pvalue_thresholds[i-1][0]:.2e} < p "
+                        f"<= {pvalue_thresholds[i][0]:.2e}")
 
-            print(f"{pvalue_thresholds[0][1]}: p "
-                  f"<= {pvalue_thresholds[0][0]:.2e}")
+            print(f"{pvalue_thresholds[0][1]}: ".rjust(10) +
+                  f"p <= {pvalue_thresholds[0][0]:.2e}")
 
             print()
 

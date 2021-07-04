@@ -267,16 +267,14 @@ calculated with number of box_pairs</p></li>
 <li><p><cite>line_width</cite></p></li>
 <li><p><cite>loc</cite></p></li>
 <li><p><cite>pvalue_format</cite></p></li>
-<li><p><cite>show_test_name</cite></p></li>
-<li><p><cite>test</cite></p></li>
-<li><p><cite>test_short_name</cite></p></li>
-<li><p><cite>text_offset</cite></p></li>
 <li><dl class="simple">
 <dt><cite>show_test_name</cite>: Set to False to not show the (short) name of</dt><dd><p>test</p>
 </dd>
 </dl>
 </li>
+<li><p><cite>test</cite></p></li>
 <li><p><cite>text_offset</cite>: in points</p></li>
+<li><p><cite>test_short_name</cite></p></li>
 <li><p><cite>use_fixed_offset</cite></p></li>
 <li><p><cite>verbose</cite></p></li>
 </ul>
@@ -328,8 +326,8 @@ calculated with number of box_pairs</p></li>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.set_custom_annotation">
-<span class="sig-name descname"><span class="pre">set_custom_annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text_annot_custom</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.set_custom_annotation" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.set_custom_annotations">
+<span class="sig-name descname"><span class="pre">set_custom_annotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text_annot_custom</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.set_custom_annotations" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>text_annot_custom</strong> – List of strings to annotate for each
@@ -351,6 +349,11 @@ calculated with number of box_pairs</p></li>
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.set_pvalues_and_annotate">
+<span class="sig-name descname"><span class="pre">set_pvalues_and_annotate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pvalues</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_comparisons</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.set_pvalues_and_annotate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="statannotations.Annotator.Annotator.test">

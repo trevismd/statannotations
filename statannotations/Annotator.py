@@ -131,6 +131,7 @@ class Annotator:
         self.line_offset = None
         self.line_height = _DEFAULT_VALUES["line_height"]
         self.text_offset = 1
+        self.text_offest_impact_above = 0
         self.color = '0.2'
         self.line_width = 1.5
         self.y_offset = None
@@ -217,19 +218,19 @@ class Annotator:
         ax_to_data = Annotator._get_transform_func(self.ax, 'ax_to_data')
 
         self.validate_test_short_name()
+        annotations = self.custom_annotations or self.annotations
 
         for box_structs, result in zip(self.box_struct_pairs,
-                                       self.annotations):
+                                       annotations):
             self._annotate_pair(box_structs, result,
                                 ax_to_data=ax_to_data,
                                 ann_list=ann_list,
                                 orig_ylim=orig_ylim)
 
-        y_stack_max = max(self.y_stack_arr[1, :])
-
         # reset transformation
+        y_stack_max = max(self.y_stack_arr[1, :])
         ax_to_data = Annotator._get_transform_func(self.ax, 'ax_to_data')
-        ylims = ([(0, 0), (0, max(1.03 * y_stack_max, 1))]
+        ylims = ([(0, 0), (0, max(1.04 * y_stack_max, 1))]
                  if self.loc == 'inside'
                  else [(0, 0), (0, 1)])
 
@@ -253,13 +254,11 @@ class Annotator:
         * `line_width`
         * `loc`
         * `pvalue_format`
-        * `show_test_name`
-        * `test`
-        * `test_short_name`
-        * `text_offset`
         * `show_test_name`: Set to False to not show the (short) name of
             test
+        * `test`
         * `text_offset`: in points
+        * `test_short_name`
         * `use_fixed_offset`
         * `verbose`
         """
@@ -314,8 +313,11 @@ class Annotator:
 
         return self
 
-    def set_pvalues(self, pvalues,
-                    num_comparisons='auto'):
+    def set_pvalues_and_annotate(self, pvalues, num_comparisons='auto'):
+        self.set_pvalues(pvalues, num_comparisons)
+        return self.annotate()
+
+    def set_pvalues(self, pvalues, num_comparisons='auto'):
         """
         :param pvalues: list or array of p-values for each box pair comparison.
         :param num_comparisons: Override number of comparisons otherwise
@@ -335,13 +337,14 @@ class Annotator:
 
         return self
 
-    def set_custom_annotation(self, text_annot_custom):
+    def set_custom_annotations(self, text_annot_custom):
         """
         :param text_annot_custom: List of strings to annotate for each
             `box_pair`
         """
         self._check_correct_number_custom_annotations(text_annot_custom)
         self.custom_annotations = text_annot_custom
+        self.show_test_name = False
         self._deactivate_configured_warning()
         return self
 
@@ -425,7 +428,8 @@ class Annotator:
         self._just_configured = False
 
     def print_pvalue_legend(self):
-        self._pvalue_format.print_legend_if_used()
+        if not self.custom_annotations:
+            self._pvalue_format.print_legend_if_used()
 
     def _get_results(self, num_comparisons, pvalues=None,
                      **stats_params) -> List[StatResult]:
@@ -973,12 +977,16 @@ class Annotator:
         return box_names, labels
 
     def validate_test_short_name(self):
-        if self.show_test_name:
-            if self.test_short_name is None:
+        if self.test_short_name is not None:
+            return
+
+        if self.show_test_name and self.pvalue_format.text_format != "star":
+            if self.test:
                 self.test_short_name = (self.test
                                         if isinstance(self.test, str)
                                         else self.test.short_name)
-        else:
+
+        if self.test_short_name is None:
             self.test_short_name = ""
 
     def has_type0_comparisons_correction(self):
@@ -1005,6 +1013,7 @@ class Annotator:
                 pix_to_ax = Annotator._get_transform_func(self.ax, 'pix_to_ax')
                 bbox_ax = bbox.transformed(pix_to_ax)
                 y_top_annot = bbox_ax.ymax
+
             except RuntimeError:
                 got_mpl_error = True
 
@@ -1020,13 +1029,14 @@ class Annotator:
                 size='medium').get_size_in_points()
             offset_trans = mtransforms.offset_copy(
                 self.ax.transAxes, fig=self.fig, x=0,
-                y=1.0 * fontsize_points + self.text_offset, units='points')
+                y=fontsize_points + self.text_offset, units='points')
 
             y_top_display = offset_trans.transform(
                 (0, y + self.line_height))
             y_top_annot = (self.ax.transAxes.inverted()
                            .transform(y_top_display)[1])
 
+        self.text_offest_impact_above = y_top_annot - y - self.y_offset - self.line_height
         return y_top_annot
 
     def _reset_default_values(self):
@@ -1045,7 +1055,7 @@ class Annotator:
             offset = self.line_offset_to_box
         else:
             # there is an annotation below
-            offset = self.y_offset
+            offset = self.y_offset + self.text_offest_impact_above
 
         return ymax_in_range_x1_x2 + offset
 
