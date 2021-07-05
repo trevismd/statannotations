@@ -53,12 +53,6 @@ def get_validated_comparisons_correction(comparisons_correction):
             raise ImportError(f"{e} Please install statsmodels or pass "
                               f"`comparisons_correction=None`.")
 
-        except NotImplementedError as e:
-            raise NotImplementedError(e)
-
-        except ValueError as e:
-            raise NotImplementedError(e)
-
     if not (isinstance(comparisons_correction, ComparisonsCorrection)):
         raise ValueError("comparisons_correction must be a statmodels "
                          "method name or a ComparisonCorrection instance")

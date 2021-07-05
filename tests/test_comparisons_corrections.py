@@ -5,7 +5,8 @@ from functools import partial
 import numpy.testing as npt
 from statsmodels.stats.multitest import multipletests
 
-from statannotations.stats.ComparisonsCorrection import ComparisonsCorrection
+from statannotations.stats.ComparisonsCorrection import \
+    ComparisonsCorrection, get_validated_comparisons_correction
 
 
 class TestBonferroni(unittest.TestCase):
@@ -266,3 +267,31 @@ class TestBenjaminiHochberg(unittest.TestCase):
     def test_raises_not_implemented(self):
         with self.assertRaises(NotImplementedError):
             ComparisonsCorrection('that method')
+
+
+class TestGetValidated(unittest.TestCase):
+    def test_get_validated_comparisons_correction_none_to_none(self):
+        self.assertIsNone(get_validated_comparisons_correction(None))
+
+    def test_get_validated_comparisons_correction_incorrect_string(self):
+        self.assertRaises(ValueError,
+                          get_validated_comparisons_correction,
+                          "that method")
+
+    def test_get_validated_comparisons_correction_incorrect_format(self):
+        self.assertRaises(ValueError,
+                          get_validated_comparisons_correction,
+                          ["that method"])
+
+    def test_get_validated_comparisons_correction_str_to_instance(self):
+        self.assertIsInstance(get_validated_comparisons_correction("BH"),
+                              ComparisonsCorrection)
+
+    def test_get_validated_comparisons_correction_to_results(self):
+        raw_p_values = [6.477e-01, 4.690e-02, 2.680e-02]
+        expected = [False, False, False]
+        cc = get_validated_comparisons_correction("BH")
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            observed = cc(raw_p_values)
+        npt.assert_allclose(observed, expected)
