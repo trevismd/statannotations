@@ -198,3 +198,10 @@ class TestAnnotator(unittest.TestCase):
         annot = Annotator(self.ax, box_pairs=[("X", "Y")],
                           data=self.data2)
         annot.configure(test="Mann-Whitney").apply_and_annotate()
+
+    def test_comparisons_correction_by_name(self):
+        self.ax = sns.boxplot(ax=self.ax, data=self.data2)
+        annot = Annotator(self.ax, box_pairs=[("X", "Y")],
+                          data=self.data2)
+        annot.configure(test="Mann-Whitney", comparisons_correction="BH")
+        annot.apply_and_annotate()

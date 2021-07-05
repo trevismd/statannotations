@@ -28,10 +28,10 @@ statannotations.stats.StatTest module
    :undoc-members:
    :show-inheritance:
 
-statannotations.stats.tests module
-----------------------------------
+statannotations.stats.test module
+---------------------------------
 
-.. automodule:: statannotations.stats.tests
+.. automodule:: statannotations.stats.test
    :members:
    :undoc-members:
    :show-inheritance:

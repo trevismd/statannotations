@@ -12,7 +12,7 @@ IMPLEMENTED_TESTS = ['t-test_ind', 't-test_welch', 't-test_paired',
                      'Levene', 'Wilcoxon', 'Kruskal']
 
 
-def stat_test(
+def apply_test(
         box_data1,
         box_data2,
         test: Union[StatTest, str] = None,

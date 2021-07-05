@@ -16,7 +16,7 @@ from statannotations.stats.ComparisonsCorrection import \
     get_validated_comparisons_correction
 from statannotations.stats.StatResult import StatResult
 from statannotations.stats.StatTest import StatTest
-from statannotations.stats.tests import stat_test, IMPLEMENTED_TESTS
+from statannotations.stats.test import apply_test, IMPLEMENTED_TESTS
 from statannotations.stats.utils import check_alpha, check_pvalues, \
     check_num_comparisons, get_num_comparisons
 from statannotations.utils import check_is_in, remove_null, check_not_none, \
@@ -789,7 +789,7 @@ class Annotator:
                                    num_comparisons,
                                    **stats_params) -> StatResult:
 
-        result = stat_test(
+        result = apply_test(
             box_struct1['box_data'],
             box_struct2['box_data'],
             self.test,
