@@ -24,7 +24,14 @@ class TestStatsTest(unittest.TestCase):
 
     def test_apply_test_with_test(self):
         test = StatTest.from_library("Mann-Whitney")
-        apply_test(self.x, self.y, test)
+        self.assertAlmostEqual(
+            0.7962534147376392,
+            apply_test(self.x, self.y, test).pvalue
+        )
 
     def test_apply_test_with_correction(self):
-        apply_test(self.x, self.y, "Mann-Whitney", "bonferroni")
+        self.assertAlmostEqual(
+            1.0,
+            apply_test(self.x, self.y, "Mann-Whitney", "bonferroni",
+                       num_comparisons=2).pvalue
+        )
