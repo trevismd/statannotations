@@ -5,7 +5,8 @@ from functools import partial
 import numpy.testing as npt
 from statsmodels.stats.multitest import multipletests
 
-from statannotations.stats.ComparisonsCorrection import ComparisonsCorrection
+from statannotations.stats.ComparisonsCorrection import \
+    ComparisonsCorrection, get_validated_comparisons_correction
 
 
 class TestBonferroni(unittest.TestCase):
@@ -161,8 +162,8 @@ class TestBenjaminiHochberg(unittest.TestCase):
 
     def setUp(self) -> None:
         self.benjamini_hochberg = ComparisonsCorrection("Benjamini-Hochberg")
-        self.benjamini_hochberg_006 = ComparisonsCorrection("Benjamini-Hochberg",
-                                                            alpha=0.06)
+        self.benjamini_hochberg_006 = ComparisonsCorrection(
+            "Benjamini-Hochberg", alpha=0.06)
 
         self.benjamini_hochberg_006_man_diff_api = ComparisonsCorrection(
             self.my_bh_from_sm, name="Benjamini-Hochberg (manual)",
@@ -248,4 +249,49 @@ class TestBenjaminiHochberg(unittest.TestCase):
         raw_p_values = [0.06, 0.01, 0.04]
         expected = [True, True, True]
         observed = self.benjamini_hochberg_006_man_diff_api(raw_p_values)
+        npt.assert_allclose(observed, expected)
+
+    def test_values_of_documentation(self):
+        raw_p_values = [6.477e-01, 4.690e-02, 2.680e-02]
+        expected = [False, False, False]
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            observed = self.benjamini_hochberg(raw_p_values)
+        npt.assert_allclose(observed, expected)
+
+    def test_min_num_comparisons(self):
+        raw_p_values = [6.477e-01, 4.690e-02, 2.680e-02]
+        with self.assertRaisesRegex(ValueError, "be at least "):
+            self.benjamini_hochberg(raw_p_values, num_comparisons=2)
+
+    def test_raises_not_implemented(self):
+        with self.assertRaises(NotImplementedError):
+            ComparisonsCorrection('that method')
+
+
+class TestGetValidated(unittest.TestCase):
+    def test_get_validated_comparisons_correction_none_to_none(self):
+        self.assertIsNone(get_validated_comparisons_correction(None))
+
+    def test_get_validated_comparisons_correction_incorrect_string(self):
+        self.assertRaises(ValueError,
+                          get_validated_comparisons_correction,
+                          "that method")
+
+    def test_get_validated_comparisons_correction_incorrect_format(self):
+        self.assertRaises(ValueError,
+                          get_validated_comparisons_correction,
+                          ["that method"])
+
+    def test_get_validated_comparisons_correction_str_to_instance(self):
+        self.assertIsInstance(get_validated_comparisons_correction("BH"),
+                              ComparisonsCorrection)
+
+    def test_get_validated_comparisons_correction_to_results(self):
+        raw_p_values = [6.477e-01, 4.690e-02, 2.680e-02]
+        expected = [False, False, False]
+        cc = get_validated_comparisons_correction("BH")
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            observed = cc(raw_p_values)
         npt.assert_allclose(observed, expected)

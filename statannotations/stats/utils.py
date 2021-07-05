@@ -1,30 +1,33 @@
 import warnings
-
+from numbers import Number
 import numpy as np
 
-import statannotations.stats.ComparisonsCorrection as ComparisonsCorrection
-from statannotations.utils import raise_expected_got, check_is_in
+from statannotations.utils import raise_expected_got
 
 
-def check_valid_correction_name(name):
-    check_is_in(name, ComparisonsCorrection.IMPLEMENTED_METHODS + [None],
-                label='argument `comparisons_correction`')
+def check_pvalues(p_values):
+    def is_number(value):
+        return isinstance(value, Number)
 
-
-def check_pval_correction_input_values(p_values, num_comparisons):
-    if np.ndim(p_values) > 1:
+    if np.ndim(p_values) > 1 or not np.all(list(map(is_number, p_values))):
         raise_expected_got(
             'Scalar or list-like', 'argument `p_values`', p_values
         )
 
+
+def check_num_comparisons(num_comparisons):
     if num_comparisons != 'auto':
         try:
-            # Raise a TypeError if num_comparisons is not numeric, and raise
-            # an AssertionError if it isn't int-like.
-            assert np.ceil(num_comparisons) == num_comparisons
+            assert num_comparisons == int(num_comparisons)
+            if not num_comparisons:
+                raise ValueError
         except (AssertionError, TypeError):
             raise_expected_got(
-                'Int or `auto`', 'argument `num_comparisons`', num_comparisons
+                'Int or `auto`', '`num_comparisons`', num_comparisons
+            )
+        except ValueError:
+            raise_expected_got(
+                'a positive value', '`num_comparisons`', num_comparisons
             )
 
 
@@ -34,20 +37,15 @@ def check_alpha(alpha):
                          "smaller than one.")
 
 
-def get_num_comparisons(p_values_array, num_comparisons):
+def get_num_comparisons(p_values, num_comparisons):
     if num_comparisons == 'auto':
-        # Infer number of comparisons
-        num_comparisons = len(p_values_array)
+        num_comparisons = len(p_values)
 
-    elif 1 < len(p_values_array) != num_comparisons:
-        # Warn if multiple p_values have been passed and num_comparisons is
-        # set manually.
+    elif num_comparisons < len(p_values):
         warnings.warn(
-            'Manually-specified `num_comparisons={}` differs from number of '
-            'p_values to correct ({}).'.format(
-                num_comparisons, len(p_values_array)
-            )
-        )
+            f'Manually-specified `num_comparisons={num_comparisons}` to a '
+            f'smaller value than the number of p_values to correct '
+            f'({len(p_values)})')
     return num_comparisons
 
 

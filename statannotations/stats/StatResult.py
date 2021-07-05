@@ -12,7 +12,7 @@ class StatResult:
         self.test_short_name = test_short_name
         self.stat_str = stat_str
         self.stat_value = stat
-        self.pval = pval
+        self.pvalue = pval
         self._corrected_significance = None
         self._correction_method = None
         self.alpha = alpha
@@ -42,7 +42,7 @@ class StatResult:
         if self._correction_method is not None:
             description += f' with {self._correction_method} correction'
 
-        stat_summary = '{}, P_val:{:.3e}'.format(description, self.pval)
+        stat_summary = '{}, P_val:{:.3e}'.format(description, self.pvalue)
 
         stat_summary += self.significance_suffix
 
@@ -54,7 +54,7 @@ class StatResult:
     @property
     def significance_suffix(self):
         # will add this only if a correction method is specified
-        if self._corrected_significance is False and self.pval <= self.alpha:
+        if self._corrected_significance is False and self.pvalue <= self.alpha:
             return ' (ns)'
         return ""
 

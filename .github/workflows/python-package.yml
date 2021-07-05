@@ -5,7 +5,7 @@ name: Python package
 
 on:
   push:
-    branches: [ master, dev, v0.2, v0.3 ]
+    branches: [ master, dev, v0.2, v0.3, refactoring]
   pull_request:
     branches: [ master, dev, v0.2, v0.3 ]
 
@@ -27,7 +27,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install flake8 coverage
+        python -m pip install flake8 coverage packaging
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Lint with flake8
       run: |
