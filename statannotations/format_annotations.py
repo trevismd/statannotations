@@ -16,10 +16,10 @@ def pval_annotation_text(result: Union[List[StatResult], StatResult],
     single_value = False
 
     if isinstance(result, list):
-        x1_pval = np.array([res.pval for res in result])
+        x1_pval = np.array([res.pvalue for res in result])
         x1_signif_suff = [res.significance_suffix for res in result]
     else:
-        x1_pval = np.array([result.pval])
+        x1_pval = np.array([result.pvalue])
         x1_signif_suff = [result.significance_suffix]
         single_value = True
 
@@ -60,14 +60,13 @@ def simple_text(result: StatResult, pvalue_format, pvalue_thresholds) -> str:
     # Sort thresholds
     thresholds = sorted(pvalue_thresholds, key=lambda x: x[0])
 
-    # Test name if passed
-    text = result.test_short_name and result.test_short_name + " " or ""
+    text = result.test_short_name and f"{result.test_short_name} " or ""
 
     for threshold in thresholds:
-        if result.pval < threshold[0]:
+        if result.pvalue < threshold[0]:
             pval_text = "p ≤ {}".format(threshold[1])
             break
     else:
-        pval_text = "p = {}".format(pvalue_format).format(result.pval)
+        pval_text = "p = {}".format(pvalue_format).format(result.pvalue)
 
     return text + pval_text + result.significance_suffix

@@ -17,6 +17,7 @@ class TestAnnotator(unittest.TestCase):
 
     def setUp(self):
         self.data = [[1, 2, 3], [2, 5, 7]]
+        self.data2 = pd.DataFrame([[1, 2], [2, 5], [3, 7]], columns=["X", "Y"])
         self.ax = sns.boxplot(data=self.data)
         self.df = pd.DataFrame.from_dict(
             {1: {'x': "a", 'y': 15, 'color': 'blue'},
@@ -191,3 +192,9 @@ class TestAnnotator(unittest.TestCase):
         self.annot.new_plot(self.ax, self.box_pairs_df, **self.params_df)
         self.annot.configure(test="Mann-Whitney-gt", text_format="simple")
         self.annot.apply_and_annotate()
+
+    def test_valid_parameters_df_data_only(self):
+        self.ax = sns.boxplot(ax=self.ax, data=self.data2)
+        annot = Annotator(self.ax, box_pairs=[("X", "Y")],
+                          data=self.data2)
+        annot.configure(test="Mann-Whitney").apply_and_annotate()

@@ -35,6 +35,8 @@ def remove_null(series):
 
 def get_x_values(data, x) -> set:
     if isinstance(data, pd.DataFrame):
+        if x is None:
+            return set(data.columns)
         return set(data[x].unique())
     elif data is not None:
         return set([_ for _ in range(len(data))])
@@ -59,6 +61,7 @@ def _check_box_pairs_in_data_no_hue(box_pairs: Union[list, tuple],
                                     data: Union[List[list],
                                                 pd.DataFrame] = None,
                                     x: Union[str, list] = None) -> None:
+
     x_values = get_x_values(data, x)
     pairs_x_values = set(itertools.chain(*box_pairs))
     unmatched_x_values = pairs_x_values - x_values

@@ -75,7 +75,7 @@ def stat_test(
     # Optionally, run multiple comparisons correction that can independently be
     # applied to each pval
     if comparisons_correction is not None and comparisons_correction.type == 0:
-        result.pval = comparisons_correction(result.pval, num_comparisons)
+        result.pvalue = comparisons_correction(result.pvalue, num_comparisons)
         result.correction_method = comparisons_correction.name
 
     return result

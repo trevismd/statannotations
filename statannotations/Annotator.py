@@ -131,7 +131,7 @@ class Annotator:
         self.line_offset = None
         self.line_height = _DEFAULT_VALUES["line_height"]
         self.text_offset = 1
-        self.text_offest_impact_above = 0
+        self.text_offset_impact_above = 0
         self.color = '0.2'
         self.line_width = 1.5
         self.y_offset = None
@@ -752,7 +752,7 @@ class Annotator:
     @staticmethod
     def _apply_type1_comparisons_correction(comparisons_correction,
                                             test_result_list):
-        original_pvalues = [result.pval for result in test_result_list]
+        original_pvalues = [result.pvalue for result in test_result_list]
 
         significant_pvalues = comparisons_correction(original_pvalues)
         correction_name = comparisons_correction.name
@@ -768,8 +768,8 @@ class Annotator:
         for result in test_result_list:
             result.correction_method = comparisons_correction.name
             result.corrected_significance = (
-                    result.pval < alpha
-                    or np.isclose(result.pval, alpha))
+                    result.pvalue < alpha
+                    or np.isclose(result.pvalue, alpha))
 
     @staticmethod
     def _apply_comparisons_correction(comparisons_correction,
@@ -1036,7 +1036,8 @@ class Annotator:
             y_top_annot = (self.ax.transAxes.inverted()
                            .transform(y_top_display)[1])
 
-        self.text_offest_impact_above = y_top_annot - y - self.y_offset - self.line_height
+        self.text_offset_impact_above = (
+                y_top_annot - y - self.y_offset - self.line_height)
         return y_top_annot
 
     def _reset_default_values(self):
@@ -1055,7 +1056,7 @@ class Annotator:
             offset = self.line_offset_to_box
         else:
             # there is an annotation below
-            offset = self.y_offset + self.text_offest_impact_above
+            offset = self.y_offset + self.text_offset_impact_above
 
         return ymax_in_range_x1_x2 + offset
 

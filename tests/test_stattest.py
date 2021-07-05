@@ -30,5 +30,5 @@ class TestStatTest(unittest.TestCase):
         test = StatTest(self.a_func, 'A test', 'test')
         res = test(self.x, self.y)
         self.assertIsInstance(res, StatResult)
-        stat, pval = res.stat_value, res.pval
+        stat, pval = res.stat_value, res.pvalue
         self.assertEqual((stat, pval), (12, 0.6))

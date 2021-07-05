@@ -148,7 +148,7 @@ class PValueFormat:
         if self.text_format == 'full':
             return ("{} p = {}{}"
                     .format('{}', self.pvalue_format_string, '{}')
-                    .format(result.test_short_name, result.pval,
+                    .format(result.test_short_name, result.pvalue,
                             result.significance_suffix))
 
         elif self.text_format == 'star':
