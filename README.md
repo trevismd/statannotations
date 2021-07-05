@@ -1,9 +1,10 @@
-[![Active Development](https://img.shields.io/badge/Maintenance%20Level-Actively%20Developed-brightgreen.svg)](https://gist.github.com/cheerfulstoic/d107229326a01ff0f333a1d3476e068d) ![coverage](https://raw.githubusercontent.com/trevismd/statannotations/master/coverage.svg)  ![Python](https://img.shields.io/badge/Python-3.6%2B-blue)[![Documentation Status](https://readthedocs.org/projects/statannotations/badge/?version=latest)](https://statannotations.readthedocs.io/en/refactoring/?badge=latest)
+[![Active Development](https://img.shields.io/badge/Maintenance%20Level-Actively%20Developed-brightgreen.svg)](https://gist.github.com/cheerfulstoic/d107229326a01ff0f333a1d3476e068d) ![coverage](https://raw.githubusercontent.com/trevismd/statannotations/master/coverage.svg)  ![Python](https://img.shields.io/badge/Python-3.6%2B-blue)[![Documentation Status](https://readthedocs.org/projects/statannotations/badge/?version=latest)](https://statannotations.readthedocs.io/en/master/?badge=latest)
 
 ## What is it
 
 Python package to optionally compute statistical test and add statistical
-annotations on plots generated with seaborn.
+annotations on plots generated with seaborn.  
+This branch is now at version 0.4.0-alpha, while the latest release is v0.3.2.
 
 ## Derived work
 
@@ -53,7 +54,7 @@ corresponding branch).
 - Optionally, custom p-values can be given as input.
       In this case, no statistical test is performed, but **corrections for
       multiple testing can be applied.**
-- And various fixes (see [CHANGELOG.md](https://raw.githubusercontent.com/trevismd/statannotations/master/CHANGELOG.md)).
+- And various fixes (see [CHANGELOG.md](https://github.com/trevismd/statannotations/blob/master/CHANGELOG.md)).
 
 ## Installation
 
@@ -73,8 +74,8 @@ pip install -r requirements.txt .
 
 ## Documentation
 
-See example jupyter notebook [usage/example.ipynb](`https://raw.githubusercontent.com/trevismd/statannotations/master/usage/example.ipynb).
-
+- Example jupyter notebook [usage/example.ipynb](https://github.com/trevismd/statannotations/master/usage/example.ipynb),  
+- *in-progress* sphinx documentation in `/docs`, also on https://statannotations.readthedocs.io/en/latest/index.html
 ## Usage
 
 Here is a minimal example:
@@ -90,6 +91,8 @@ y = "total_bill"
 order = ['Sun', 'Thur', 'Fri', 'Sat']
 box_pairs=[("Thur", "Fri"), ("Thur", "Sat"), ("Fri", "Sun")]
 ax = sns.boxplot(data=df, x=x, y=y, order=order)
+
+
 annotator = Annotator(ax, box_pairs, data=df, x=x, y=y, order=order)
 annotator.configure(test='Mann-Whitney', text_format='star', loc='outside')
 annotator.apply_and_annotate()
@@ -100,6 +103,8 @@ annotator.apply_and_annotate()
 ![Example 1](https://raw.githubusercontent.com/trevismd/statannotations/master/usage/example_non-hue_outside.png)
 
 ![Example 2](https://raw.githubusercontent.com/trevismd/statannotations/master/usage/example_hue_layout.png)
+
+![Example 3](https://raw.githubusercontent.com/trevismd/statannotations/master/usage/flu_dataset_log_scale_in_axes.svg)
 
 ## Requirements
 
@@ -117,4 +122,5 @@ annotator.apply_and_annotate()
 In addition to git's history, contributions to statannotations are logged in
 the changelog.  
 If you don't know where to start, there may be a few ideas in opened issues or
-discussion, or something to work for the documentation.
+discussion, or something to work for the documentation.  
+NB: to run the test suite, the `statsmodels` and `packaging` packages are required.
