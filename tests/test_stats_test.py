@@ -1,9 +1,10 @@
 import unittest
 
 import numpy as np
+from scipy.stats import mannwhitneyu as mwu
 
-from statannotations.stats.test import apply_test
 from statannotations.stats.StatTest import StatTest
+from statannotations.stats.test import apply_test
 
 
 class TestStatsTest(unittest.TestCase):
@@ -25,7 +26,7 @@ class TestStatsTest(unittest.TestCase):
     def test_apply_test_with_test(self):
         test = StatTest.from_library("Mann-Whitney")
         self.assertAlmostEqual(
-            0.7962534147376392,
+            mwu(self.x, self.y, alternative="two-sided")[1],
             apply_test(self.x, self.y, test).pvalue
         )
 

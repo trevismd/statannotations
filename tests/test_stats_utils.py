@@ -1,7 +1,7 @@
 import unittest
 
-from statannotations.stats.utils import check_alpha, return_results, get_num_comparisons, check_pvalues, \
-    check_num_comparisons
+from statannotations.stats.utils import check_alpha, return_results, \
+    get_num_comparisons, check_pvalues, check_num_comparisons
 
 
 class TestStatUtils(unittest.TestCase):
