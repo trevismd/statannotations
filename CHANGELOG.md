@@ -1,8 +1,10 @@
 ## v0.4
 ### v0.4.0
- - Major refactoring, change to an Annotator `class` to prepare and add annotations distinctly
+ - Major refactoring, change to an Annotator `class` to prepare and add 
+   annotations distinctly
  - Support for `violinplot`
- - Fixes in rendering of non significant tests results after multiple comparisons correction
+ - Fixes in rendering of non significant tests results after multiple 
+   comparisons correction
  - Fix the printout of the star annotation legend 
  - Fix the bug when providing a dataframe with categories as different columns.
  - Many unit and integration tests
