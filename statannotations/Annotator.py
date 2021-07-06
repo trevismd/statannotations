@@ -62,15 +62,13 @@ class Annotator:
     Optionally computes statistical test between pairs of data series, and add
     statistical annotation on top of the boxes/bars. The same exact arguments
     `data`, `x`, `y`, `hue`, `order`, `width`, `hue_order` (and `units`) as in
-    the seaborn boxplot/barplot function must be passed to this function.
+    the seaborn plotting function must be passed to this function.
 
-    This function works in one of the two following modes:
-    a) `perform_stat_test` is True (default):
-    * statistical test as given by argument `test` is performed.
-    * The `test_short_name` argument can be used to customize what appears
-    before the pvalues if test is a string.
-    b) `perform_stat_test` is False: no statistical test is performed, list of
-    custom p-values `pvalues` are used for each pair of boxes.
+    This function works in one of the three following modes:
+        - Add custom text annotations (`set_custom_annotations`)
+        - Format pvalues and add them to the plot (`set_pvalues`)
+        - Perform a statistical test and then add the results to the plot
+            (`apply_test`)
     """
 
     def __init__(self, ax, box_pairs, plot='boxplot', data=None, x=None,
@@ -78,10 +76,8 @@ class Annotator:
         """
         :param ax: Ax of existing plot
         :param box_pairs: can be of either form:
-            For non-grouped boxplot: `[(cat1, cat2), (cat3, cat4)]`.
-            For boxplot grouped by hue: `[
-                ((cat1, hue1), (cat2, hue2)), ((cat3, hue3), (cat4, hue4))
-            ]`
+            For non-grouped boxplot: `[(cat1, cat2), ...]`.
+            For boxplot grouped by hue: `[((cat1, hue1), (cat2, hue2)), ...]`
         :param plot: type of the plot, one of 'boxplot' or 'barplot'.
         :param data: seaborn  plot's data
         :param x: seaborn plot's x

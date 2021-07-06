@@ -4,13 +4,25 @@ import numpy as np
 class _XPositions:
     def __init__(self, plotter, box_names):
         self.plotter = plotter
+        self.hue_names = self.plotter.hue_names
+
+        if self.hue_names is not None:
+            nb_hues = len(self.hue_names)
+            if nb_hues == 1:
+                raise ValueError(
+                    "Using hues with only one hue is not supported.")
+
+            self.hue_offsets = self.plotter.hue_offsets
+            self.xunits = self.hue_offsets[1] - self.hue_offsets[0]
+
         self.xpositions = {
             np.round(self.get_box_x_position(box_name), 1): box_name
             for box_name in box_names
         }
 
-        self.xunits = \
-            (max(list(self.xpositions.keys())) + 1) / len(self.xpositions)
+        if self.hue_names is None:
+            self.xunits = \
+                (max(list(self.xpositions.keys())) + 1) / len(self.xpositions)
 
         self.xranges = {
             (pos - self.xunits / 2, pos + self.xunits / 2, pos): box_name
@@ -34,8 +46,8 @@ class _XPositions:
         else:
             cat = box_name[0]
             hue_level = box_name[1]
-            hue_offset = self.plotter.hue_offsets[
-                self.plotter.hue_names.index(hue_level)]
+            hue_offset = self.hue_offsets[
+                self.hue_names.index(hue_level)]
 
         group_pos = self.plotter.group_names.index(cat)
         box_pos = group_pos + hue_offset

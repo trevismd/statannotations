@@ -205,14 +205,19 @@
 <p>Optionally computes statistical test between pairs of data series, and add
 statistical annotation on top of the boxes/bars. The same exact arguments
 <cite>data</cite>, <cite>x</cite>, <cite>y</cite>, <cite>hue</cite>, <cite>order</cite>, <cite>width</cite>, <cite>hue_order</cite> (and <cite>units</cite>) as in
-the seaborn boxplot/barplot function must be passed to this function.</p>
-<p>This function works in one of the two following modes:
-a) <cite>perform_stat_test</cite> is True (default):
-* statistical test as given by argument <cite>test</cite> is performed.
-* The <cite>test_short_name</cite> argument can be used to customize what appears
-before the pvalues if test is a string.
-b) <cite>perform_stat_test</cite> is False: no statistical test is performed, list of
-custom p-values <cite>pvalues</cite> are used for each pair of boxes.</p>
+the seaborn plotting function must be passed to this function.</p>
+<dl class="simple">
+<dt>This function works in one of the three following modes:</dt><dd><ul class="simple">
+<li><p>Add custom text annotations (<cite>set_custom_annotations</cite>)</p></li>
+<li><p>Format pvalues and add them to the plot (<cite>set_pvalues</cite>)</p></li>
+<li><dl class="simple">
+<dt>Perform a statistical test and then add the results to the plot</dt><dd><p>(<cite>apply_test</cite>)</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="statannotations.Annotator.Annotator.alpha">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">alpha</span></span><a class="headerlink" href="#statannotations.Annotator.Annotator.alpha" title="Permalink to this definition">¶</a></dt>
