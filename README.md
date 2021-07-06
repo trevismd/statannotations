@@ -123,4 +123,5 @@ In addition to git's history, contributions to statannotations are logged in
 the changelog.  
 If you don't know where to start, there may be a few ideas in opened issues or
 discussion, or something to work for the documentation.  
-NB: to run the test suite, the `statsmodels` and `packaging` packages are required.
+NB: to run the test suite, the `statsmodels` and `packaging` packages are 
+required.
