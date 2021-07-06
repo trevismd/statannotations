@@ -112,7 +112,8 @@ class TestAnnotator(unittest.TestCase):
             self.annot.configure(pvalue_format={'text_format': 'that'})
 
     def test_apply_comparisons_correction(self):
-        self.assertIsNone(Annotator._apply_comparisons_correction(None, []))
+        self.test_init_simple()
+        self.assertIsNone(self.annot._apply_comparisons_correction([]))
 
     def test_correct_num_custom_annotations(self):
         self.test_init_simple()

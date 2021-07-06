@@ -213,11 +213,6 @@ a) <cite>perform_stat_test</cite> is True (default):
 before the pvalues if test is a string.
 b) <cite>perform_stat_test</cite> is False: no statistical test is performed, list of
 custom p-values <cite>pvalues</cite> are used for each pair of boxes.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.absolute_box_struct_pair_in_tuple_x_diff">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">absolute_box_struct_pair_in_tuple_x_diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box_struct_pair</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.absolute_box_struct_pair_in_tuple_x_diff" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="py property">
 <dt class="sig sig-object py" id="statannotations.Annotator.Annotator.alpha">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">alpha</span></span><a class="headerlink" href="#statannotations.Annotator.Annotator.alpha" title="Permalink to this definition">¶</a></dt>
@@ -250,6 +245,11 @@ calculated with number of box_pairs</p></li>
 </dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.box_struct_pairs">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">box_struct_pairs</span></span><a class="headerlink" href="#statannotations.Annotator.Annotator.box_struct_pairs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="statannotations.Annotator.Annotator.comparisons_correction">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">comparisons_correction</span></span><a class="headerlink" href="#statannotations.Annotator.Annotator.comparisons_correction" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -280,14 +280,14 @@ calculated with number of box_pairs</p></li>
 </ul>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.get_annotations_text">
-<span class="sig-name descname"><span class="pre">get_annotations_text</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.get_annotations_text" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.fig">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">fig</span></span><a class="headerlink" href="#statannotations.Annotator.Annotator.fig" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.get_basic_plot">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_basic_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box_pairs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'boxplot'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hue_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">plot_params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.get_basic_plot" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.get_annotations_text">
+<span class="sig-name descname"><span class="pre">get_annotations_text</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.get_annotations_text" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -366,11 +366,6 @@ calculated with number of box_pairs</p></li>
 <dd></dd></dl>
 
 </dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="statannotations.Annotator.check_implemented_plotters">
-<span class="sig-prename descclassname"><span class="pre">statannotations.Annotator.</span></span><span class="sig-name descname"><span class="pre">check_implemented_plotters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.check_implemented_plotters" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 </div>
 <div class="section" id="module-statannotations.PValueFormat">
