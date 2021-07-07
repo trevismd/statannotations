@@ -68,7 +68,7 @@ def _check_box_pairs_in_data_no_hue(box_pairs: Union[list, tuple],
     if unmatched_x_values:
         raise ValueError(f"Missing x value(s) "
                          f"`{render_collection(unmatched_x_values)}` in {x}"
-                         f" (specified in `box_pairs`) in data")
+                         f" (specified in `pairs`) in data")
 
 
 def _check_box_pairs_in_data_with_hue(box_pairs: Union[list, tuple],
@@ -85,12 +85,12 @@ def _check_box_pairs_in_data_with_hue(box_pairs: Union[list, tuple],
     for x_value, hue_value in itertools.chain(itertools.chain(*box_pairs)):
         if x_value not in seen_x_values and x_value not in x_values:
             raise ValueError(f"Missing x value `{x_value}` in {x}"
-                             f" (specified in `box_pairs`)")
+                             f" (specified in `pairs`)")
         seen_x_values.add(x_value)
 
         if hue_value not in hue_values:
             raise ValueError(f"Missing hue value `{hue_value}` in {hue}"
-                             f" (specified in `box_pairs`)")
+                             f" (specified in `pairs`)")
 
     return hue_values
 
@@ -111,7 +111,7 @@ def check_box_pairs_in_data(box_pairs: Union[list, tuple],
                             hue: str = None,
                             hue_order: List[str] = None):
     """
-    Checks that values referred to in `order` and `box_pairs` exist in data.
+    Checks that values referred to in `order` and `pairs` exist in data.
     """
 
     if hue is None and hue_order is None:

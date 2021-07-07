@@ -14,13 +14,13 @@ IMPLEMENTED_PLOTTERS = ['barplot', 'boxplot', 'stripplot', 'swarmplot',
 
 
 class _Plotter:
-    def __init__(self, ax, box_pairs, plot='boxplot', data=None, x=None,
+    def __init__(self, ax, pairs, plot='boxplot', data=None, x=None,
                  y=None, hue=None, order=None, hue_order=None, **plot_params):
 
         check_plot_is_implemented(plot)
-        check_not_none("box_pairs", box_pairs)
+        check_not_none("pairs", pairs)
         check_order_in_data(data, x, order)
-        check_box_pairs_in_data(box_pairs, data, x, hue, hue_order)
+        check_box_pairs_in_data(pairs, data, x, hue, hue_order)
 
         self.ax = ax
         self.fig = plt.gcf()
@@ -35,7 +35,7 @@ class _Plotter:
         self.ymaxes = self._generate_ymaxes()
 
         self.box_structs = self._get_box_structs()
-        self.box_pairs = box_pairs
+        self.box_pairs = pairs
         self.box_struct_pairs = self._get_box_struct_pairs()
 
         self.reordering = None

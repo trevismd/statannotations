@@ -89,11 +89,11 @@ df = sns.load_dataset("tips")
 x = "day"
 y = "total_bill"
 order = ['Sun', 'Thur', 'Fri', 'Sat']
-box_pairs=[("Thur", "Fri"), ("Thur", "Sat"), ("Fri", "Sun")]
+pairs=[("Thur", "Fri"), ("Thur", "Sat"), ("Fri", "Sun")]
 ax = sns.boxplot(data=df, x=x, y=y, order=order)
 
 
-annotator = Annotator(ax, box_pairs, data=df, x=x, y=y, order=order)
+annotator = Annotator(ax, pairs, data=df, x=x, y=y, order=order)
 annotator.configure(test='Mann-Whitney', text_format='star', loc='outside')
 annotator.apply_and_annotate()
 ```
