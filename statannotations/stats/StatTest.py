@@ -6,20 +6,20 @@ from statannotations.stats.StatResult import StatResult
 
 
 # Also example for how to add other functions
-def wilcoxon(box_data1, box_data2, verbose=1, **stats_params):
+def wilcoxon(group_data1, group_data2, verbose=1, **stats_params):
     """
     This function provides the equivalent behavior from earlier versions of
     statannot/statannotations.
     """
     zero_method = stats_params.pop('zero_method', None)
     if zero_method is None:
-        return stats.wilcoxon(box_data1, box_data2, **stats_params)
+        return stats.wilcoxon(group_data1, group_data2, **stats_params)
     if zero_method == "AUTO":
-        zero_method = len(box_data1) <= 20 and "pratt" or "wilcox"
+        zero_method = len(group_data1) <= 20 and "pratt" or "wilcox"
         if verbose >= 1:
             print("Using zero_method ", zero_method)
 
-    return stats.wilcoxon(box_data1, box_data2,
+    return stats.wilcoxon(group_data1, group_data2,
                           zero_method=zero_method, **stats_params)
 
 
@@ -71,10 +71,10 @@ class StatTest:
             f"------ Original function documentation ------ \n"
             f"{func.__doc__}")
 
-    def __call__(self, box_data1, box_data2, alpha=0.05,
+    def __call__(self, group_data1, group_data2, alpha=0.05,
                  **stat_params):
 
-        stat, pval = self._func(box_data1, box_data2, *self.args,
+        stat, pval = self._func(group_data1, group_data2, *self.args,
                                 **{**self.kwargs, **stat_params})[:2]
 
         return StatResult(self._test_long_name, self._test_short_name,

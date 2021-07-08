@@ -13,8 +13,8 @@ IMPLEMENTED_TESTS = ['t-test_ind', 't-test_welch', 't-test_paired',
 
 
 def apply_test(
-        box_data1,
-        box_data2,
+        group_data1,
+        group_data2,
         test: Union[StatTest, str] = None,
         comparisons_correction: Union[ComparisonsCorrection, str] = None,
         num_comparisons: int = 1,
@@ -23,8 +23,8 @@ def apply_test(
 ):
     """Get formatted result of two-sample statistical test.
 
-    :param box_data1: data
-    :param box_data2: data
+    :param group_data1: data
+    :param group_data2: data
     :param test: Union[StatTest, str]: Statistical test to run.
         Either a `StatTest` instance or one of:
         - `Levene`
@@ -71,7 +71,7 @@ def apply_test(
             get_stat_result = StatTest.from_library(test)
 
         result = get_stat_result(
-            box_data1, box_data2, alpha=alpha, **stats_params)
+            group_data1, group_data2, alpha=alpha, **stats_params)
 
     # Optionally, run multiple comparisons correction that can independently be
     # applied to each pval

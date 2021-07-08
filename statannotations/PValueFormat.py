@@ -12,8 +12,20 @@ CONFIGURABLE_PARAMETERS = [
 ]
 
 
-class PValueFormat:
+class Formatter:
     def __init__(self):
+        pass
+
+    def config(self, *args, **kwargs):
+        pass
+
+    def format_data(self, data):
+        pass
+
+
+class PValueFormat(Formatter):
+    def __init__(self):
+        Formatter.__init__(self)
         self._pvalue_format_string = '{:.3e}'
         self._simple_format_string = '{:.2f}'
         self._text_format = "star"
@@ -144,7 +156,7 @@ class PValueFormat:
         self._pvalue_thresholds = self._get_pvalue_thresholds(
             self._pvalue_thresholds)
 
-    def format_result(self, result):
+    def format_data(self, result):
         if self.text_format == 'full':
             return ("{} p = {}{}"
                     .format('{}', self.pvalue_format_string, '{}')

@@ -638,7 +638,7 @@ a:hover tt, a:hover code {
 
 /* Make nested-list/multi-paragraph items look better in Releases changelog
  * pages. Without this, docutils' magical list fuckery causes inconsistent
- * formatting between different release sub-lists.
+ * formatter between different release sub-lists.
  */
 div#changelog > div.section > ul > li > p:only-child {
     margin-bottom: 0;
