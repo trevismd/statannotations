@@ -205,14 +205,19 @@
 <p>Optionally computes statistical test between pairs of data series, and add
 statistical annotation on top of the boxes/bars. The same exact arguments
 <cite>data</cite>, <cite>x</cite>, <cite>y</cite>, <cite>hue</cite>, <cite>order</cite>, <cite>width</cite>, <cite>hue_order</cite> (and <cite>units</cite>) as in
-the seaborn boxplot/barplot function must be passed to this function.</p>
-<p>This function works in one of the two following modes:
-a) <cite>perform_stat_test</cite> is True (default):
-* statistical test as given by argument <cite>test</cite> is performed.
-* The <cite>test_short_name</cite> argument can be used to customize what appears
-before the pvalues if test is a string.
-b) <cite>perform_stat_test</cite> is False: no statistical test is performed, list of
-custom p-values <cite>pvalues</cite> are used for each pair of boxes.</p>
+the seaborn plotting function must be passed to this function.</p>
+<dl class="simple">
+<dt>This function works in one of the three following modes:</dt><dd><ul class="simple">
+<li><p>Add custom text annotations (<cite>set_custom_annotations</cite>)</p></li>
+<li><p>Format pvalues and add them to the plot (<cite>set_pvalues</cite>)</p></li>
+<li><dl class="simple">
+<dt>Perform a statistical test and then add the results to the plot</dt><dd><p>(<cite>apply_test</cite>)</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="statannotations.Annotator.Annotator.alpha">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">alpha</span></span><a class="headerlink" href="#statannotations.Annotator.Annotator.alpha" title="Permalink to this definition">¶</a></dt>
@@ -437,16 +442,16 @@ calculated with number of pairs</p></li>
 <span id="statannotations-format-annotations-module"></span><h2>statannotations.format_annotations module<a class="headerlink" href="#module-statannotations.format_annotations" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="statannotations.format_annotations.pval_annotation_text">
-<span class="sig-prename descclassname"><span class="pre">statannotations.format_annotations.</span></span><span class="sig-name descname"><span class="pre">pval_annotation_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="statannotations.stats.html#statannotations.stats.StatResult.StatResult" title="statannotations.stats.StatResult.StatResult"><span class="pre">statannotations.stats.StatResult.StatResult</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="statannotations.stats.html#statannotations.stats.StatResult.StatResult" title="statannotations.stats.StatResult.StatResult"><span class="pre">statannotations.stats.StatResult.StatResult</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pvalue_thresholds</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.format_annotations.pval_annotation_text" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">statannotations.format_annotations.</span></span><span class="sig-name descname"><span class="pre">pval_annotation_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="statannotations.stats.html#statannotations.stats.StatResult.StatResult" title="statannotations.stats.StatResult.StatResult"><span class="pre">statannotations.stats.StatResult.StatResult</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="statannotations.stats.html#statannotations.stats.StatResult.StatResult" title="statannotations.stats.StatResult.StatResult"><span class="pre">statannotations.stats.StatResult.StatResult</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pvalue_thresholds</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#statannotations.format_annotations.pval_annotation_text" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>result</strong> – StatResult instance or list thereof</p></li>
-<li><p><strong>pvalue_thresholds</strong> – thresholds to use for formatting</p></li>
+<li><p><strong>pvalue_thresholds</strong> – thresholds to use for formatter</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A Series of rendered annotations if a list of StatResults was
+<dd class="field-even"><p>A List of rendered annotations if a list of StatResults was
 provided, a string otherwise.</p>
 </dd>
 </dl>
