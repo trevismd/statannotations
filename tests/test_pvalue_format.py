@@ -33,9 +33,9 @@ class Test(unittest.TestCase):
         }
         self.ax = sns.boxplot(**plotting)
         self.annotator = Annotator(
-            self.ax, box_pairs=[(("a", "blue"), ("a", "red")),
-                                (("b", "blue"), ("b", "red")),
-                                (("a", "blue"), ("b", "blue"))],
+            self.ax, pairs=[(("a", "blue"), ("a", "red")),
+                            (("b", "blue"), ("b", "red")),
+                            (("a", "blue"), ("b", "blue"))],
             **plotting)
         self.pvalues = [0.03, 0.04, 0.9]
 

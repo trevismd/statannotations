@@ -71,14 +71,16 @@ class Annotator:
             (`apply_test`)
     """
 
-    def __init__(self, ax, box_pairs, plot='boxplot', data=None, x=None,
+    def __init__(self, ax, pairs, plot='boxplot', data=None, x=None,
                  y=None, hue=None, order=None, hue_order=None, **plot_params):
         """
         :param ax: Ax of existing plot
-        :param box_pairs: can be of either form:
-            For non-grouped boxplot: `[(cat1, cat2), ...]`.
-            For boxplot grouped by hue: `[((cat1, hue1), (cat2, hue2)), ...]`
-        :param plot: type of the plot, one of 'boxplot' or 'barplot'.
+        :param pairs: can be of either form:
+            For non-grouped boxplot: `[(cat1, cat2), (cat3, cat4)]`.
+            For plot grouped by hue: `[
+                ((cat1, hue1), (cat2, hue2)), ((cat3, hue3), (cat4, hue4))
+            ]`
+        :param plot: type of the plot (default 'boxplot')
         :param data: seaborn  plot's data
         :param x: seaborn plot's x
         :param y: seaborn plot's y
@@ -87,10 +89,10 @@ class Annotator:
         :param hue_order: seaborn plot's hue_order
         :param plot_params: Other parameters for seaborn plotter
         """
-        self.box_pairs = box_pairs
+        self.pairs = pairs
         self.ax = ax
 
-        self._plotter = _Plotter(ax, box_pairs, plot, data, x, y, hue,
+        self._plotter = _Plotter(ax, pairs, plot, data, x, y, hue,
                                  order, hue_order, **plot_params)
 
         self._test = None
@@ -120,14 +122,14 @@ class Annotator:
         self.OFFSET_FUNCS = {"inside": Annotator._get_offsets_inside,
                              "outside": Annotator._get_offsets_outside}
 
-    def new_plot(self, ax, box_pairs=None, plot='boxplot', data=None, x=None,
+    def new_plot(self, ax, pairs=None, plot='boxplot', data=None, x=None,
                  y=None, hue=None, order=None, hue_order=None, **plot_params):
         self.ax = ax
 
-        if box_pairs is None:
-            box_pairs = self.box_pairs
+        if pairs is None:
+            pairs = self.pairs
 
-        self._plotter = _Plotter(ax, box_pairs, plot, data, x, y, hue,
+        self._plotter = _Plotter(ax, pairs, plot, data, x, y, hue,
                                  order, hue_order, **plot_params)
 
         self.line_offset = None
@@ -256,7 +258,7 @@ class Annotator:
         :param stats_params: Parameters for statistical test functions.
 
         :param num_comparisons: Override number of comparisons otherwise
-            calculated with number of box_pairs
+            calculated with number of pairs
         """
 
         self._check_test_pvalues_perform()
@@ -280,7 +282,7 @@ class Annotator:
         """
         :param pvalues: list or array of p-values for each box pair comparison.
         :param num_comparisons: Override number of comparisons otherwise
-            calculated with number of box_pairs
+            calculated with number of pairs
         """
         self.perform_stat_test = False
 
@@ -299,13 +301,21 @@ class Annotator:
     def set_custom_annotations(self, text_annot_custom):
         """
         :param text_annot_custom: List of strings to annotate for each
-            `box_pair`
+            `pair`
         """
         self._check_correct_number_custom_annotations(text_annot_custom)
         self.custom_annotations = text_annot_custom
         self.show_test_name = False
         self._deactivate_configured_warning()
         return self
+
+    def annotate_custom_annotations(self, text_annot_custom):
+        """
+        :param text_annot_custom: List of strings to annotate for each
+            `pair`
+        """
+        self.set_custom_annotations(text_annot_custom)
+        return self.annotate()
 
     def get_configuration(self):
         configuration = {key: getattr(self, key)
@@ -505,9 +515,9 @@ class Annotator:
             raise ValueError("If `perform_stat_test` is False, "
                              "custom `pvalues` must be specified.")
         check_pvalues(pvalues)
-        if len(pvalues) != len(self.box_pairs):
+        if len(pvalues) != len(self.pairs):
             raise ValueError("`pvalues` should be of the same length as "
-                             "`box_pairs`.")
+                             "`pairs`.")
 
     def _check_test_no_perform(self):
         if self.test is not None:
@@ -520,7 +530,7 @@ class Annotator:
 
         if len(text_annot_custom) != len(self.box_struct_pairs):
             raise ValueError(
-                "`text_annot_custom` should be of same length as `box_pairs`.")
+                "`text_annot_custom` should be of same length as `pairs`.")
 
     def _apply_comparisons_correction(self, test_result_list):
         if self.comparisons_correction is None:
