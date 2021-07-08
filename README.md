@@ -4,7 +4,7 @@
 
 Python package to optionally compute statistical test and add statistical
 annotations on plots generated with seaborn.  
-This branch is now at version 0.4.0-alpha2, while the latest release is v0.3.2.
+This branch is now at version 0.4.0-alpha3, while the latest release is v0.3.2.
 
 ## Derived work
 
@@ -54,7 +54,8 @@ corresponding branch).
 - Optionally, custom p-values can be given as input.
       In this case, no statistical test is performed, but **corrections for
       multiple testing can be applied.**
-- And various fixes (see [CHANGELOG.md](https://github.com/trevismd/statannotations/blob/master/CHANGELOG.md)).
+- And various fixes (see
+  [CHANGELOG.md](https://github.com/trevismd/statannotations/blob/master/CHANGELOG.md)).
 
 ## Installation
 
@@ -121,5 +122,5 @@ annotator.apply_and_annotate()
 In addition to git's history, contributions to statannotations are logged in
 the changelog.  
 If you don't know where to start, there may be a few ideas in opened issues or
-discussion, or something to work for the documentation.  
+discussion, or something to work for the documentation.
 NB: More on [CONTRIBUTING.md](CONTRIBUTING.md)

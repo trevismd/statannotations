@@ -229,17 +229,21 @@
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">statannotations.Annotator.</span></span><span class="sig-name descname"><span class="pre">Annotator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pairs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'boxplot'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hue_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">plot_params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Optionally computes statistical test between pairs of data series, and add
-statistical annotation on top of the groups (boxes, bars…) The same exact
-arguments <cite>data</cite>, <cite>x</cite>, <cite>y</cite>, <cite>hue</cite>, <cite>order</cite>, <cite>width</cite>, <cite>hue_order</cite> (and
-<cite>units</cite>) as in the seaborn boxplot/barplot function must be passed to this
-function.</p>
-<p>This function works in one of the two following modes:
-a) <cite>perform_stat_test</cite> is True (default):
-* statistical test as given by argument <cite>test</cite> is performed.
-* The <cite>test_short_name</cite> argument can be used to customize what appears
-before the pvalues if test is a string.
-b) <cite>perform_stat_test</cite> is False: no statistical test is performed, list of
-custom p-values <cite>pvalues</cite> are used for each pair of groups.</p>
+statistical annotation on top of the groups (boxes, bars…). The same
+exact arguments provided to the seaborn plotting function must be passed to
+the constructor.</p>
+<dl class="simple">
+<dt>This Annotator works in one of the three following modes:</dt><dd><ul class="simple">
+<li><p>Add custom text annotations (<cite>set_custom_annotations</cite>)</p></li>
+<li><p>Format pvalues and add them to the plot (<cite>set_pvalues</cite>)</p></li>
+<li><dl class="simple">
+<dt>Perform a statistical test and then add the results to the plot</dt><dd><p>(<cite>apply_test</cite>)</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="statannotations.Annotator.Annotator.alpha">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">alpha</span></span><a class="headerlink" href="#statannotations.Annotator.Annotator.alpha" title="Permalink to this definition">¶</a></dt>

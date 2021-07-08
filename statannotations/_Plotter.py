@@ -40,12 +40,12 @@ class _Plotter:
         self.pairs = pairs
         self.struct_pairs = self._get_group_struct_pairs()
 
-        self.reordering = None
-        self.sort_group_struct_pairs()
-
         self.y_stack_arr = np.array(
             [[struct['x'], struct['ymax'], 0] for struct in self.structs]
         ).T
+
+        self.reordering = None
+        self.sort_group_struct_pairs()
 
     # noinspection PyProtectedMember
     def _get_plotter(self, plot, x, y, hue, data, order, hue_order,
@@ -277,12 +277,12 @@ class _Plotter:
         return ymaxes
 
     def _get_child_ypos(self, child, data_to_ax):
-        if ((type(child) == PathCollection)
+        if (type(child) == PathCollection
                 and len(child.properties()['offsets'])):
             return self._get_ypos_for_path_collection(
                 child, data_to_ax)
 
-        elif (type(child) == lines.Line2D) or (type(child) == Rectangle):
+        elif type(child) in (lines.Line2D, Rectangle):
             return self._get_ypos_for_line2d_or_rectangle(
                 child, data_to_ax)
 

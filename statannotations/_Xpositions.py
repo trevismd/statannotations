@@ -4,13 +4,25 @@ import numpy as np
 class _XPositions:
     def __init__(self, plotter, group_names):
         self.plotter = plotter
+        self.hue_names = self.plotter.hue_names
+
+        if self.hue_names is not None:
+            nb_hues = len(self.hue_names)
+            if nb_hues == 1:
+                raise ValueError(
+                    "Using hues with only one hue is not supported.")
+
+            self.hue_offsets = self.plotter.hue_offsets
+            self.xunits = self.hue_offsets[1] - self.hue_offsets[0]
+
         self.xpositions = {
             np.round(self.get_group_x_position(group_name), 1): group_name
             for group_name in group_names
         }
 
-        self.xunits = \
-            (max(list(self.xpositions.keys())) + 1) / len(self.xpositions)
+        if self.hue_names is None:
+            self.xunits = \
+                (max(list(self.xpositions.keys())) + 1) / len(self.xpositions)
 
         self.xranges = {
             (pos - self.xunits / 2, pos + self.xunits / 2, pos): group_name
