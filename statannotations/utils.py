@@ -57,13 +57,13 @@ def check_order_in_data(data, x, order) -> None:
                          f"(specified in `order`)")
 
 
-def _check_box_pairs_in_data_no_hue(box_pairs: Union[list, tuple],
-                                    data: Union[List[list],
-                                                pd.DataFrame] = None,
-                                    x: Union[str, list] = None) -> None:
+def _check_pairs_in_data_no_hue(pairs: Union[list, tuple],
+                                data: Union[List[list],
+                                            pd.DataFrame] = None,
+                                x: Union[str, list] = None) -> None:
 
     x_values = get_x_values(data, x)
-    pairs_x_values = set(itertools.chain(*box_pairs))
+    pairs_x_values = set(itertools.chain(*pairs))
     unmatched_x_values = pairs_x_values - x_values
     if unmatched_x_values:
         raise ValueError(f"Missing x value(s) "
@@ -71,18 +71,18 @@ def _check_box_pairs_in_data_no_hue(box_pairs: Union[list, tuple],
                          f" (specified in `pairs`) in data")
 
 
-def _check_box_pairs_in_data_with_hue(box_pairs: Union[list, tuple],
-                                      data: Union[List[list],
-                                                  pd.DataFrame] = None,
-                                      x: Union[str, list] = None,
-                                      hue: str = None) -> set:
+def _check_pairs_in_data_with_hue(pairs: Union[list, tuple],
+                                  data: Union[List[list],
+                                              pd.DataFrame] = None,
+                                  x: Union[str, list] = None,
+                                  hue: str = None) -> set:
 
     x_values = get_x_values(data, x)
     seen_x_values = set()
 
     hue_values = set(data[hue].unique())
 
-    for x_value, hue_value in itertools.chain(itertools.chain(*box_pairs)):
+    for x_value, hue_value in itertools.chain(itertools.chain(*pairs)):
         if x_value not in seen_x_values and x_value not in x_values:
             raise ValueError(f"Missing x value `{x_value}` in {x}"
                              f" (specified in `pairs`)")
@@ -105,19 +105,19 @@ def _check_hue_order_in_data(hue, hue_values: set,
                              f" in {hue} (specified in `hue_order`)")
 
 
-def check_box_pairs_in_data(box_pairs: Union[list, tuple],
-                            data: Union[List[list], pd.DataFrame] = None,
-                            x: Union[str, list] = None,
-                            hue: str = None,
-                            hue_order: List[str] = None):
+def check_pairs_in_data(pairs: Union[list, tuple],
+                        data: Union[List[list], pd.DataFrame] = None,
+                        x: Union[str, list] = None,
+                        hue: str = None,
+                        hue_order: List[str] = None):
     """
     Checks that values referred to in `order` and `pairs` exist in data.
     """
 
     if hue is None and hue_order is None:
-        _check_box_pairs_in_data_no_hue(box_pairs, data, x)
+        _check_pairs_in_data_no_hue(pairs, data, x)
     else:
-        hue_values = _check_box_pairs_in_data_with_hue(box_pairs, data, x, hue)
+        hue_values = _check_pairs_in_data_with_hue(pairs, data, x, hue)
         _check_hue_order_in_data(hue, hue_values, hue_order)
 
 

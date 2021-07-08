@@ -158,7 +158,6 @@
 
 <div class="genindex-jumpbox">
  <a href="#A"><strong>A</strong></a>
- | <a href="#B"><strong>B</strong></a>
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
  | <a href="#F"><strong>F</strong></a>
@@ -184,10 +183,12 @@
 </li>
       <li><a href="statannotations.html#statannotations.Annotator.Annotator.annotate_custom_annotations">annotate_custom_annotations() (statannotations.Annotator.Annotator method)</a>
 </li>
-      <li><a href="statannotations.html#statannotations.Annotator.Annotator">Annotator (class in statannotations.Annotator)</a>
+      <li><a href="statannotations.html#statannotations.Annotation.Annotation">Annotation (class in statannotations.Annotation)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="statannotations.html#statannotations.Annotator.Annotator">Annotator (class in statannotations.Annotator)</a>
+</li>
       <li><a href="statannotations.stats.html#statannotations.stats.ComparisonsCorrection.ComparisonsCorrection.apply">apply() (statannotations.stats.ComparisonsCorrection.ComparisonsCorrection method)</a>
 </li>
       <li><a href="statannotations.html#statannotations.Annotator.Annotator.apply_and_annotate">apply_and_annotate() (statannotations.Annotator.Annotator method)</a>
@@ -201,20 +202,10 @@
   </ul></td>
 </tr></table>
 
-<h2 id="B">B</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="statannotations.html#statannotations.Annotator.Annotator.box_struct_pairs">box_struct_pairs (statannotations.Annotator.Annotator property)</a>
-</li>
-  </ul></td>
-</tr></table>
-
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="statannotations.stats.html#statannotations.stats.utils.check_alpha">check_alpha() (in module statannotations.stats.utils)</a>
-</li>
-      <li><a href="statannotations.html#statannotations.utils.check_box_pairs_in_data">check_box_pairs_in_data() (in module statannotations.utils)</a>
 </li>
       <li><a href="statannotations.html#statannotations.utils.check_is_in">check_is_in() (in module statannotations.utils)</a>
 </li>
@@ -224,20 +215,26 @@
 </li>
       <li><a href="statannotations.html#statannotations.utils.check_order_in_data">check_order_in_data() (in module statannotations.utils)</a>
 </li>
+      <li><a href="statannotations.html#statannotations.utils.check_pairs_in_data">check_pairs_in_data() (in module statannotations.utils)</a>
+</li>
       <li><a href="statannotations.stats.html#statannotations.stats.utils.check_pvalues">check_pvalues() (in module statannotations.stats.utils)</a>
+</li>
+      <li><a href="statannotations.stats.html#statannotations.stats.ComparisonsCorrection.check_valid_correction_name">check_valid_correction_name() (in module statannotations.stats.ComparisonsCorrection)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="statannotations.stats.html#statannotations.stats.ComparisonsCorrection.check_valid_correction_name">check_valid_correction_name() (in module statannotations.stats.ComparisonsCorrection)</a>
-</li>
       <li><a href="statannotations.html#statannotations.utils.check_valid_text_format">check_valid_text_format() (in module statannotations.utils)</a>
 </li>
       <li><a href="statannotations.html#statannotations.Annotator.Annotator.comparisons_correction">comparisons_correction (statannotations.Annotator.Annotator property)</a>
 </li>
       <li><a href="statannotations.stats.html#statannotations.stats.ComparisonsCorrection.ComparisonsCorrection">ComparisonsCorrection (class in statannotations.stats.ComparisonsCorrection)</a>
 </li>
-      <li><a href="statannotations.html#statannotations.PValueFormat.PValueFormat.config">config() (statannotations.PValueFormat.PValueFormat method)</a>
+      <li><a href="statannotations.html#statannotations.PValueFormat.Formatter.config">config() (statannotations.PValueFormat.Formatter method)</a>
+
+      <ul>
+        <li><a href="statannotations.html#statannotations.PValueFormat.PValueFormat.config">(statannotations.PValueFormat.PValueFormat method)</a>
 </li>
+      </ul></li>
       <li><a href="statannotations.html#statannotations.Annotator.Annotator.configure">configure() (statannotations.Annotator.Annotator method)</a>
 </li>
       <li><a href="statannotations.stats.html#statannotations.stats.StatResult.StatResult.corrected_significance">corrected_significance (statannotations.stats.StatResult.StatResult property)</a>
@@ -260,11 +257,21 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="statannotations.html#statannotations.Annotator.Annotator.fig">fig (statannotations.Annotator.Annotator property)</a>
 </li>
-      <li><a href="statannotations.html#statannotations.PValueFormat.PValueFormat.format_result">format_result() (statannotations.PValueFormat.PValueFormat method)</a>
+      <li><a href="statannotations.html#statannotations.PValueFormat.Formatter.format_data">format_data() (statannotations.PValueFormat.Formatter method)</a>
+
+      <ul>
+        <li><a href="statannotations.html#statannotations.PValueFormat.PValueFormat.format_data">(statannotations.PValueFormat.PValueFormat method)</a>
 </li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="statannotations.stats.html#statannotations.stats.StatResult.StatResult.formatted_output">formatted_output (statannotations.stats.StatResult.StatResult property)</a>
+      <li><a href="statannotations.html#statannotations.Annotation.Annotation.formatted_output">formatted_output (statannotations.Annotation.Annotation property)</a>
+
+      <ul>
+        <li><a href="statannotations.stats.html#statannotations.stats.StatResult.StatResult.formatted_output">(statannotations.stats.StatResult.StatResult property)</a>
+</li>
+      </ul></li>
+      <li><a href="statannotations.html#statannotations.PValueFormat.Formatter">Formatter (class in statannotations.PValueFormat)</a>
 </li>
       <li><a href="statannotations.stats.html#statannotations.stats.StatTest.StatTest.from_library">from_library() (statannotations.stats.StatTest.StatTest static method)</a>
 </li>
@@ -320,6 +327,8 @@
       <ul>
         <li><a href="statannotations.html#module-statannotations">statannotations</a>
 </li>
+        <li><a href="statannotations.html#module-statannotations.Annotation">statannotations.Annotation</a>
+</li>
         <li><a href="statannotations.html#module-statannotations.Annotator">statannotations.Annotator</a>
 </li>
         <li><a href="statannotations.html#module-statannotations.format_annotations">statannotations.format_annotations</a>
@@ -355,6 +364,8 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="statannotations.html#statannotations.Annotation.Annotation.print_labels_and_content">print_labels_and_content() (statannotations.Annotation.Annotation method)</a>
+</li>
       <li><a href="statannotations.html#statannotations.PValueFormat.PValueFormat.print_legend_if_used">print_legend_if_used() (statannotations.PValueFormat.PValueFormat method)</a>
 </li>
       <li><a href="statannotations.html#statannotations.Annotator.Annotator.print_pvalue_legend">print_pvalue_legend() (statannotations.Annotator.Annotator method)</a>
@@ -416,6 +427,13 @@
 
       <ul>
         <li><a href="statannotations.html#module-statannotations">module</a>
+</li>
+      </ul></li>
+      <li>
+    statannotations.Annotation
+
+      <ul>
+        <li><a href="statannotations.html#module-statannotations.Annotation">module</a>
 </li>
       </ul></li>
       <li>
@@ -504,6 +522,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="statannotations.html#statannotations.Annotation.Annotation.text">text (statannotations.Annotation.Annotation property)</a>
+</li>
       <li><a href="statannotations.html#statannotations.PValueFormat.PValueFormat.text_format">text_format (statannotations.PValueFormat.PValueFormat property)</a>
 </li>
   </ul></td>

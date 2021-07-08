@@ -12,6 +12,14 @@ Subpackages
 Submodules
 ----------
 
+statannotations.Annotation module
+---------------------------------
+
+.. automodule:: statannotations.Annotation
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 statannotations.Annotator module
 --------------------------------
 
