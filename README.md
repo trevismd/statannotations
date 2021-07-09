@@ -59,7 +59,7 @@ corresponding branch).
 ## Installation
 
 From version 0.3.0 on, the package is distributed on PyPi.
-The latest stable release can be downloaded and installed with:
+The latest stable release (v0.3.2) can be downloaded and installed with:
 ```bash
 pip install statannotations
 ```
