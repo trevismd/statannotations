@@ -30,7 +30,7 @@ class TestAnnotator(unittest.TestCase):
              8: {'x': "b", 'y': 18, 'color': 'red'}
              }).T
 
-        self.box_pairs_df = [(("a", "blue"), ("b", "blue")),
+        self.pairs_for_df = [(("a", "blue"), ("b", "blue")),
                              (("a", "blue"), ("a", "red"))]
         self.df.y = self.df.y.astype(float)
         self.params_df = {
@@ -46,7 +46,7 @@ class TestAnnotator(unittest.TestCase):
 
     def test_init_df(self):
         self.ax = sns.boxplot(**self.params_df)
-        self.annot = Annotator(self.ax, pairs=self.box_pairs_df,
+        self.annot = Annotator(self.ax, pairs=self.pairs_for_df,
                                **self.params_df)
 
     def test_init_barplot(self):
@@ -159,7 +159,7 @@ class TestAnnotator(unittest.TestCase):
         self.assertEqual(expected, self.annot.get_annotations_text())
 
     def test_init_df_inverted(self):
-        box_pairs = self.box_pairs_df[::-1]
+        box_pairs = self.pairs_for_df[::-1]
         self.ax = sns.boxplot(**self.params_df)
         self.annot = Annotator(self.ax, pairs=box_pairs, **self.params_df)
 
@@ -179,7 +179,7 @@ class TestAnnotator(unittest.TestCase):
         self.annot.apply_and_annotate()
 
         self.ax = sns.boxplot(**self.params_df)
-        self.annot.new_plot(self.ax, self.box_pairs_df, **self.params_df)
+        self.annot.new_plot(self.ax, self.pairs_for_df, **self.params_df)
         self.annot.configure(test="Levene", text_format="simple")
         with self.assertWarns(UserWarning):
             self.annot.annotate()
@@ -190,7 +190,7 @@ class TestAnnotator(unittest.TestCase):
         self.annot.apply_and_annotate()
 
         self.ax = sns.boxplot(**self.params_df)
-        self.annot.new_plot(self.ax, self.box_pairs_df, **self.params_df)
+        self.annot.new_plot(self.ax, self.pairs_for_df, **self.params_df)
         self.annot.configure(test="Mann-Whitney-gt", text_format="simple")
         self.annot.apply_and_annotate()
 

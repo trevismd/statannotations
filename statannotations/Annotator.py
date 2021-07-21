@@ -7,9 +7,10 @@ import numpy as np
 from matplotlib import lines
 from matplotlib.font_manager import FontProperties
 
+from statannotations.Annotation import Annotation
 from statannotations.PValueFormat import PValueFormat, \
     CONFIGURABLE_PARAMETERS as PVALUE_CONFIGURABLE_PARAMETERS
-from statannotations._Plotter import _Plotter
+from statannotations._Plotter import _Plotter, _SeabornPlotter
 from statannotations.stats.ComparisonsCorrection import \
     get_validated_comparisons_correction
 from statannotations.stats.StatResult import StatResult
@@ -25,7 +26,7 @@ CONFIGURABLE_PARAMETERS = [
     'comparisons_correction',
     'line_height',
     'line_offset',
-    'line_offset_to_box',
+    'line_offset_to_group',
     'line_width',
     'loc',
     'pvalue_format',
@@ -56,15 +57,17 @@ _DEFAULT_VALUES = {
     "custom_annotations": None
 }
 
+ENGINE_PLOTTERS = {"seaborn": _SeabornPlotter}
+
 
 class Annotator:
     """
     Optionally computes statistical test between pairs of data series, and add
-    statistical annotation on top of the boxes/bars. The same exact arguments
-    `data`, `x`, `y`, `hue`, `order`, `width`, `hue_order` (and `units`) as in
-    the seaborn plotting function must be passed to this function.
+    statistical annotation on top of the groups (boxes, bars...). The same
+    exact arguments provided to the seaborn plotting function must be passed to
+    the constructor.
 
-    This function works in one of the three following modes:
+    This Annotator works in one of the three following modes:
         - Add custom text annotations (`set_custom_annotations`)
         - Format pvalues and add them to the plot (`set_pvalues`)
         - Perform a statistical test and then add the results to the plot
@@ -72,12 +75,13 @@ class Annotator:
     """
 
     def __init__(self, ax, pairs, plot='boxplot', data=None, x=None,
-                 y=None, hue=None, order=None, hue_order=None, **plot_params):
+                 y=None, hue=None, order=None, hue_order=None,
+                 engine="seaborn", **plot_params):
         """
         :param ax: Ax of existing plot
         :param pairs: can be of either form:
-            For non-grouped boxplot: `[(cat1, cat2), (cat3, cat4)]`.
-            For plot grouped by hue: `[
+            For non-grouped plots: `[(cat1, cat2), (cat3, cat4)]`.
+            For plots grouped by hue: `[
                 ((cat1, hue1), (cat2, hue2)), ((cat3, hue3), (cat4, hue4))
             ]`
         :param plot: type of the plot (default 'boxplot')
@@ -87,13 +91,14 @@ class Annotator:
         :param hue: seaborn plot's hue
         :param order: seaborn plot's order
         :param hue_order: seaborn plot's hue_order
-        :param plot_params: Other parameters for seaborn plotter
+        :param engine: currently only "seaborn" is implemented
+        :param plot_params: Other parameters for plotter engine
         """
         self.pairs = pairs
         self.ax = ax
 
-        self._plotter = _Plotter(ax, pairs, plot, data, x, y, hue,
-                                 order, hue_order, **plot_params)
+        self._plotter = self._get_plotter(engine, ax, pairs, plot, data, x, y,
+                                          hue, order, hue_order, **plot_params)
 
         self._test = None
         self.perform_stat_test = None
@@ -109,7 +114,7 @@ class Annotator:
         self._just_configured = True
         self.show_test_name = True
         self.use_fixed_offset = False
-        self.line_offset_to_box = None
+        self.line_offset_to_group = None
         self.line_offset = None
         self.line_height = _DEFAULT_VALUES["line_height"]
         self.text_offset = 1
@@ -119,21 +124,20 @@ class Annotator:
         self.y_offset = None
         self.custom_annotations = None
 
-        self.OFFSET_FUNCS = {"inside": Annotator._get_offsets_inside,
-                             "outside": Annotator._get_offsets_outside}
-
     def new_plot(self, ax, pairs=None, plot='boxplot', data=None, x=None,
-                 y=None, hue=None, order=None, hue_order=None, **plot_params):
+                 y=None, hue=None, order=None, hue_order=None,
+                 engine: str = "seaborn", **plot_params):
         self.ax = ax
 
         if pairs is None:
             pairs = self.pairs
 
-        self._plotter = _Plotter(ax, pairs, plot, data, x, y, hue,
-                                 order, hue_order, **plot_params)
+        self._plotter: _Plotter = self._get_plotter(
+            engine, ax, pairs, plot, data, x, y, hue, order, hue_order,
+            **plot_params)
 
         self.line_offset = None
-        self.line_offset_to_box = None
+        self.line_offset_to_group = None
         self.perform_stat_test = None
 
         return self
@@ -147,8 +151,8 @@ class Annotator:
         return self._plotter.fig
 
     @property
-    def box_struct_pairs(self):
-        return self._plotter.box_struct_pairs
+    def _struct_pairs(self):
+        return self._plotter.struct_pairs
 
     def reset_configuration(self):
 
@@ -157,7 +161,7 @@ class Annotator:
 
         return self
 
-    def annotate(self, line_offset=None, line_offset_to_box=None):
+    def annotate(self, line_offset=None, line_offset_to_group=None):
         """Add configured annotations to the plot."""
         if self._should_warn_about_configuration:
             warnings.warn("Annotator was reconfigured without applying the "
@@ -169,9 +173,9 @@ class Annotator:
         ann_list = []
         orig_ylim = self.ax.get_ylim()
 
-        offset_func = self.OFFSET_FUNCS[self.loc]
-        self.y_offset, self.line_offset_to_box = offset_func(
-            line_offset, line_offset_to_box)
+        offset_func = self.get_offset_func(self.loc)
+        self.y_offset, self.line_offset_to_group = offset_func(
+            line_offset, line_offset_to_group)
 
         if self.verbose:
             self.print_pvalue_legend()
@@ -179,11 +183,9 @@ class Annotator:
         ax_to_data = self._plotter.get_transform_func('ax_to_data')
 
         self.validate_test_short_name()
-        annotations = self.custom_annotations or self.annotations
 
-        for box_structs, result in zip(self.box_struct_pairs,
-                                       annotations):
-            self._annotate_pair(box_structs, result,
+        for annotation in self.annotations:
+            self._annotate_pair(annotation,
                                 ax_to_data=ax_to_data,
                                 ann_list=ann_list,
                                 orig_ylim=orig_ylim)
@@ -211,7 +213,7 @@ class Annotator:
         * `comparisons_correction`
         * `line_height`: in axes fraction coordinates
         * `line_offset`
-        * `line_offset_to_box`
+        * `line_offset_to_group`
         * `line_width`
         * `loc`
         * `pvalue_format`
@@ -244,13 +246,7 @@ class Annotator:
 
         self._activate_configured_warning()
 
-        if parameters.get("alpha"):
-            pvalue_format = parameters.get("pvalue_format")
-            if (pvalue_format is None
-                    or pvalue_format.get("pvalue_thresholds") is None):
-                warnings.warn("Changing alpha without updating "
-                              "pvalue_thresholds can result in inconsistent "
-                              "plotting results")
+        self._warn_alpha_thresholds_if_necessary(parameters)
         return self
 
     def apply_test(self, num_comparisons='auto', **stats_params):
@@ -280,7 +276,7 @@ class Annotator:
 
     def set_pvalues(self, pvalues, num_comparisons='auto'):
         """
-        :param pvalues: list or array of p-values for each box pair comparison.
+        :param pvalues: list or array of p-values for each pair comparison.
         :param num_comparisons: Override number of comparisons otherwise
             calculated with number of pairs
         """
@@ -304,7 +300,9 @@ class Annotator:
             `pair`
         """
         self._check_correct_number_custom_annotations(text_annot_custom)
-        self.custom_annotations = text_annot_custom
+        self.annotations = [Annotation(struct, text) for
+                            struct, text in zip(self._struct_pairs,
+                                                text_annot_custom)]
         self.show_test_name = False
         self._deactivate_configured_warning()
         return self
@@ -325,13 +323,8 @@ class Annotator:
 
     def get_annotations_text(self):
         if self.annotations is not None:
-            return [self._get_text(self.annotations[new_idx])
+            return [self.annotations[new_idx].text
                     for new_idx in self._reordering]
-
-        if self.custom_annotations is not None:
-            return [self.custom_annotations[new_idx]
-                    for new_idx in self._reordering]
-
         return None
 
     @property
@@ -394,6 +387,11 @@ class Annotator:
     def _should_warn_about_configuration(self):
         return self._just_configured
 
+    @classmethod
+    def get_offset_func(cls, position):
+        return {"inside":  cls._get_offsets_inside,
+                "outside": cls._get_offsets_outside}[position]
+
     def _activate_configured_warning(self):
         self._just_configured = True
 
@@ -405,55 +403,47 @@ class Annotator:
             self._pvalue_format.print_legend_if_used()
 
     def _get_results(self, num_comparisons, pvalues=None,
-                     **stats_params) -> List[StatResult]:
+                     **stats_params) -> List[Annotation]:
 
         test_result_list = []
 
         if num_comparisons == "auto":
-            num_comparisons = len(self.box_struct_pairs)
+            num_comparisons = len(self._struct_pairs)
 
-        for box_struct1, box_struct2 in self.box_struct_pairs:
-            box1 = box_struct1['box']
-            box2 = box_struct2['box']
+        for group_struct1, group_struct2 in self._struct_pairs:
+            group1 = group_struct1['group']
+            group2 = group_struct2['group']
 
             if self.perform_stat_test:
                 result = self._get_stat_result_from_test(
-                    box_struct1, box_struct2, num_comparisons, **stats_params)
+                    group_struct1, group_struct2, num_comparisons,
+                    **stats_params)
             else:
-                result = self._get_custom_results(box_struct1, pvalues)
+                result = self._get_custom_results(group_struct1, pvalues)
 
-            result.box1 = box1
-            result.box2 = box2
+            result.group1 = group1
+            result.group2 = group2
 
-            test_result_list.append(result)
+            test_result_list.append(Annotation((group_struct1, group_struct2),
+                                               result,
+                                               formatter=self.pvalue_format))
 
         # Perform other types of correction methods for multiple testing
         self._apply_comparisons_correction(test_result_list)
 
         return test_result_list
 
-    def _get_text(self, result):
-        return self._pvalue_format.format_result(result)
+    def _annotate_pair(self, annotation, ax_to_data, ann_list, orig_ylim):
 
-    def _annotate_pair(self, box_structs, result, ax_to_data,
-                       ann_list, orig_ylim):
+        if self.verbose >= 1:
+            annotation.print_labels_and_content()
 
-        if self.custom_annotations is not None:
-            i_box_pair = box_structs[0]['i_box_pair']
-            text = self.custom_annotations[i_box_pair]
+        x1 = annotation.structs[0]['x']
+        x2 = annotation.structs[1]['x']
+        xi1 = annotation.structs[0]['xi']
+        xi2 = annotation.structs[1]['xi']
 
-        else:
-            if self.verbose >= 1:
-                _print_result_line(box_structs, result.formatted_output)
-
-            text = self._get_text(result)
-
-        x1 = box_structs[0]['x']
-        x2 = box_structs[1]['x']
-        xi1 = box_structs[0]['xi']
-        xi2 = box_structs[1]['xi']
-
-        # Find y maximum for all the y_stacks *in between* box1 and box2
+        # Find y maximum for all the y_stacks *in between* group1 and group2
         i_ymax_in_range_x1_x2 = xi1 + np.nanargmax(
             self._y_stack_arr[1, np.where((x1 <= self._y_stack_arr[0, :])
                                           & (self._y_stack_arr[0, :] <= x2))])
@@ -472,12 +462,12 @@ class Annotator:
         self._plot_line(line_x, line_y)
 
         ann = self.ax.annotate(
-            text, xy=(np.mean([x1, x2]), line_y[2]),
+            annotation.text, xy=(np.mean([x1, x2]), line_y[2]),
             xytext=(0, self.text_offset), textcoords='offset points',
             xycoords='data', ha='center', va='bottom',
             fontsize=self._pvalue_format.fontsize, clip_on=False,
             annotation_clip=False)
-        if text is not None:
+        if annotation.text is not None:
             ann_list.append(ann)
             plt.draw()
             self.ax.set_ylim(orig_ylim)
@@ -528,23 +518,24 @@ class Annotator:
         if text_annot_custom is None:
             return
 
-        if len(text_annot_custom) != len(self.box_struct_pairs):
+        if len(text_annot_custom) != len(self._struct_pairs):
             raise ValueError(
                 "`text_annot_custom` should be of same length as `pairs`.")
 
-    def _apply_comparisons_correction(self, test_result_list):
+    def _apply_comparisons_correction(self, annotations):
         if self.comparisons_correction is None:
             return
         else:
-            self.comparisons_correction.apply(test_result_list)
+            self.comparisons_correction.apply(
+                [annotation.data for annotation in annotations])
 
-    def _get_stat_result_from_test(self, box_struct1, box_struct2,
+    def _get_stat_result_from_test(self, group_struct1, group_struct2,
                                    num_comparisons,
                                    **stats_params) -> StatResult:
 
         result = apply_test(
-            box_struct1['box_data'],
-            box_struct2['box_data'],
+            group_struct1['group_data'],
+            group_struct2['group_data'],
             self.test,
             comparisons_correction=self.comparisons_correction,
             num_comparisons=num_comparisons,
@@ -554,8 +545,8 @@ class Annotator:
 
         return result
 
-    def _get_custom_results(self, box_struct1, pvalues) -> StatResult:
-        pvalue = pvalues[box_struct1['i_box_pair']]
+    def _get_custom_results(self, group_struct1, pvalues) -> StatResult:
+        pvalue = pvalues[group_struct1['i_group_pair']]
 
         if self.has_type0_comparisons_correction():
             pvalue = self.comparisons_correction(pvalue, len(pvalues))
@@ -572,28 +563,28 @@ class Annotator:
         return result
 
     @staticmethod
-    def _get_offsets_inside(line_offset, line_offset_to_box):
+    def _get_offsets_inside(line_offset, line_offset_to_group):
         if line_offset is None:
             line_offset = 0.05
-            if line_offset_to_box is None:
-                line_offset_to_box = 0.06
+            if line_offset_to_group is None:
+                line_offset_to_group = 0.06
         else:
-            if line_offset_to_box is None:
-                line_offset_to_box = 0.06
+            if line_offset_to_group is None:
+                line_offset_to_group = 0.06
         y_offset = line_offset
-        return y_offset, line_offset_to_box
+        return y_offset, line_offset_to_group
 
     @staticmethod
-    def _get_offsets_outside(line_offset, line_offset_to_box):
+    def _get_offsets_outside(line_offset, line_offset_to_group):
         if line_offset is None:
             line_offset = 0.03
-            if line_offset_to_box is None:
-                line_offset_to_box = line_offset
+            if line_offset_to_group is None:
+                line_offset_to_group = line_offset
         else:
-            line_offset_to_box = line_offset
+            line_offset_to_group = line_offset
 
         y_offset = line_offset
-        return y_offset, line_offset_to_box
+        return y_offset, line_offset_to_group
 
     def validate_test_short_name(self):
         if self.test_short_name is not None:
@@ -671,16 +662,27 @@ class Annotator:
         # below at the x position in the range [x1, x2] where the stack is the
         # highest
         if self._y_stack_arr[2, i_ymax_in_range_x1_x2] == 0:
-            # there is only a box below
-            offset = self.line_offset_to_box
+            # there is only a group below
+            offset = self.line_offset_to_group
         else:
             # there is an annotation below
             offset = self.y_offset + self.text_offset_impact_above
 
         return ymax_in_range_x1_x2 + offset
 
+    @staticmethod
+    def _warn_alpha_thresholds_if_necessary(parameters):
+        if parameters.get("alpha"):
+            pvalue_format = parameters.get("pvalue_format")
+            if (pvalue_format is None
+                    or pvalue_format.get("pvalue_thresholds") is None):
+                warnings.warn("Changing alpha without updating "
+                              "pvalue_thresholds can result in inconsistent "
+                              "plotting results")
 
-def _print_result_line(box_structs, formatted_output):
-    label1 = box_structs[0]['label']
-    label2 = box_structs[1]['label']
-    print(f"{label1} v.s. {label2}: {formatted_output}")
+    @staticmethod
+    def _get_plotter(engine, *args, **kwargs):
+        engine_plotter = ENGINE_PLOTTERS.get(engine)
+        if engine_plotter is None:
+            raise NotImplementedError(f"{engine} engine not implemented.")
+        return engine_plotter(*args, **kwargs)

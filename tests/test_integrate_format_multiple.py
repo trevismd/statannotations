@@ -38,10 +38,9 @@ class Test(unittest.TestCase):
         self.pvalues = [0.03, 0.04, 0.9]
 
     def test_ns_without_correction_star(self):
-        results = self.annotator._get_results("auto", pvalues=self.pvalues)
+        annotations = self.annotator._get_results("auto", pvalues=self.pvalues)
         self.assertEqual(["*", "*", "ns"],
-                         [self.annotator._get_text(result)
-                          for result in results])
+                         [annotation.text for annotation in annotations])
 
     def test_signif_with_type1_correction_star(self):
         bh = ComparisonsCorrection("BH")

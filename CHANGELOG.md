@@ -11,6 +11,7 @@
  - Fix a bug where an incorrect xunits calculation resulted in wrong 
    association of points within a box, leading to erroneous max y position for 
    that box.
+ - Reduced code complexity, more SOLID.
  - Many unit and integration tests
 
 ## v0.3
