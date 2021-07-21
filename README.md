@@ -3,9 +3,7 @@
 ## What is it
 
 Python package to optionally compute statistical test and add statistical
-annotations on plots generated with seaborn.  
-This branch is now at version 0.4.0-beta, and may be ahead of the latest stable
-release.
+annotations on plots generated with seaborn.
 
 ## Derived work
 
@@ -16,10 +14,12 @@ by Marc Weber. It is based on commit 1835078 of Feb 21, 2020, tagged "v0.2.3".
 Additions/modifications since that version are below represented **in bold**
 (previous fixes are not listed).
 
-    From version 0.4 onwards (introduction of `Annotator`), `statannot`'s API
-    is no longer usable in `statannotations`
+**! From version 0.4 onwards (introduction of `Annotator`), `statannot`'s API 
+is no longer usable in `statannotations`**. 
+Please use the latest v0.3.2 release if you must keep statannot API in your 
+code, but are looking for bug fixes we have covered.
 
-The statannot interface, at least until its version 0.2.3, is usable in
+Indeed, the statannot interface, at least until its version 0.2.3, is usable in
 statannotations until v.0.3.x, which already provides additional features (see
 corresponding branch).
 

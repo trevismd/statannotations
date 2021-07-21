@@ -1,5 +1,7 @@
 import numpy as np
 
+from statannotations.utils import get_closest
+
 
 class _XPositions:
     def __init__(self, plotter, group_names):
@@ -19,6 +21,8 @@ class _XPositions:
             np.round(self.get_group_x_position(group_name), 1): group_name
             for group_name in group_names
         }
+
+        self._xpositions_list = sorted(self._xpositions.keys())
 
         if self._hue_names is None:
             self._xunits = ((max(list(self._xpositions.keys())) + 1)
@@ -59,3 +63,6 @@ class _XPositions:
 
         group_pos = self._plotter.group_names.index(cat) + hue_offset
         return group_pos
+
+    def find_closest(self, xpos):
+        return get_closest(list(self._xpositions_list), xpos)

@@ -76,7 +76,7 @@ class Annotator:
 
     def __init__(self, ax, pairs, plot='boxplot', data=None, x=None,
                  y=None, hue=None, order=None, hue_order=None,
-                 engine="seaborn", **plot_params):
+                 engine="seaborn", verbose=True, **plot_params):
         """
         :param ax: Ax of existing plot
         :param pairs: can be of either form:
@@ -92,13 +92,15 @@ class Annotator:
         :param order: seaborn plot's order
         :param hue_order: seaborn plot's hue_order
         :param engine: currently only "seaborn" is implemented
+        :param verbose: verbosity flag
         :param plot_params: Other parameters for plotter engine
         """
         self.pairs = pairs
         self.ax = ax
 
         self._plotter = self._get_plotter(engine, ax, pairs, plot, data, x, y,
-                                          hue, order, hue_order, **plot_params)
+                                          hue, order, hue_order,
+                                          verbose=verbose, **plot_params)
 
         self._test = None
         self.perform_stat_test = None
@@ -110,7 +112,7 @@ class Annotator:
         self._comparisons_correction = None
 
         self._loc = "inside"
-        self.verbose = 1
+        self._verbose = 1
         self._just_configured = True
         self.show_test_name = True
         self.use_fixed_offset = False
@@ -141,6 +143,15 @@ class Annotator:
         self.perform_stat_test = None
 
         return self
+
+    @property
+    def verbose(self):
+        return self._verbose
+
+    @verbose.setter
+    def verbose(self, verbose):
+        self._verbose = verbose
+        self._plotter.verbose = verbose
 
     @property
     def _y_stack_arr(self):
@@ -177,7 +188,7 @@ class Annotator:
         self.y_offset, self.line_offset_to_group = offset_func(
             line_offset, line_offset_to_group)
 
-        if self.verbose:
+        if self._verbose:
             self.print_pvalue_legend()
 
         ax_to_data = self._plotter.get_transform_func('ax_to_data')
@@ -435,7 +446,7 @@ class Annotator:
 
     def _annotate_pair(self, annotation, ax_to_data, ann_list, orig_ylim):
 
-        if self.verbose >= 1:
+        if self._verbose >= 1:
             annotation.print_labels_and_content()
 
         x1 = annotation.structs[0]['x']
@@ -628,7 +639,7 @@ class Annotator:
                 got_mpl_error = True
 
         if self.use_fixed_offset or got_mpl_error:
-            if self.verbose >= 1:
+            if self._verbose >= 1:
                 print("Warning: cannot get the text bounding box. Falling "
                       "back to a fixed y offset. Layout may be not "
                       "optimal.")

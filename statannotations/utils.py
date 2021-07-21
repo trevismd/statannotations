@@ -1,4 +1,5 @@
 import itertools
+from bisect import bisect_left
 from typing import List, Union
 
 import pandas as pd
@@ -136,3 +137,20 @@ def check_valid_text_format(text_format):
 
 def render_collection(collection):
     return '","'.join(map(str, collection))
+
+
+def get_closest(a_list, value):
+    """
+    Assumes myList is sorted. Returns closest value to myNumber.
+    If two numbers are equally close, return the smallest number.
+    from https://stackoverflow.com/a/12141511/9981846
+    """
+    pos = bisect_left(a_list, value)
+    if pos == 0:
+        return a_list[0]
+    if pos == len(a_list):
+        return a_list[-1]
+    before, after = a_list[pos - 1: pos + 1]
+    if after - value < value - before:
+        return after
+    return before

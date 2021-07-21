@@ -1,4 +1,5 @@
 import itertools
+import warnings
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -18,7 +19,7 @@ IMPLEMENTED_PLOTTERS = {
 
 class _Plotter:
     def __init__(self, ax, pairs, data=None, x=None, hue=None,
-                 order=None, hue_order=None):
+                 order=None, hue_order=None, verbose=False):
         self.ax = ax
         self._fig = plt.gcf()
         check_not_none("pairs", pairs)
@@ -26,6 +27,7 @@ class _Plotter:
         check_pairs_in_data(pairs, data, x, hue, hue_order)
         self.pairs = pairs
         self._struct_pairs = None
+        self.verbose = verbose
 
     def get_transform_func(self, kind: str):
         """
@@ -70,8 +72,12 @@ class _Plotter:
 
 class _SeabornPlotter(_Plotter):
     def __init__(self, ax, pairs, plot='boxplot', data=None, x=None,
-                 y=None, hue=None, order=None, hue_order=None, **plot_params):
-        _Plotter.__init__(self, ax, pairs, data, x, hue, order, hue_order)
+                 y=None, hue=None, order=None, hue_order=None, verbose=False,
+                 **plot_params):
+
+        _Plotter.__init__(self, ax, pairs, data, x, hue, order, hue_order,
+                          verbose)
+
         self.check_plot_is_implemented(plot)
 
         self.plot = plot
@@ -101,8 +107,8 @@ class _SeabornPlotter(_Plotter):
     # noinspection PyProtectedMember
     def _get_plotter(self, plot, x, y, hue, data, order, hue_order,
                      **plot_params):
-        if not plot_params.pop("dodge", True):
-            raise ValueError("`dodge` cannot be False in statannotations.")
+        dodge = plot_params.pop("dodge", None)
+        self.fix_and_warn(dodge, hue, plot)
 
         if plot == 'boxplot':
             plotter = sns.categorical._BoxPlotter(
@@ -311,6 +317,13 @@ class _SeabornPlotter(_Plotter):
         ymax = child.properties()['offsets'][:, 1].max()
         xpos = float(np.round(np.nanmean(
             child.properties()['offsets'][:, 0]), 1))
+        if xpos not in self.xpositions.xpositions:
+            if self.verbose:
+                warnings.warn(
+                    "Invalid x-position found. Are the same parameters passed "
+                    "to seaborn and statannotations calls? or are there few "
+                    "data points?")
+            xpos = self.xpositions.find_closest(xpos)
 
         xname = self.xpositions.xpositions[xpos]
         ypos = data_to_ax.transform((0, ymax))[1]
@@ -352,3 +365,15 @@ class _SeabornPlotter(_Plotter):
             raise NotImplementedError(
                 f"Only {render_collection(IMPLEMENTED_PLOTTERS[engine])} are "
                 f"supported with {engine} engine.")
+
+    @staticmethod
+    def fix_and_warn(dodge, hue, plot):
+        if dodge is False and hue:
+            raise ValueError("`dodge` cannot be False in statannotations.")
+
+        if plot in ("swarmplot", 'stripplot') and hue:
+            if dodge is None:
+                warnings.warn(
+                    "Implicitly setting dodge to True as it is necessary in "
+                    "statannotations. It must have been True for the seaborn "
+                    "call to yield consistent results when using `hue`.")

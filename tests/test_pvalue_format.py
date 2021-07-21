@@ -35,7 +35,7 @@ class Test(unittest.TestCase):
         self.annotator = Annotator(
             self.ax, pairs=[(("a", "blue"), ("a", "red")),
                             (("b", "blue"), ("b", "red")),
-                            (("a", "blue"), ("b", "blue"))],
+                            (("a", "blue"), ("b", "blue"))], verbose=False,
             **plotting)
         self.pvalues = [0.03, 0.04, 0.9]
 
@@ -76,7 +76,6 @@ class Test(unittest.TestCase):
 
     @unittest.mock.patch('sys.stdout', new_callable=io.StringIO)
     def assert_print_pvalue(self, pvalue_format, expected_output, mock_stdout):
-
         pvalue_format.print_legend_if_used()
         self.assertEqual(expected_output, mock_stdout.getvalue())
 
