@@ -11,21 +11,68 @@ from statannotations._Xpositions import _XPositions
 from statannotations.utils import check_not_none, check_order_in_data, \
     check_pairs_in_data, render_collection, check_is_in, remove_null
 
-IMPLEMENTED_PLOTTERS = ['barplot', 'boxplot', 'stripplot', 'swarmplot',
-                        'violinplot']
+IMPLEMENTED_PLOTTERS = {
+    'seaborn': ['barplot', 'boxplot', 'stripplot', 'swarmplot', 'violinplot']
+}
 
 
 class _Plotter:
-    def __init__(self, ax, pairs, plot='boxplot', data=None, x=None,
-                 y=None, hue=None, order=None, hue_order=None, **plot_params):
-
-        check_plot_is_implemented(plot)
+    def __init__(self, ax, pairs, data=None, x=None, hue=None,
+                 order=None, hue_order=None):
+        self.ax = ax
+        self._fig = plt.gcf()
         check_not_none("pairs", pairs)
         check_order_in_data(data, x, order)
         check_pairs_in_data(pairs, data, x, hue, hue_order)
+        self.pairs = pairs
+        self._struct_pairs = None
 
-        self.ax = ax
-        self.fig = plt.gcf()
+    def get_transform_func(self, kind: str):
+        """
+        Given an axis object, returns one of three possible transformation
+        functions to move between coordinate systems, depending on the value of
+        kind:
+        'data_to_ax': converts data coordinates to axes coordinates
+        'ax_to_data': converts axes coordinates to data coordinates
+        'pix_to_ax': converts pixel coordinates to axes coordinates
+        'all': return tuple of all three
+
+        This function should be called whenever axes limits are altered.
+        """
+
+        check_is_in(kind, ['data_to_ax', 'ax_to_data', 'pix_to_ax', 'all'],
+                    'kind')
+
+        if kind == 'pix_to_ax':
+            return self.ax.transAxes.inverted()
+
+        data_to_ax = \
+            self.ax.transData + self.ax.get_xaxis_transform().inverted()
+
+        if kind == 'data_to_ax':
+            return data_to_ax
+
+        elif kind == 'ax_to_data':
+            return data_to_ax.inverted()
+
+        else:
+            return (data_to_ax, data_to_ax.inverted(),
+                    self.ax.transAxes.inverted())
+
+    @property
+    def fig(self):
+        return self._fig
+
+    @property
+    def struct_pairs(self):
+        return self._struct_pairs
+
+
+class _SeabornPlotter(_Plotter):
+    def __init__(self, ax, pairs, plot='boxplot', data=None, x=None,
+                 y=None, hue=None, order=None, hue_order=None, **plot_params):
+        _Plotter.__init__(self, ax, pairs, data, x, hue, order, hue_order)
+        self.check_plot_is_implemented(plot)
 
         self.plot = plot
         self.plotter = self._get_plotter(plot, x, y, hue, data, order,
@@ -38,20 +85,24 @@ class _Plotter:
 
         self.structs = self._get_structs()
         self.pairs = pairs
-        self.struct_pairs = self._get_group_struct_pairs()
+        self._struct_pairs = self._get_group_struct_pairs()
 
-        self.y_stack_arr = np.array(
+        self._y_stack_arr = np.array(
             [[struct['x'], struct['ymax'], 0] for struct in self.structs]
         ).T
 
         self.reordering = None
-        self.sort_group_struct_pairs()
+        self._sort_group_struct_pairs()
+
+    @property
+    def y_stack_arr(self):
+        return self._y_stack_arr
 
     # noinspection PyProtectedMember
     def _get_plotter(self, plot, x, y, hue, data, order, hue_order,
                      **plot_params):
         if not plot_params.pop("dodge", True):
-            raise ValueError("`dodge` must be True in statannotations")
+            raise ValueError("`dodge` cannot be False in statannotations.")
 
         if plot == 'boxplot':
             plotter = sns.categorical._BoxPlotter(
@@ -156,38 +207,6 @@ class _Plotter:
                     ymaxes[xname] = ypos
 
         return ymaxes
-
-    def get_transform_func(self, kind: str):
-        """
-        Given an axis object, returns one of three possible transformation
-        functions to move between coordinate systems, depending on the value of
-        kind:
-        'data_to_ax': converts data coordinates to axes coordinates
-        'ax_to_data': converts axes coordinates to data coordinates
-        'pix_to_ax': converts pixel coordinates to axes coordinates
-        'all': return tuple of all three
-
-        This function should be called whenever axes limits are altered.
-        """
-
-        check_is_in(kind, ['data_to_ax', 'ax_to_data', 'pix_to_ax', 'all'],
-                    'kind')
-
-        if kind == 'pix_to_ax':
-            return self.ax.transAxes.inverted()
-
-        data_to_ax = \
-            self.ax.transData + self.ax.get_xaxis_transform().inverted()
-
-        if kind == 'data_to_ax':
-            return data_to_ax
-
-        elif kind == 'ax_to_data':
-            return data_to_ax.inverted()
-
-        else:
-            return (data_to_ax, data_to_ax.inverted(),
-                    self.ax.transAxes.inverted())
 
     def _get_structs(self):
         structs = [
@@ -314,21 +333,22 @@ class _Plotter:
 
         return xname, ypos
 
-    def sort_group_struct_pairs(self):
+    def _sort_group_struct_pairs(self):
         # Draw first the annotations with the shortest between-groups distance,
         # in order to reduce overlapping between annotations.
         new_group_struct_pairs = sorted(
-            enumerate(self.struct_pairs),
-            key=self.absolute_group_struct_pair_in_tuple_x_diff)
+            enumerate(self._struct_pairs),
+            key=self._absolute_group_struct_pair_in_tuple_x_diff)
 
-        self.reordering, self.struct_pairs = zip(*new_group_struct_pairs)
+        self.reordering, self._struct_pairs = zip(*new_group_struct_pairs)
 
     @staticmethod
-    def absolute_group_struct_pair_in_tuple_x_diff(group_struct_pair):
+    def _absolute_group_struct_pair_in_tuple_x_diff(group_struct_pair):
         return abs(group_struct_pair[1][1]['x'] - group_struct_pair[1][0]['x'])
 
-
-def check_plot_is_implemented(plot):
-    if plot not in IMPLEMENTED_PLOTTERS:
-        raise NotImplementedError(
-            f"Only {render_collection(IMPLEMENTED_PLOTTERS)} are supported.")
+    @staticmethod
+    def check_plot_is_implemented(plot, engine="seaborn"):
+        if plot not in IMPLEMENTED_PLOTTERS[engine]:
+            raise NotImplementedError(
+                f"Only {render_collection(IMPLEMENTED_PLOTTERS[engine])} are "
+                f"supported with {engine} engine.")

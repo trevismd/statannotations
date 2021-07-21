@@ -10,7 +10,7 @@ from matplotlib.font_manager import FontProperties
 from statannotations.Annotation import Annotation
 from statannotations.PValueFormat import PValueFormat, \
     CONFIGURABLE_PARAMETERS as PVALUE_CONFIGURABLE_PARAMETERS
-from statannotations._Plotter import _Plotter
+from statannotations._Plotter import _Plotter, _SeabornPlotter
 from statannotations.stats.ComparisonsCorrection import \
     get_validated_comparisons_correction
 from statannotations.stats.StatResult import StatResult
@@ -57,6 +57,8 @@ _DEFAULT_VALUES = {
     "custom_annotations": None
 }
 
+ENGINE_PLOTTERS = {"seaborn": _SeabornPlotter}
+
 
 class Annotator:
     """
@@ -73,7 +75,8 @@ class Annotator:
     """
 
     def __init__(self, ax, pairs, plot='boxplot', data=None, x=None,
-                 y=None, hue=None, order=None, hue_order=None, **plot_params):
+                 y=None, hue=None, order=None, hue_order=None,
+                 engine="seaborn", **plot_params):
         """
         :param ax: Ax of existing plot
         :param pairs: can be of either form:
@@ -88,13 +91,14 @@ class Annotator:
         :param hue: seaborn plot's hue
         :param order: seaborn plot's order
         :param hue_order: seaborn plot's hue_order
-        :param plot_params: Other parameters for seaborn plotter
+        :param engine: currently only "seaborn" is implemented
+        :param plot_params: Other parameters for plotter engine
         """
         self.pairs = pairs
         self.ax = ax
 
-        self._plotter = _Plotter(ax, pairs, plot, data, x, y, hue,
-                                 order, hue_order, **plot_params)
+        self._plotter = self._get_plotter(engine, ax, pairs, plot, data, x, y,
+                                          hue, order, hue_order, **plot_params)
 
         self._test = None
         self.perform_stat_test = None
@@ -120,18 +124,17 @@ class Annotator:
         self.y_offset = None
         self.custom_annotations = None
 
-        self.OFFSET_FUNCS = {"inside": Annotator._get_offsets_inside,
-                             "outside": Annotator._get_offsets_outside}
-
     def new_plot(self, ax, pairs=None, plot='boxplot', data=None, x=None,
-                 y=None, hue=None, order=None, hue_order=None, **plot_params):
+                 y=None, hue=None, order=None, hue_order=None,
+                 engine: str = "seaborn", **plot_params):
         self.ax = ax
 
         if pairs is None:
             pairs = self.pairs
 
-        self._plotter = _Plotter(ax, pairs, plot, data, x, y, hue,
-                                 order, hue_order, **plot_params)
+        self._plotter: _Plotter = self._get_plotter(
+            engine, ax, pairs, plot, data, x, y, hue, order, hue_order,
+            **plot_params)
 
         self.line_offset = None
         self.line_offset_to_group = None
@@ -170,7 +173,7 @@ class Annotator:
         ann_list = []
         orig_ylim = self.ax.get_ylim()
 
-        offset_func = self.OFFSET_FUNCS[self.loc]
+        offset_func = self.get_offset_func(self.loc)
         self.y_offset, self.line_offset_to_group = offset_func(
             line_offset, line_offset_to_group)
 
@@ -383,6 +386,11 @@ class Annotator:
     @property
     def _should_warn_about_configuration(self):
         return self._just_configured
+
+    @classmethod
+    def get_offset_func(cls, position):
+        return {"inside":  cls._get_offsets_inside,
+                "outside": cls._get_offsets_outside}[position]
 
     def _activate_configured_warning(self):
         self._just_configured = True
@@ -671,3 +679,10 @@ class Annotator:
                 warnings.warn("Changing alpha without updating "
                               "pvalue_thresholds can result in inconsistent "
                               "plotting results")
+
+    @staticmethod
+    def _get_plotter(engine, *args, **kwargs):
+        engine_plotter = ENGINE_PLOTTERS.get(engine)
+        if engine_plotter is None:
+            raise NotImplementedError(f"{engine} engine not implemented.")
+        return engine_plotter(*args, **kwargs)

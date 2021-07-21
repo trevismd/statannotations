@@ -4,7 +4,8 @@
 
 Python package to optionally compute statistical test and add statistical
 annotations on plots generated with seaborn.  
-This branch is now at version 0.4.0-alpha3, while the latest release is v0.3.2.
+This branch is now at version 0.4.0-beta, and may be ahead of the latest stable
+release.
 
 ## Derived work
 
