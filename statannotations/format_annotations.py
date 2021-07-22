@@ -2,48 +2,42 @@ from statannotations.stats.StatResult import StatResult
 from typing import Union, List
 import numpy as np
 import pandas as pd
+from operator import itemgetter
 
 
 def pval_annotation_text(result: Union[List[StatResult], StatResult],
-                         pvalue_thresholds: List):
+                         pvalue_thresholds: List) -> Union[List[str], str]:
     """
 
     :param result: StatResult instance or list thereof
-    :param pvalue_thresholds: thresholds to use for formatting
-    :returns: A Series of rendered annotations if a list of StatResults was
+    :param pvalue_thresholds: thresholds to use for formatter
+    :returns: A List of rendered annotations if a list of StatResults was
         provided, a string otherwise.
     """
-    single_value = False
+    was_list = True
 
-    if isinstance(result, list):
-        x1_pval = np.array([res.pvalue for res in result])
-        x1_signif_suff = [res.significance_suffix for res in result]
-    else:
-        x1_pval = np.array([result.pvalue])
-        x1_signif_suff = [result.significance_suffix]
-        single_value = True
+    if not isinstance(result, list):
+        was_list = False
+        result = [result]
 
-    # Sort the threshold array
-    pvalue_thresholds = (pd.DataFrame(pvalue_thresholds)
-                         .sort_values(by=0, ascending=False)
-                         .values)
-    x_annot = pd.Series(["" for _ in range(len(x1_pval))])
+    x1_pval = np.array([res.pvalue for res in result])
 
-    for i in range(0, len(pvalue_thresholds)):
+    pvalue_thresholds = sorted(pvalue_thresholds, key=itemgetter(0),
+                               reverse=True)
 
-        if i < len(pvalue_thresholds) - 1:
-            condition = (x1_pval <= pvalue_thresholds[i][0])\
-                        & (pvalue_thresholds[i + 1][0] < x1_pval)
-            x_annot[condition] = pvalue_thresholds[i][1]
+    x_annot = pd.Series(["" for _ in x1_pval])
 
-        else:
-            condition = x1_pval < pvalue_thresholds[i][0]
-            x_annot[condition] = pvalue_thresholds[i][1]
+    for i, threshold in enumerate(pvalue_thresholds[:-1]):
+        condition = ((x1_pval <= threshold[0])
+                     & (pvalue_thresholds[i + 1][0] < x1_pval))
+        x_annot[condition] = threshold[1]
 
-    x_annot = pd.Series([f"{star}{signif}"
-                         for star, signif in zip(x_annot, x1_signif_suff)])
+    x_annot[x1_pval <= pvalue_thresholds[-1][0]] = pvalue_thresholds[-1][1]
 
-    return x_annot if not single_value else x_annot.iloc[0]
+    x_annot = [f"{star}{res.significance_suffix}"
+               for star, res in zip(x_annot, result)]
+
+    return x_annot if was_list else x_annot[0]
 
 
 def simple_text(result: StatResult, pvalue_format, pvalue_thresholds) -> str:

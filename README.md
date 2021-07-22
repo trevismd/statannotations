@@ -3,22 +3,23 @@
 ## What is it
 
 Python package to optionally compute statistical test and add statistical
-annotations on plots generated with seaborn.  
-This branch is now at version 0.4.0-alpha, while the latest release is v0.3.2.
+annotations on plots generated with seaborn.
 
 ## Derived work
 
-This repository is evolving independently from
+This repository is based on
 [webermarcolivier/statannot](https://github.com/webermarcolivier/statannot)
-by Marc Weber. It is based on commit 1835078 of Feb 21, 2020, tagged "v0.2.3".
+ (commit 1835078 of Feb 21, 2020, tagged "v0.2.3").
 
 Additions/modifications since that version are below represented **in bold**
 (previous fixes are not listed).
 
-    From version 0.4 onwards (introduction of `Annotator`), `statannot`'s API
-    is no longer usable in `statannotations`
+**! From version 0.4.0 onwards (introduction of `Annotator`), `statannot`'s API 
+is no longer usable in `statannotations`**. 
+Please use the latest v0.3.2 release if you must keep `statannot``s API in your 
+code, but are looking for bug fixes we have covered.
 
-The statannot interface, at least until its version 0.2.3, is usable in
+Indeed, the statannot interface, at least until its version 0.2.3, is usable in
 statannotations until v.0.3.x, which already provides additional features (see
 corresponding branch).
 
@@ -54,7 +55,9 @@ corresponding branch).
 - Optionally, custom p-values can be given as input.
       In this case, no statistical test is performed, but **corrections for
       multiple testing can be applied.**
-- And various fixes (see [CHANGELOG.md](https://github.com/trevismd/statannotations/blob/master/CHANGELOG.md)).
+- Any text can be used as annotation
+- And various fixes (see
+  [CHANGELOG.md](https://github.com/trevismd/statannotations/blob/master/CHANGELOG.md)).
 
 ## Installation
 
@@ -68,7 +71,7 @@ or, after cloning the repository,
 ```bash
 pip install .
 
-# OR, to have optional dependencies too (multiple comparisons)
+# OR, to have optional dependencies too (multiple comparisons & testing)
 pip install -r requirements.txt .
 ```
 
@@ -89,11 +92,12 @@ df = sns.load_dataset("tips")
 x = "day"
 y = "total_bill"
 order = ['Sun', 'Thur', 'Fri', 'Sat']
-box_pairs=[("Thur", "Fri"), ("Thur", "Sat"), ("Fri", "Sun")]
+
 ax = sns.boxplot(data=df, x=x, y=y, order=order)
 
+pairs=[("Thur", "Fri"), ("Thur", "Sat"), ("Fri", "Sun")]
 
-annotator = Annotator(ax, box_pairs, data=df, x=x, y=y, order=order)
+annotator = Annotator(ax, pairs, data=df, x=x, y=y, order=order)
 annotator.configure(test='Mann-Whitney', text_format='star', loc='outside')
 annotator.apply_and_annotate()
 ```
@@ -122,5 +126,5 @@ annotator.apply_and_annotate()
 In addition to git's history, contributions to statannotations are logged in
 the changelog.  
 If you don't know where to start, there may be a few ideas in opened issues or
-discussion, or something to work for the documentation.  
-NB: to run the test suite, the `statsmodels` and `packaging` packages are required.
+discussion, or something to work for the documentation.
+NB: More on [CONTRIBUTING.md](CONTRIBUTING.md)

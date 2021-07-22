@@ -197,3 +197,27 @@ class ComparisonsCorrection(object):
             result = result[:n_vals]
 
         return result if got_pvalues_in_array else result[0]
+
+    def _apply_type1_comparisons_correction(self, test_result_list):
+        original_pvalues = [result.pvalue for result in test_result_list]
+
+        significant_pvalues = self(original_pvalues)
+        for is_significant, result in zip(significant_pvalues,
+                                          test_result_list):
+            result.correction_method = self.name
+            result.corrected_significance = is_significant
+
+    def _apply_type0_comparisons_correction(self, test_result_list):
+        for result in test_result_list:
+            result.correction_method = self.name
+            result.corrected_significance = (
+                    result.pvalue < self.alpha
+                    or np.isclose(result.pvalue, self.alpha))
+
+    def apply(self, test_result_list):
+
+        if self.type == 1:
+            self._apply_type1_comparisons_correction(test_result_list)
+
+        else:
+            self._apply_type0_comparisons_correction(test_result_list)

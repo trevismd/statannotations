@@ -1,7 +1,8 @@
 import unittest
 
 from statannotations.utils import \
-    raise_expected_got, check_is_in, check_not_none, get_x_values
+    raise_expected_got, check_is_in, check_not_none, get_x_values, \
+    get_closest
 
 
 class TestUtils(unittest.TestCase):
@@ -30,3 +31,24 @@ class TestUtils(unittest.TestCase):
 
     def test_get_x_values(self):
         self.assertSetEqual({1, 2, 3}, get_x_values(None, [1, 3, 2]))
+
+
+class TestClosest(unittest.TestCase):
+    def setUp(self):
+        self.a_list = [1, 2, 7, 11.1, 11.6, 11.9, 12, 14, 30]
+
+    def test_smaller_than_0(self):
+        value = 0
+        self.assertEqual(1, get_closest(self.a_list, value))
+
+    def test_larger_than_max(self):
+        value = 31
+        self.assertEqual(30, get_closest(self.a_list, value))
+
+    def test_btween1(self):
+        value = 12.1
+        self.assertAlmostEqual(12, get_closest(self.a_list, value))
+
+    def test_middle_take_smallest(self):
+        value = 11.95
+        self.assertAlmostEqual(11.9, get_closest(self.a_list, value))

@@ -33,25 +33,23 @@ class Test(unittest.TestCase):
         }
         self.ax = sns.boxplot(**plotting)
         self.annotator = Annotator(
-            self.ax, box_pairs=[(("a", "blue"), ("a", "red")),
-                                (("b", "blue"), ("b", "red")),
-                                (("a", "blue"), ("b", "blue"))],
+            self.ax, pairs=[(("a", "blue"), ("a", "red")),
+                            (("b", "blue"), ("b", "red")),
+                            (("a", "blue"), ("b", "blue"))], verbose=False,
             **plotting)
         self.pvalues = [0.03, 0.04, 0.9]
 
     def test_format_simple(self):
         self.annotator.configure(pvalue_format={"text_format": "simple"})
-        results = self.annotator._get_results("auto", pvalues=self.pvalues)
+        annotations = self.annotator._get_results("auto", pvalues=self.pvalues)
         self.assertEqual(["p ≤ 0.05", "p ≤ 0.05", "p = 0.90"],
-                         [self.annotator._get_text(result)
-                          for result in results])
+                         [annotation.text for annotation in annotations])
     
     def test_format_simple_in_annotator(self):
         self.annotator.configure(text_format="simple")
-        results = self.annotator._get_results("auto", pvalues=self.pvalues)
+        annotations = self.annotator._get_results("auto", pvalues=self.pvalues)
         self.assertEqual(["p ≤ 0.05", "p ≤ 0.05", "p = 0.90"],
-                         [self.annotator._get_text(result)
-                          for result in results])
+                         [annotation.text for annotation in annotations])
 
     def test_wrong_parameter(self):
         with self.assertRaisesRegex(
@@ -61,25 +59,23 @@ class Test(unittest.TestCase):
     def test_format_string(self):
         self.annotator.configure(text_format="simple",
                                  pvalue_format_string="{:.3f}")
-        self.assertEqual("{:.3f}", self.annotator.pvalue_format.pvalue_format_string)
-        results = self.annotator._get_results("auto", pvalues=self.pvalues)
+        self.assertEqual("{:.3f}",
+                         self.annotator.pvalue_format.pvalue_format_string)
+        annotations = self.annotator._get_results("auto", pvalues=self.pvalues)
         self.assertEqual(["p ≤ 0.05", "p ≤ 0.05", "p = 0.900"],
-                         [self.annotator._get_text(result)
-                          for result in results])
+                         [annotation.text for annotation in annotations])
 
     def test_format_string_default(self):
         self.annotator.configure(text_format="simple",
                                  pvalue_format_string="{:.3f}")
         self.annotator.pvalue_format.config(pvalue_format_string=DEFAULT)
 
-        results = self.annotator._get_results("auto", pvalues=self.pvalues)
+        annotations = self.annotator._get_results("auto", pvalues=self.pvalues)
         self.assertEqual(["p ≤ 0.05", "p ≤ 0.05", "p = 0.90"],
-                         [self.annotator._get_text(result)
-                          for result in results])
+                         [annotation.text for annotation in annotations])
 
     @unittest.mock.patch('sys.stdout', new_callable=io.StringIO)
     def assert_print_pvalue(self, pvalue_format, expected_output, mock_stdout):
-
         pvalue_format.print_legend_if_used()
         self.assertEqual(expected_output, mock_stdout.getvalue())
 

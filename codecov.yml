@@ -1,1 +1,9 @@
+coverage:
+  status:
+    project:
+      default:
+        threshold: 0.5  # Allow coverage to drop by up to 0.5% in a PR before marking it failed
 
+    patch:
+      default:
+        threshold: 0.5%
