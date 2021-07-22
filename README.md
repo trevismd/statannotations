@@ -7,16 +7,16 @@ annotations on plots generated with seaborn.
 
 ## Derived work
 
-This repository is evolving independently from
+This repository is based on
 [webermarcolivier/statannot](https://github.com/webermarcolivier/statannot)
-by Marc Weber. It is based on commit 1835078 of Feb 21, 2020, tagged "v0.2.3".
+ (commit 1835078 of Feb 21, 2020, tagged "v0.2.3").
 
 Additions/modifications since that version are below represented **in bold**
 (previous fixes are not listed).
 
-**! From version 0.4 onwards (introduction of `Annotator`), `statannot`'s API 
+**! From version 0.4.0 onwards (introduction of `Annotator`), `statannot`'s API 
 is no longer usable in `statannotations`**. 
-Please use the latest v0.3.2 release if you must keep statannot API in your 
+Please use the latest v0.3.2 release if you must keep `statannot``s API in your 
 code, but are looking for bug fixes we have covered.
 
 Indeed, the statannot interface, at least until its version 0.2.3, is usable in
@@ -55,6 +55,7 @@ corresponding branch).
 - Optionally, custom p-values can be given as input.
       In this case, no statistical test is performed, but **corrections for
       multiple testing can be applied.**
+- Any text can be used as annotation
 - And various fixes (see
   [CHANGELOG.md](https://github.com/trevismd/statannotations/blob/master/CHANGELOG.md)).
 
@@ -70,7 +71,7 @@ or, after cloning the repository,
 ```bash
 pip install .
 
-# OR, to have optional dependencies too (multiple comparisons)
+# OR, to have optional dependencies too (multiple comparisons & testing)
 pip install -r requirements.txt .
 ```
 
@@ -91,9 +92,11 @@ df = sns.load_dataset("tips")
 x = "day"
 y = "total_bill"
 order = ['Sun', 'Thur', 'Fri', 'Sat']
+
 ax = sns.boxplot(data=df, x=x, y=y, order=order)
 
 pairs=[("Thur", "Fri"), ("Thur", "Sat"), ("Fri", "Sun")]
+
 annotator = Annotator(ax, pairs, data=df, x=x, y=y, order=order)
 annotator.configure(test='Mann-Whitney', text_format='star', loc='outside')
 annotator.apply_and_annotate()
