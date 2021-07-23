@@ -43,3 +43,10 @@ class Annotation:
                                   for struct in self.structs])
 
         print(f"{labels_string}: {self.formatted_output}")
+
+    def __str__(self):
+        return f"Annotation(('{self.structs[0]['label']}', " \
+               f"'{self.structs[1]['label']}'), {self.text})"
+
+    def __repr__(self):
+        return f"<{str(self)}>"
