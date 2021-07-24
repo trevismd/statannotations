@@ -8,7 +8,7 @@ from matplotlib import lines
 from matplotlib.collections import PathCollection
 from matplotlib.patches import Rectangle
 
-from statannotations._Xpositions import _XPositions
+from statannotations._GroupsPositions import _GroupsPositions
 from statannotations.utils import check_not_none, check_order_in_data, \
     check_pairs_in_data, render_collection, check_is_in, remove_null
 
@@ -18,16 +18,18 @@ IMPLEMENTED_PLOTTERS = {
 
 
 class _Plotter:
-    def __init__(self, ax, pairs, data=None, x=None, hue=None,
-                 order=None, hue_order=None, verbose=False):
+    def __init__(self, ax, pairs, data=None, x=None, y=None, hue=None,
+                 order=None, hue_order=None, verbose=False, **plot_params):
         self.ax = ax
         self._fig = plt.gcf()
         check_not_none("pairs", pairs)
-        check_order_in_data(data, x, order)
-        check_pairs_in_data(pairs, data, x, hue, hue_order)
+        group_coord = y if plot_params.get("orient") == "h" else x
+        check_order_in_data(data, group_coord, order)
+        check_pairs_in_data(pairs, data, group_coord, hue, hue_order)
         self.pairs = pairs
         self._struct_pairs = None
         self.verbose = verbose
+        self.orient = plot_params.get("orient", "v")
 
     def get_transform_func(self, kind: str):
         """
@@ -48,9 +50,11 @@ class _Plotter:
         if kind == 'pix_to_ax':
             return self.ax.transAxes.inverted()
 
-        data_to_ax = \
-            self.ax.transData + self.ax.get_xaxis_transform().inverted()
+        transform = {'v': self.ax.get_xaxis_transform,
+                     'h': self.ax.get_yaxis_transform}[self.orient]
 
+        data_to_ax = \
+            self.ax.transData + transform().inverted()
         if kind == 'data_to_ax':
             return data_to_ax
 
@@ -75,34 +79,34 @@ class _SeabornPlotter(_Plotter):
                  y=None, hue=None, order=None, hue_order=None, verbose=False,
                  **plot_params):
 
-        _Plotter.__init__(self, ax, pairs, data, x, hue, order, hue_order,
-                          verbose)
+        _Plotter.__init__(self, ax, pairs, data, x, y, hue, order, hue_order,
+                          verbose, **plot_params)
 
         self.check_plot_is_implemented(plot)
-
         self.plot = plot
         self.plotter = self._get_plotter(plot, x, y, hue, data, order,
                                          hue_order, **plot_params)
 
         self.group_names, self.labels = self._get_group_names_and_labels()
-        self.xpositions = _XPositions(self.plotter, self.group_names)
+        self.groups_positions = _GroupsPositions(self.plotter,
+                                                 self.group_names)
         self.reordering = None
-        self.ymaxes = self._generate_ymaxes()
+        self.value_maxes = self._generate_value_maxes()
 
         self.structs = self._get_structs()
         self.pairs = pairs
         self._struct_pairs = self._get_group_struct_pairs()
 
-        self._y_stack_arr = np.array(
-            [[struct['x'], struct['ymax'], 0] for struct in self.structs]
+        self._value_stack_arr = np.array(
+            [[struct['group_coord'], struct['value_max'], 0] for struct in self.structs]
         ).T
 
         self.reordering = None
         self._sort_group_struct_pairs()
 
     @property
-    def y_stack_arr(self):
-        return self._y_stack_arr
+    def value_stack_arr(self):
+        return self._value_stack_arr
 
     # noinspection PyProtectedMember
     def _get_plotter(self, plot, x, y, hue, data, order, hue_order,
@@ -187,7 +191,7 @@ class _SeabornPlotter(_Plotter):
 
         return group_names, labels
 
-    def _generate_ymaxes(self):
+    def _generate_value_maxes(self):
         """
         given plotter and the names of two categorical variables,
         returns highest y point drawn between those two variables before
@@ -197,38 +201,40 @@ class _SeabornPlotter(_Plotter):
         (eg, error bars and/or bar charts).
         """
 
-        ymaxes = {name: 0 for name in self.group_names}
+        value_maxes = {name: 0 for name in self.group_names}
 
         data_to_ax = self.get_transform_func('data_to_ax')
 
         if self.plot == 'violinplot':
-            ymaxes = self._get_ymaxes_violin(ymaxes, data_to_ax)
+            value_maxes = self._get_value_maxes_violin(value_maxes, data_to_ax)
 
         else:
             for child in self.ax.get_children():
 
-                xname, ypos = self._get_child_ypos(child, data_to_ax)
+                group_name, value_pos = self._get_value_ypos(child, data_to_ax)
 
-                if ypos is not None and ypos > ymaxes[xname]:
-                    ymaxes[xname] = ypos
+                if value_pos is not None and value_pos > value_maxes[group_name]:
+                    value_maxes[group_name] = value_pos
 
-        return ymaxes
+        return value_maxes
 
     def _get_structs(self):
         structs = [
             {
                 'group': group_name,
                 'label': self.labels[b_idx],
-                'x': self.xpositions.get_group_x_position(group_name),
+                'group_coord': (self.groups_positions
+                                .get_group_axis_position(group_name)),
                 'group_data': self._get_group_data(group_name),
-                'ymax': self.ymaxes[group_name]
-            } for b_idx, group_name in enumerate(self.group_names)]
+                'value_max': self.value_maxes[group_name]
+            }
+            for b_idx, group_name in enumerate(self.group_names)]
 
-        # Sort the group data structures by position along the x axis
-        structs = sorted(structs, key=lambda struct: struct['x'])
+        # Sort the group data structures by position along the groups axis
+        structs = sorted(structs, key=lambda struct: struct['group_coord'])
 
-        # Add the index position in the list of groups along the x axis
-        structs = [dict(struct, xi=i)
+        # Add the index position in the list of groups along the groups axis
+        structs = [dict(struct, group_i=i)
                    for i, struct in enumerate(structs)]
 
         return structs
@@ -246,7 +252,7 @@ class _SeabornPlotter(_Plotter):
             group_struct2 = dict(group_structs_dic[group2],
                                  i_group_pair=i_group_pair)
 
-            if group_struct1['x'] <= group_struct2['x']:
+            if group_struct1['group_coord'] <= group_struct2['group_coord']:
                 group_struct_pairs.append((group_struct1, group_struct2))
 
             else:
@@ -289,26 +295,26 @@ class _SeabornPlotter(_Plotter):
 
         return group_data
 
-    def _get_ymaxes_violin(self, ymaxes, data_to_ax):
+    def _get_value_maxes_violin(self, value_maxes, data_to_ax):
         for group_idx, group_name in enumerate(self.plotter.group_names):
             if self.plotter.hue_names:
                 for hue_idx, hue_name in enumerate(self.plotter.hue_names):
-                    ypos = max(self.plotter.support[group_idx][hue_idx])
-                    ymaxes[(group_name, hue_name)] = \
-                        data_to_ax.transform((0, ypos))[1]
+                    value_pos = max(self.plotter.support[group_idx][hue_idx])
+                    value_maxes[(group_name, hue_name)] = \
+                        data_to_ax.transform((0, value_pos))[1]
             else:
-                ypos = max(self.plotter.support[group_idx])
-                ymaxes[group_name] = data_to_ax.transform((0, ypos))[1]
-        return ymaxes
+                value_pos = max(self.plotter.support[group_idx])
+                value_maxes[group_name] = data_to_ax.transform((0, value_pos))[1]
+        return value_maxes
 
-    def _get_child_ypos(self, child, data_to_ax):
+    def _get_value_ypos(self, child, data_to_ax):
         if (type(child) == PathCollection
                 and len(child.properties()['offsets'])):
             return self._get_ypos_for_path_collection(
                 child, data_to_ax)
 
         elif type(child) in (lines.Line2D, Rectangle):
-            return self._get_ypos_for_line2d_or_rectangle(
+            return self._get_value_pos_for_line2d_or_rectangle(
                 child, data_to_ax)
 
         return None, None
@@ -317,34 +323,42 @@ class _SeabornPlotter(_Plotter):
         ymax = child.properties()['offsets'][:, 1].max()
         xpos = float(np.round(np.nanmean(
             child.properties()['offsets'][:, 0]), 1))
-        if xpos not in self.xpositions.xpositions:
+        if xpos not in self.groups_positions.axis_positions:
             if self.verbose:
                 warnings.warn(
                     "Invalid x-position found. Are the same parameters passed "
                     "to seaborn and statannotations calls? or are there few "
                     "data points?")
-            xpos = self.xpositions.find_closest(xpos)
+            xpos = self.groups_positions.find_closest(xpos)
 
-        xname = self.xpositions.xpositions[xpos]
+        xname = self.groups_positions.axis_positions[xpos]
         ypos = data_to_ax.transform((0, ymax))[1]
 
         return xname, ypos
 
-    def _get_ypos_for_line2d_or_rectangle(self, child, data_to_ax):
+    def _get_value_pos_for_line2d_or_rectangle(self, child, data_to_ax):
         bbox = self.ax.transData.inverted().transform(
             child.get_window_extent(self.fig.canvas.get_renderer()))
 
-        if (bbox[:, 0].max() - bbox[:, 0].min()) > 1.1*self.xpositions.xunits:
-            return None, None
-        raw_xpos = np.round(bbox[:, 0].mean(), 1)
-        xpos = self.xpositions.get_xpos_location(raw_xpos)
-        if xpos not in self.xpositions.xpositions:
-            return None, None
-        xname = self.xpositions.xpositions[xpos]
-        ypos = bbox[:, 1].max()
-        ypos = data_to_ax.transform((0, ypos))[1]
+        group_coord = {"v": 0, "h": 1}[self.orient]
+        value_coord = (group_coord + 1) % 2
 
-        return xname, ypos
+        if ((bbox[:, group_coord].max() - bbox[:, group_coord].min())
+                > 1.1 * self.groups_positions.axis_units):
+            return None, None
+        raw_group_pos = np.round(bbox[:, group_coord].mean(), 1)
+        group_pos = self.groups_positions.get_axis_pos_location(raw_group_pos)
+        if group_pos not in self.groups_positions.axis_positions:
+            return None, None
+        group_name = self.groups_positions.axis_positions[group_pos]
+        value_pos = bbox[:, value_coord].max()
+
+        if group_coord:
+            value_pos = data_to_ax.transform((value_pos, 0))
+            return group_name, value_pos[0]
+
+        value_pos = data_to_ax.transform((0, value_pos))
+        return group_name, value_pos[1]
 
     def _sort_group_struct_pairs(self):
         # Draw first the annotations with the shortest between-groups distance,
@@ -357,7 +371,8 @@ class _SeabornPlotter(_Plotter):
 
     @staticmethod
     def _absolute_group_struct_pair_in_tuple_x_diff(group_struct_pair):
-        return abs(group_struct_pair[1][1]['x'] - group_struct_pair[1][0]['x'])
+        return abs(group_struct_pair[1][1]['group_coord']
+                   - group_struct_pair[1][0]['group_coord'])
 
     @staticmethod
     def check_plot_is_implemented(plot, engine="seaborn"):
@@ -377,3 +392,8 @@ class _SeabornPlotter(_Plotter):
                     "Implicitly setting dodge to True as it is necessary in "
                     "statannotations. It must have been True for the seaborn "
                     "call to yield consistent results when using `hue`.")
+
+    def get_value_lim(self):
+        if self.orient == 'v':
+            return self.ax.get_ylim()
+        return self.ax.get_xlim()
