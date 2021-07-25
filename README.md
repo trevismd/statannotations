@@ -111,6 +111,8 @@ annotator.apply_and_annotate()
 
 ![Example 3](https://raw.githubusercontent.com/trevismd/statannotations/master/usage/flu_dataset_log_scale_in_axes.svg)
 
+![Example 4](https://raw.githubusercontent.com/trevismd/statannotations/master/usage/HorizontalBarplotOutside.png)
+
 ## Requirements
 
 + Python >= 3.6
