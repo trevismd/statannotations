@@ -75,19 +75,19 @@ def _check_pairs_in_data_no_hue(pairs: Union[list, tuple],
 def _check_pairs_in_data_with_hue(pairs: Union[list, tuple],
                                   data: Union[List[list],
                                               pd.DataFrame] = None,
-                                  x: Union[str, list] = None,
+                                  group_coord: Union[str, list] = None,
                                   hue: str = None) -> set:
 
-    x_values = get_x_values(data, x)
-    seen_x_values = set()
+    x_values = get_x_values(data, group_coord)
+    seen_group_values = set()
 
     hue_values = set(data[hue].unique())
 
-    for x_value, hue_value in itertools.chain(itertools.chain(*pairs)):
-        if x_value not in seen_x_values and x_value not in x_values:
-            raise ValueError(f"Missing x value `{x_value}` in {x}"
+    for group_value, hue_value in itertools.chain(itertools.chain(*pairs)):
+        if group_value not in seen_group_values and group_value not in x_values:
+            raise ValueError(f"Missing group value `{group_value}` in {group_coord}"
                              f" (specified in `pairs`)")
-        seen_x_values.add(x_value)
+        seen_group_values.add(group_value)
 
         if hue_value not in hue_values:
             raise ValueError(f"Missing hue value `{hue_value}` in {hue}"
@@ -108,7 +108,7 @@ def _check_hue_order_in_data(hue, hue_values: set,
 
 def check_pairs_in_data(pairs: Union[list, tuple],
                         data: Union[List[list], pd.DataFrame] = None,
-                        x: Union[str, list] = None,
+                        coord: Union[str, list] = None,
                         hue: str = None,
                         hue_order: List[str] = None):
     """
@@ -116,9 +116,9 @@ def check_pairs_in_data(pairs: Union[list, tuple],
     """
 
     if hue is None and hue_order is None:
-        _check_pairs_in_data_no_hue(pairs, data, x)
+        _check_pairs_in_data_no_hue(pairs, data, coord)
     else:
-        hue_values = _check_pairs_in_data_with_hue(pairs, data, x, hue)
+        hue_values = _check_pairs_in_data_with_hue(pairs, data, coord, hue)
         _check_hue_order_in_data(hue, hue_values, hue_order)
 
 
