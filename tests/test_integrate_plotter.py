@@ -28,6 +28,7 @@ class Test(unittest.TestCase):
             "y": "y",
             "hue": 'color',
         }
+        self.df.y = self.df.y.astype(float)
 
     def test_dodge_false_raises(self):
         ax = sns.barplot(dodge=False, **self.plotting)
@@ -48,3 +49,16 @@ class Test(unittest.TestCase):
                        (("b", "blue"), ("b", "red")),
                        (("a", "blue"), ("b", "blue"))],
                 **self.plotting)
+
+    def test_orient_horizontal(self):
+        plotting = {**self.plotting, 'orient': 'h',
+                    'x': 'y', 'y': 'x', 'dodge': True}
+        ax = sns.stripplot(**plotting)
+        self.annotator = Annotator(
+            ax, plot="stripplot",
+            pairs=[(("a", "blue"), ("a", "red")),
+                   (("b", "blue"), ("b", "red")),
+                   (("a", "blue"), ("b", "blue"))],
+            **plotting)
+        self.annotator.configure(test="Mann-Whitney")
+        self.annotator.apply_and_annotate()
