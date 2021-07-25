@@ -1,4 +1,7 @@
 ## v0.4
+### v0.4.1
+ - Support for horizontal orientation
+
 ### v0.4.0
  - Major refactoring, change to an Annotator `class` to prepare and add 
    annotations in separate function (now method) calls.

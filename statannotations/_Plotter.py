@@ -98,7 +98,8 @@ class _SeabornPlotter(_Plotter):
         self._struct_pairs = self._get_group_struct_pairs()
 
         self._value_stack_arr = np.array(
-            [[struct['group_coord'], struct['value_max'], 0] for struct in self.structs]
+            [[struct['group_coord'], struct['value_max'], 0]
+             for struct in self.structs]
         ).T
 
         self.reordering = None
@@ -211,7 +212,7 @@ class _SeabornPlotter(_Plotter):
         else:
             for child in self.ax.get_children():
 
-                group_name, value_pos = self._get_value_ypos(child, data_to_ax)
+                group_name, value_pos = self._get_value_pos(child, data_to_ax)
 
                 if value_pos is not None and value_pos > value_maxes[group_name]:
                     value_maxes[group_name] = value_pos
@@ -304,13 +305,14 @@ class _SeabornPlotter(_Plotter):
                         data_to_ax.transform((0, value_pos))[1]
             else:
                 value_pos = max(self.plotter.support[group_idx])
-                value_maxes[group_name] = data_to_ax.transform((0, value_pos))[1]
+                value_maxes[group_name] = data_to_ax.transform((0,
+                                                                value_pos))[1]
         return value_maxes
 
-    def _get_value_ypos(self, child, data_to_ax):
+    def _get_value_pos(self, child, data_to_ax):
         if (type(child) == PathCollection
                 and len(child.properties()['offsets'])):
-            return self._get_ypos_for_path_collection(
+            return self._get_value_pos_for_path_collection(
                 child, data_to_ax)
 
         elif type(child) in (lines.Line2D, Rectangle):
@@ -319,46 +321,54 @@ class _SeabornPlotter(_Plotter):
 
         return None, None
 
-    def _get_ypos_for_path_collection(self, child, data_to_ax):
-        ymax = child.properties()['offsets'][:, 1].max()
-        xpos = float(np.round(np.nanmean(
-            child.properties()['offsets'][:, 0]), 1))
-        if xpos not in self.groups_positions.axis_positions:
+    def _get_value_pos_for_path_collection(self, child, data_to_ax):
+        group_coord = {"v": 0, "h": 1}[self.orient]
+        value_coord = (group_coord + 1) % 2
+
+        direction = {"v": 1, "h": -1}[self.orient]
+
+        value_max = child.properties()['offsets'][:, value_coord].max()
+        group_pos = float(np.round(np.nanmean(
+            child.properties()['offsets'][:, group_coord]), 1))
+
+        if group_pos not in self.groups_positions.axis_positions:
             if self.verbose:
                 warnings.warn(
                     "Invalid x-position found. Are the same parameters passed "
                     "to seaborn and statannotations calls? or are there few "
                     "data points?")
-            xpos = self.groups_positions.find_closest(xpos)
+            group_pos = self.groups_positions.find_closest(group_pos)
 
-        xname = self.groups_positions.axis_positions[xpos]
-        ypos = data_to_ax.transform((0, ymax))[1]
+        group_name = self.groups_positions.axis_positions[group_pos]
 
-        return xname, ypos
+        value_pos = data_to_ax.transform((0, value_max)[::direction])
+
+        return group_name, value_pos[value_coord]
 
     def _get_value_pos_for_line2d_or_rectangle(self, child, data_to_ax):
         bbox = self.ax.transData.inverted().transform(
             child.get_window_extent(self.fig.canvas.get_renderer()))
 
         group_coord = {"v": 0, "h": 1}[self.orient]
+        direction = {"v": 1, "h": -1}[self.orient]
+
         value_coord = (group_coord + 1) % 2
 
         if ((bbox[:, group_coord].max() - bbox[:, group_coord].min())
                 > 1.1 * self.groups_positions.axis_units):
             return None, None
+
         raw_group_pos = np.round(bbox[:, group_coord].mean(), 1)
         group_pos = self.groups_positions.get_axis_pos_location(raw_group_pos)
+
         if group_pos not in self.groups_positions.axis_positions:
             return None, None
+
         group_name = self.groups_positions.axis_positions[group_pos]
         value_pos = bbox[:, value_coord].max()
 
-        if group_coord:
-            value_pos = data_to_ax.transform((value_pos, 0))
-            return group_name, value_pos[0]
-
-        value_pos = data_to_ax.transform((0, value_pos))
-        return group_name, value_pos[1]
+        value_pos = data_to_ax.transform((0, value_pos)[::direction])
+        return group_name, value_pos[value_coord]
 
     def _sort_group_struct_pairs(self):
         # Draw first the annotations with the shortest between-groups distance,

@@ -477,8 +477,11 @@ class Annotator:
         value = self._get_value_for_pair(i_value_max_in_range_g1_g2)
 
         # Determine lines in axes coordinates
-        ax_line_group = [group_coord_1, group_coord_1, group_coord_2, group_coord_2]
-        ax_line_value = [value, value + self.line_height, value + self.line_height, value]
+        ax_line_group = [group_coord_1, group_coord_1,
+                         group_coord_2, group_coord_2]
+        ax_line_value = [value, value + self.line_height,
+                         value + self.line_height, value]
+
         lists = ((ax_line_group, ax_line_value) if self.orient == 'v'
                  else (ax_line_value, ax_line_group))
 
@@ -489,16 +492,8 @@ class Annotator:
         line_x, line_y = zip(*points)
         self._plot_line(line_x, line_y)
 
-        xy_params = {
-            'xy': ((np.mean([group_coord_1, group_coord_2]), line_y[2])
-                   if self.orient == 'v'
-                   else (line_x[2], np.mean([group_coord_1, group_coord_2]))),
-            'xytext': ((0, self.text_offset)
-                       if self.orient == 'v'
-                       else (self.text_offset, 0)),
-            'rotation': 0 if self.orient == 'v' else 270,
-            'rotation_mode': 'anchor'
-        }
+        xy_params = self._get_xy_params(group_coord_1, group_coord_2, line_x,
+                                        line_y)
 
         ann = self.ax.annotate(
             annotation.text, textcoords='offset points',
@@ -509,10 +504,10 @@ class Annotator:
         if annotation.text is not None:
             ann_list.append(ann)
             plt.draw()
-            if self.orient == 'v':
-                self.ax.set_ylim(orig_value_lim)
-            else:
-                self.ax.set_xlim(orig_value_lim)
+            set_lim = {'v': 'set_ylim',
+                       'h': 'set_xlim'}[self.orient]
+
+            getattr(self.ax, set_lim)(orig_value_lim)
 
             value_top_annot = self._annotate_pair_text(ann, value)
         else:
@@ -663,8 +658,8 @@ class Annotator:
                 bbox = ann.get_window_extent()
                 pix_to_ax = self._plotter.get_transform_func('pix_to_ax')
                 bbox_ax = bbox.transformed(pix_to_ax)
-                attr = {'v': 'ymax', 'h': 'xmax'}[self.orient]
-                value_top_annot = getattr(bbox_ax, attr)
+                value_coord_max = {'v': 'ymax', 'h': 'xmax'}[self.orient]
+                value_top_annot = getattr(bbox_ax, value_coord_max)
 
             except RuntimeError:
                 got_mpl_error = True
@@ -675,26 +670,26 @@ class Annotator:
                       "back to a fixed y offset. Layout may be not "
                       "optimal.")
 
-            # We will apply a fixed offset in points,
-            # based on the font size of the annotation.
             fontsize_points = FontProperties(
                 size='medium').get_size_in_points()
-            xy_params = {
-                'x': {'v': 0, 'h': fontsize_points + self.text_offset}[self.orient],
-                'y': {'h': 0, 'v': fontsize_points + self.text_offset}[self.orient],
-            }
+
+            direction = {'h': -1, 'v': 1}[self.orient]
+            x, y = [0, fontsize_points + self.text_offset][::direction]
             offset_trans = mtransforms.offset_copy(trans=self.ax.transAxes,
                                                    fig=self.fig,
-                                                   units='points', **xy_params)
+                                                   units='points', x=x, y=y)
 
             value_top_display = offset_trans.transform(
                 (value + self.line_height, value + self.line_height))
-            value_coord = 0 if self.orient == 'h' else 1
+
+            value_coord = {'h': 0, 'v': 1}[self.orient]
+
             value_top_annot = (self.ax.transAxes.inverted()
                                .transform(value_top_display)[value_coord])
 
         self.text_offset_impact_above = (
                 value_top_annot - value - self.value_offset - self.line_height)
+
         return value_top_annot
 
     def _reset_default_values(self):
@@ -733,3 +728,28 @@ class Annotator:
         if engine_plotter is None:
             raise NotImplementedError(f"{engine} engine not implemented.")
         return engine_plotter(*args, **kwargs)
+
+    def _get_xy_params_horizontal(self, group_coord_1, group_coord_2,
+                                  line_x: np.ndarray):
+        return {
+            'xy': (line_x[2], np.mean([group_coord_1, group_coord_2])),
+            'xytext': (self.text_offset, 0),
+            'rotation':  270,
+            'rotation_mode': 'anchor'
+        }
+
+    def _get_xy_params_vertical(self, group_coord_1, group_coord_2,
+                                line_y: np.ndarray):
+        return {
+            'xy': (np.mean([group_coord_1, group_coord_2]), line_y[2]),
+            'xytext': (0, self.text_offset),
+        }
+
+    def _get_xy_params(self, group_coord_1, group_coord_2, line_x: np.ndarray,
+                       line_y: np.ndarray):
+        if self.orient == 'h':
+            return self._get_xy_params_horizontal(group_coord_1, group_coord_2,
+                                                  line_x)
+
+        return self._get_xy_params_vertical(group_coord_1, group_coord_2,
+                                            line_y)
