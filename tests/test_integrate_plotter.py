@@ -62,3 +62,14 @@ class Test(unittest.TestCase):
             **plotting)
         self.annotator.configure(test="Mann-Whitney")
         self.annotator.apply_and_annotate()
+
+    def test_fixed_offset(self):
+        ax = sns.barplot(**self.plotting)
+        self.annotator = Annotator(
+            ax, plot="barplot",
+            pairs=[(("a", "blue"), ("a", "red")),
+                   (("b", "blue"), ("b", "red")),
+                   (("a", "blue"), ("b", "blue"))],
+            **self.plotting)
+        self.annotator.configure(test="Mann-Whitney", use_fixed_offset=True)
+        self.annotator.apply_and_annotate()
