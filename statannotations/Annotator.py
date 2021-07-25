@@ -123,7 +123,7 @@ class Annotator:
         self.text_offset_impact_above = 0
         self.color = '0.2'
         self.line_width = 1.5
-        self.y_offset = None
+        self.value_offset = None
         self.custom_annotations = None
 
     def new_plot(self, ax, pairs=None, plot='boxplot', data=None, x=None,
@@ -145,6 +145,10 @@ class Annotator:
         return self
 
     @property
+    def orient(self):
+        return self._plotter.orient
+
+    @property
     def verbose(self):
         return self._verbose
 
@@ -154,8 +158,8 @@ class Annotator:
         self._plotter.verbose = verbose
 
     @property
-    def _y_stack_arr(self):
-        return self._plotter.y_stack_arr
+    def _value_stack_arr(self):
+        return self._plotter.value_stack_arr
 
     @property
     def fig(self):
@@ -179,13 +183,13 @@ class Annotator:
                           "test (again) which will probably lead to "
                           "unexpected results")
 
-        self._update_y_for_loc()
+        self._update_value_for_loc()
 
         ann_list = []
-        orig_ylim = self.ax.get_ylim()
+        orig_value_lim = self._plotter.get_value_lim()
 
         offset_func = self.get_offset_func(self.loc)
-        self.y_offset, self.line_offset_to_group = offset_func(
+        self.value_offset, self.line_offset_to_group = offset_func(
             line_offset, line_offset_to_group)
 
         if self._verbose:
@@ -199,16 +203,24 @@ class Annotator:
             self._annotate_pair(annotation,
                                 ax_to_data=ax_to_data,
                                 ann_list=ann_list,
-                                orig_ylim=orig_ylim)
+                                orig_value_lim=orig_value_lim)
 
         # reset transformation
-        y_stack_max = max(self._y_stack_arr[1, :])
+        y_stack_max = max(self._value_stack_arr[1, :])
         ax_to_data = self._plotter.get_transform_func('ax_to_data')
-        ylims = ([(0, 0), (0, max(1.04 * y_stack_max, 1))]
-                 if self.loc == 'inside'
-                 else [(0, 0), (0, 1)])
-
-        self.ax.set_ylim(ax_to_data.transform(ylims)[:, 1])
+        value_lims = (
+            ([(0, 0), (0, max(1.04 * y_stack_max, 1))]
+             if self.loc == 'inside'
+             else [(0, 0), (0, 1)])
+            if self.orient == 'v'
+            else
+            ([(0, 0), (max(1.04 * y_stack_max, 1), 0)]
+             if self.loc == 'inside'
+             else [(0, 0), (1, 0)])
+        )
+        set_lims = self.ax.set_ylim if self.orient == 'v' else self.ax.set_xlim
+        transformed = ax_to_data.transform(value_lims)
+        set_lims(transformed[:, 1 if self.orient == 'v' else 0])
 
         return self.ax, self.annotations
 
@@ -444,61 +456,75 @@ class Annotator:
 
         return test_result_list
 
-    def _annotate_pair(self, annotation, ax_to_data, ann_list, orig_ylim):
+    def _annotate_pair(self, annotation, ax_to_data, ann_list, orig_value_lim):
 
         if self._verbose >= 1:
             annotation.print_labels_and_content()
 
-        x1 = annotation.structs[0]['x']
-        x2 = annotation.structs[1]['x']
-        xi1 = annotation.structs[0]['xi']
-        xi2 = annotation.structs[1]['xi']
+        group_coord_1 = annotation.structs[0]['group_coord']
+        group_coord_2 = annotation.structs[1]['group_coord']
+        group_i1 = annotation.structs[0]['group_i']
+        group_i2 = annotation.structs[1]['group_i']
 
         # Find y maximum for all the y_stacks *in between* group1 and group2
-        i_ymax_in_range_x1_x2 = xi1 + np.nanargmax(
-            self._y_stack_arr[1, np.where((x1 <= self._y_stack_arr[0, :])
-                                          & (self._y_stack_arr[0, :] <= x2))])
+        i_value_max_in_range_g1_g2 = group_i1 + np.nanargmax(
+            self._value_stack_arr[1,
+                                  np.where((group_coord_1
+                                            <= self._value_stack_arr[0, :])
+                                           & (self._value_stack_arr[0, :]
+                                              <= group_coord_2))])
 
-        y = self._get_y_for_pair(i_ymax_in_range_x1_x2)
+        value = self._get_value_for_pair(i_value_max_in_range_g1_g2)
 
         # Determine lines in axes coordinates
-        ax_line_x = [x1, x1, x2, x2]
-        ax_line_y = [y, y + self.line_height, y + self.line_height, y]
+        ax_line_group = [group_coord_1, group_coord_1,
+                         group_coord_2, group_coord_2]
+        ax_line_value = [value, value + self.line_height,
+                         value + self.line_height, value]
+
+        lists = ((ax_line_group, ax_line_value) if self.orient == 'v'
+                 else (ax_line_value, ax_line_group))
 
         points = [ax_to_data.transform((x, y))
                   for x, y
-                  in zip(ax_line_x, ax_line_y)]
+                  in zip(*lists)]
 
         line_x, line_y = zip(*points)
         self._plot_line(line_x, line_y)
 
+        xy_params = self._get_xy_params(group_coord_1, group_coord_2, line_x,
+                                        line_y)
+
         ann = self.ax.annotate(
-            annotation.text, xy=(np.mean([x1, x2]), line_y[2]),
-            xytext=(0, self.text_offset), textcoords='offset points',
+            annotation.text, textcoords='offset points',
             xycoords='data', ha='center', va='bottom',
             fontsize=self._pvalue_format.fontsize, clip_on=False,
-            annotation_clip=False)
+            annotation_clip=False, **xy_params)
+
         if annotation.text is not None:
             ann_list.append(ann)
             plt.draw()
-            self.ax.set_ylim(orig_ylim)
+            set_lim = {'v': 'set_ylim',
+                       'h': 'set_xlim'}[self.orient]
 
-            y_top_annot = self._annotate_pair_text(ann, y)
+            getattr(self.ax, set_lim)(orig_value_lim)
+
+            value_top_annot = self._annotate_pair_text(ann, value)
         else:
-            y_top_annot = y + self.line_height
+            value_top_annot = value + self.line_height
 
-        # Fill the highest y position of the annotation into the y_stack array
-        # for all positions in the range x1 to x2
-        self._y_stack_arr[1,
-                          (x1 <= self._y_stack_arr[0, :])
-                          & (self._y_stack_arr[0, :] <= x2)] = y_top_annot
+        # Fill the highest value position of the annotation into the value_stack
+        # array for all positions in the range group_coord_1 to group_coord_2
+        self._value_stack_arr[
+            1, (group_coord_1 <= self._value_stack_arr[0, :])
+            & (self._value_stack_arr[0, :] <= group_coord_2)] = value_top_annot
 
-        # Increment the counter of annotations in the y_stack array
-        self._y_stack_arr[2, xi1:xi2 + 1] += 1
+        # Increment the counter of annotations in the value_stack array
+        self._value_stack_arr[2, group_i1:group_i2 + 1] += 1
 
-    def _update_y_for_loc(self):
+    def _update_value_for_loc(self):
         if self._loc == 'outside':
-            self._y_stack_arr[1, :] = 1
+            self._value_stack_arr[1, :] = 1
 
     def _check_test_pvalues_perform(self):
         if self.test is None:
@@ -582,8 +608,7 @@ class Annotator:
         else:
             if line_offset_to_group is None:
                 line_offset_to_group = 0.06
-        y_offset = line_offset
-        return y_offset, line_offset_to_group
+        return line_offset, line_offset_to_group
 
     @staticmethod
     def _get_offsets_outside(line_offset, line_offset_to_group):
@@ -623,9 +648,9 @@ class Annotator:
             line.set_clip_on(False)
             self.ax.add_line(line)
 
-    def _annotate_pair_text(self, ann, y):
+    def _annotate_pair_text(self, ann, value):
 
-        y_top_annot = None
+        value_top_annot = None
         got_mpl_error = False
 
         if not self.use_fixed_offset:
@@ -633,7 +658,8 @@ class Annotator:
                 bbox = ann.get_window_extent()
                 pix_to_ax = self._plotter.get_transform_func('pix_to_ax')
                 bbox_ax = bbox.transformed(pix_to_ax)
-                y_top_annot = bbox_ax.ymax
+                value_coord_max = {'v': 'ymax', 'h': 'xmax'}[self.orient]
+                value_top_annot = getattr(bbox_ax, value_coord_max)
 
             except RuntimeError:
                 got_mpl_error = True
@@ -644,40 +670,45 @@ class Annotator:
                       "back to a fixed y offset. Layout may be not "
                       "optimal.")
 
-            # We will apply a fixed offset in points,
-            # based on the font size of the annotation.
             fontsize_points = FontProperties(
                 size='medium').get_size_in_points()
-            offset_trans = mtransforms.offset_copy(
-                self.ax.transAxes, fig=self.fig, x=0,
-                y=fontsize_points + self.text_offset, units='points')
 
-            y_top_display = offset_trans.transform(
-                (0, y + self.line_height))
-            y_top_annot = (self.ax.transAxes.inverted()
-                           .transform(y_top_display)[1])
+            direction = {'h': -1, 'v': 1}[self.orient]
+            x, y = [0, fontsize_points + self.text_offset][::direction]
+            offset_trans = mtransforms.offset_copy(trans=self.ax.transAxes,
+                                                   fig=self.fig,
+                                                   units='points', x=x, y=y)
+
+            value_top_display = offset_trans.transform(
+                (value + self.line_height, value + self.line_height))
+
+            value_coord = {'h': 0, 'v': 1}[self.orient]
+
+            value_top_annot = (self.ax.transAxes.inverted()
+                               .transform(value_top_display)[value_coord])
 
         self.text_offset_impact_above = (
-                y_top_annot - y - self.y_offset - self.line_height)
-        return y_top_annot
+                value_top_annot - value - self.value_offset - self.line_height)
+
+        return value_top_annot
 
     def _reset_default_values(self):
         for attribute, default_value in _DEFAULT_VALUES.items():
             setattr(self, attribute, default_value)
 
-    def _get_y_for_pair(self, i_ymax_in_range_x1_x2):
+    def _get_value_for_pair(self, i_ymax_in_range_x1_x2):
 
-        ymax_in_range_x1_x2 = self._y_stack_arr[1, i_ymax_in_range_x1_x2]
+        ymax_in_range_x1_x2 = self._value_stack_arr[1, i_ymax_in_range_x1_x2]
 
         # Choose the best offset depending on whether there is an annotation
         # below at the x position in the range [x1, x2] where the stack is the
         # highest
-        if self._y_stack_arr[2, i_ymax_in_range_x1_x2] == 0:
+        if self._value_stack_arr[2, i_ymax_in_range_x1_x2] == 0:
             # there is only a group below
             offset = self.line_offset_to_group
         else:
             # there is an annotation below
-            offset = self.y_offset + self.text_offset_impact_above
+            offset = self.value_offset + self.text_offset_impact_above
 
         return ymax_in_range_x1_x2 + offset
 
@@ -697,3 +728,28 @@ class Annotator:
         if engine_plotter is None:
             raise NotImplementedError(f"{engine} engine not implemented.")
         return engine_plotter(*args, **kwargs)
+
+    def _get_xy_params_horizontal(self, group_coord_1, group_coord_2,
+                                  line_x: np.ndarray):
+        return {
+            'xy': (line_x[2], np.mean([group_coord_1, group_coord_2])),
+            'xytext': (self.text_offset, 0),
+            'rotation':  270,
+            'rotation_mode': 'anchor'
+        }
+
+    def _get_xy_params_vertical(self, group_coord_1, group_coord_2,
+                                line_y: np.ndarray):
+        return {
+            'xy': (np.mean([group_coord_1, group_coord_2]), line_y[2]),
+            'xytext': (0, self.text_offset),
+        }
+
+    def _get_xy_params(self, group_coord_1, group_coord_2, line_x: np.ndarray,
+                       line_y: np.ndarray):
+        if self.orient == 'h':
+            return self._get_xy_params_horizontal(group_coord_1, group_coord_2,
+                                                  line_x)
+
+        return self._get_xy_params_vertical(group_coord_1, group_coord_2,
+                                            line_y)

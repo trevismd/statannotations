@@ -52,3 +52,12 @@ class TestPlotter(unittest.TestCase):
         ax = sns.stripplot(**plotting)
         pairs = [("a", "b")]
         _SeabornPlotter(ax, pairs, plot="stripplot", **plotting)
+
+    def test_seaborn_plots_horizontal(self):
+        for plotter in IMPLEMENTED_PLOTTERS["seaborn"]:
+            plotting = {**self.plotting, 'x': 'y', 'y': 'x', 'orient': 'h'}
+            if plotter in ("stripplot", "swarmplot"):
+                plotting = {**plotting, "dodge": True}
+            ax = getattr(sns, plotter)(**plotting)
+            _SeabornPlotter(ax, self.pairs, plot=plotter, verbose=False,
+                            **plotting)

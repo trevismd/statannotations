@@ -42,6 +42,7 @@ corresponding branch).
 - **Interface to use any other function from any source with minimal extra
   code**
 - Smart layout of multiple annotations with correct y offsets.
+- **Support for vertical and horizontal orientation**
 - Annotations can be located inside or outside the plot.
 - **Corrections for multiple testing can be applied
   (binding to `statsmodels.stats.multitest.multipletests` methods):**
@@ -51,7 +52,7 @@ corresponding branch).
     - Benjamini-Yekutieli
 - **And any other function from any source with minimal extra code**
 - Format of the statistical test annotation can be customized:
-      star annotation, simplified p-value, or explicit p-value.
+      star annotation, simplified p-value format, or explicit p-value.
 - Optionally, custom p-values can be given as input.
       In this case, no statistical test is performed, but **corrections for
       multiple testing can be applied.**
