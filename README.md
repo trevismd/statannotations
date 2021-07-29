@@ -76,10 +76,6 @@ pip install .
 pip install -r requirements.txt .
 ```
 
-## Documentation
-
-- Example jupyter notebook [usage/example.ipynb](https://github.com/trevismd/statannotations/master/usage/example.ipynb),  
-- *in-progress* sphinx documentation in `/docs`, also on https://statannotations.readthedocs.io/en/latest/index.html
 ## Usage
 
 Here is a minimal example:
@@ -112,6 +108,13 @@ annotator.apply_and_annotate()
 ![Example 3](https://raw.githubusercontent.com/trevismd/statannotations/master/usage/flu_dataset_log_scale_in_axes.svg)
 
 ![Example 4](https://raw.githubusercontent.com/trevismd/statannotations/master/usage/HorizontalBarplotOutside.png)
+
+## Documentation
+
+- Usage examples in a jupyter notebook [usage/example.ipynb](https://github.com/trevismd/statannotations/master/usage/example.ipynb),
+- A step-by-step introductory tutorial in a separate [repository](https://github.com/trevismd/statannotations-tutorials) 
+  &mdash; [First part here](https://github.com/trevismd/statannotations-tutorials/blob/main/Tutorial_1/Statannotations-Tutorial-1.ipynb)
+- *in-progress* sphinx documentation in `/docs`, available on https://statannotations.readthedocs.io/en/latest/index.html
 
 ## Requirements
 
