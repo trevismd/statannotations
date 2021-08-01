@@ -16,7 +16,7 @@ Additions/modifications since that version are below represented **in bold**
 
 **! From version 0.4.0 onwards (introduction of `Annotator`), `statannot`'s API 
 is no longer usable in `statannotations`**. 
-Please use the latest v0.3.2 release if you must keep `statannot``s API in your 
+Please use the latest v0.3.2 release if you must keep `statannot`'s API in your 
 code, but are looking for bug fixes we have covered.
 
 Indeed, the statannot interface, at least until its version 0.2.3, is usable in
