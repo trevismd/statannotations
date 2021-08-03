@@ -8,7 +8,7 @@ import pandas as pd
 import seaborn as sns
 
 from statannotations.Annotator import Annotator
-from statannotations.utils import DEFAULT
+from statannotations.utils import DEFAULT, InvalidParametersError
 
 
 # noinspection DuplicatedCode
@@ -102,7 +102,7 @@ class TestAnnotator(unittest.TestCase):
     def test_unknown_parameter(self):
         self.test_init_simple()
         with self.assertRaisesRegex(
-                ValueError, re.escape("parameter(s) `that`")):
+                InvalidParametersError, re.escape("parameter(s) \"that\"")):
             self.annot.configure(that="this")
 
     def test_format(self):

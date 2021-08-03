@@ -7,7 +7,7 @@ import seaborn as sns
 
 from statannotations.Annotator import Annotator
 from statannotations.PValueFormat import PValueFormat
-from statannotations.utils import DEFAULT
+from statannotations.utils import DEFAULT, InvalidParametersError
 
 
 # noinspection DuplicatedCode
@@ -53,7 +53,7 @@ class Test(unittest.TestCase):
 
     def test_wrong_parameter(self):
         with self.assertRaisesRegex(
-                ValueError, re.escape("parameter(s) `that`")):
+                InvalidParametersError, re.escape('parameter(s) "that"')):
             self.annotator.configure(pvalue_format={"that": "whatever"})
 
     def test_format_string(self):

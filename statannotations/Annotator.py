@@ -18,7 +18,7 @@ from statannotations.stats.StatTest import StatTest
 from statannotations.stats.test import apply_test, IMPLEMENTED_TESTS
 from statannotations.stats.utils import check_alpha, check_pvalues, \
     check_num_comparisons, get_num_comparisons
-from statannotations.utils import check_is_in, render_collection
+from statannotations.utils import check_is_in, InvalidParametersError
 
 CONFIGURABLE_PARAMETERS = [
     'alpha',
@@ -187,10 +187,7 @@ class Annotator:
         """Add configured annotations to the plot."""
         self._check_has_plotter()
 
-        if self._should_warn_about_configuration:
-            warnings.warn("Annotator was reconfigured without applying the "
-                          "test (again) which will probably lead to "
-                          "unexpected results")
+        self._maybe_warn_about_configuration()
 
         self._update_value_for_loc()
 
@@ -279,9 +276,7 @@ class Annotator:
         unmatched_parameters -= parameters["pvalue_format"].keys()
 
         if unmatched_parameters:
-            raise ValueError(f"Invalid parameter(s) "
-                             f"`{render_collection(unmatched_parameters)}` "
-                             f"to configure annotator.")
+            raise InvalidParametersError(unmatched_parameters)
 
         for parameter, value in parameters.items():
             setattr(self, parameter, value)
@@ -544,8 +539,8 @@ class Annotator:
         else:
             value_top_annot = value + self.line_height
 
-        # Fill the highest value position of the annotation into the value_stack
-        # array for all positions in the range group_coord_1 to group_coord_2
+        # Fill the highest value position of the annotation into value_stack
+        # for all positions in the range group_coord_1 to group_coord_2
         self._value_stack_arr[
             1, (group_coord_1 <= self._value_stack_arr[0, :])
             & (self._value_stack_arr[0, :] <= group_coord_2)] = value_top_annot
@@ -784,3 +779,9 @@ class Annotator:
 
         return self._get_xy_params_vertical(group_coord_1, group_coord_2,
                                             line_y)
+
+    def _maybe_warn_about_configuration(self):
+        if self._should_warn_about_configuration:
+            warnings.warn("Annotator was reconfigured without applying the "
+                          "test (again) which will probably lead to "
+                          "unexpected results")

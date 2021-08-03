@@ -1,7 +1,7 @@
 from statannotations.format_annotations import pval_annotation_text, \
     simple_text
 from statannotations.utils import DEFAULT, check_valid_text_format, \
-    render_collection
+    InvalidParametersError
 
 CONFIGURABLE_PARAMETERS = [
     'fontsize',
@@ -37,9 +37,7 @@ class PValueFormat(Formatter):
 
         unmatched_parameters = parameters.keys() - set(CONFIGURABLE_PARAMETERS)
         if unmatched_parameters:
-            raise ValueError(f"Invalid parameter(s) "
-                             f"`{render_collection(unmatched_parameters)}` "
-                             f"to configure annotator.")
+            raise InvalidParametersError(unmatched_parameters)
 
         for parameter, value in parameters.items():
             setattr(self, parameter, value)

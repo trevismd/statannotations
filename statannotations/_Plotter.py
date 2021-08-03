@@ -214,7 +214,8 @@ class _SeabornPlotter(_Plotter):
 
                 group_name, value_pos = self._get_value_pos(child, data_to_ax)
 
-                if value_pos is not None and value_pos > value_maxes[group_name]:
+                if (value_pos is not None
+                        and value_pos > value_maxes[group_name]):
                     value_maxes[group_name] = value_pos
 
         return value_maxes
