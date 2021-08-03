@@ -206,3 +206,15 @@ class TestAnnotator(unittest.TestCase):
                           data=self.data2)
         annot.configure(test="Mann-Whitney", comparisons_correction="BH")
         annot.apply_and_annotate()
+
+    def test_empty_annotator_wo_new_plot_raises(self):
+        annot = Annotator.get_empty_annotator()
+        with self.assertRaises(RuntimeError):
+            annot.configure(test="Mann-Whitney")
+
+    def test_empty_annotator_then_new_plot_ok(self):
+        annot = Annotator.get_empty_annotator()
+        self.ax = sns.boxplot(ax=self.ax, data=self.data2)
+        annot.new_plot(self.ax, pairs=[("X", "Y")],
+                       data=self.data2)
+        annot.configure(test="Mann-Whitney")

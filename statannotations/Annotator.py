@@ -98,9 +98,12 @@ class Annotator:
         self.pairs = pairs
         self.ax = ax
 
-        self._plotter = self._get_plotter(engine, ax, pairs, plot, data, x, y,
-                                          hue, order, hue_order,
-                                          verbose=verbose, **plot_params)
+        if self.ax is None:
+            self._plotter = None
+        else:
+            self._plotter = self._get_plotter(engine, ax, pairs, plot, data,
+                                              x, y, hue, order, hue_order,
+                                              verbose=verbose, **plot_params)
 
         self._test = None
         self.perform_stat_test = None
@@ -125,6 +128,10 @@ class Annotator:
         self.line_width = 1.5
         self.value_offset = None
         self.custom_annotations = None
+
+    @staticmethod
+    def get_empty_annotator():
+        return Annotator(None, None)
 
     def new_plot(self, ax, pairs=None, plot='boxplot', data=None, x=None,
                  y=None, hue=None, order=None, hue_order=None,
@@ -178,6 +185,8 @@ class Annotator:
 
     def annotate(self, line_offset=None, line_offset_to_group=None):
         """Add configured annotations to the plot."""
+        self._check_has_plotter()
+
         if self._should_warn_about_configuration:
             warnings.warn("Annotator was reconfigured without applying the "
                           "test (again) which will probably lead to "
@@ -226,6 +235,7 @@ class Annotator:
 
     def apply_and_annotate(self):
         """Applies a configured statistical test and annotates the plot"""
+
         self.apply_test()
         return self.annotate()
 
@@ -233,13 +243,21 @@ class Annotator:
         """
         * `alpha`: Acceptable type 1 error for statistical tests, default 0.05
         * `color`
-        * `comparisons_correction`
+        * `comparisons_correction`: Method for multiple comparisons correction.
+            One of `statsmodels` `multipletests` methods (w/ default FWER), or
+            a `ComparisonsCorrection` instance.
         * `line_height`: in axes fraction coordinates
         * `line_offset`
         * `line_offset_to_group`
         * `line_width`
         * `loc`
-        * `pvalue_format`
+        * `pvalue_format`: list of lists, or tuples. Default values are:
+            * For "star" text_format: `[[1e-4, "****"], [1e-3, "***"],
+                                        [1e-2, "**"], [0.05, "*"],
+                                        [1, "ns"]]`.
+            * For "simple" text_format : `[[1e-5, "1e-5"], [1e-4, "1e-4"],
+                                           [1e-3, "0.001"], [1e-2, "0.01"],
+                                           [5e-2, "0.05"]]`
         * `show_test_name`: Set to False to not show the (short) name of
             test
         * `test`
@@ -248,6 +266,7 @@ class Annotator:
         * `use_fixed_offset`
         * `verbose`
         """
+        self._check_has_plotter()
 
         if parameters.get("pvalue_format") is None:
             parameters["pvalue_format"] = {
@@ -279,7 +298,7 @@ class Annotator:
         :param num_comparisons: Override number of comparisons otherwise
             calculated with number of pairs
         """
-
+        self._check_has_plotter()
         self._check_test_pvalues_perform()
 
         if stats_params is None:
@@ -303,6 +322,8 @@ class Annotator:
         :param num_comparisons: Override number of comparisons otherwise
             calculated with number of pairs
         """
+        self._check_has_plotter()
+
         self.perform_stat_test = False
 
         self._check_pvalues_no_perform(pvalues)
@@ -322,6 +343,8 @@ class Annotator:
         :param text_annot_custom: List of strings to annotate for each
             `pair`
         """
+        self._check_has_plotter()
+
         self._check_correct_number_custom_annotations(text_annot_custom)
         self.annotations = [Annotation(struct, text) for
                             struct, text in zip(self._struct_pairs,
@@ -374,6 +397,8 @@ class Annotator:
             correction. One of `statsmodels` `multipletests` methods
             (w/ default FWER), or a `ComparisonsCorrection` instance.
         """
+        self._check_has_plotter()
+
         self._comparisons_correction = get_validated_comparisons_correction(
             comparisons_correction)
 
@@ -455,6 +480,12 @@ class Annotator:
         self._apply_comparisons_correction(test_result_list)
 
         return test_result_list
+
+    def _check_has_plotter(self):
+        if self._plotter is None:
+            raise RuntimeError(
+                "Not plotter is defined. If `get_empty_annotator` was used, "
+                "`new_plot` must be called to provide data")
 
     def _annotate_pair(self, annotation, ax_to_data, ann_list, orig_value_lim):
 
