@@ -1,16 +1,11 @@
-import re
 import unittest
-from typing import List
-
-import scipy
-from packaging import version
 
 import pandas as pd
+import scipy
 import seaborn as sns
+from packaging import version
 
-from statannotations.Annotation import Annotation
 from statannotations.Annotator import Annotator
-from statannotations.utils import DEFAULT, InvalidParametersError
 
 
 # noinspection DuplicatedCode
@@ -34,6 +29,9 @@ class TestAnnotator(unittest.TestCase):
 
         self.pairs_for_df = [(("a", "blue"), ("b", "blue")),
                              (("a", "blue"), ("a", "red"))]
+
+        self.simple_pairs = [["a", "b"]]
+
         self.df.y = self.df.y.astype(float)
         self.params_df = {
             "data": self.df,
@@ -44,7 +42,6 @@ class TestAnnotator(unittest.TestCase):
             "hue_order": ['red', 'blue']}
 
     def test_plot_and_annotate(self):
-        annotations: List[Annotation]
         ax, annotations, annotator = Annotator.plot_and_annotate(
             plot="boxplot", pairs=self.pairs_for_df,
             plot_params=self.params_df,
@@ -57,3 +54,19 @@ class TestAnnotator(unittest.TestCase):
                     if version.parse(scipy.__version__) < version.parse("1.7")
                     else ['M.W.W. p = 0.33', 'M.W.W. p = 1.00'])
         self.assertEqual(expected, annotator.get_annotations_text())
+
+    def test_plot_and_annotate_facets(self):
+        annotator = Annotator(None, self.simple_pairs)
+        g = sns.FacetGrid(self.params_df.pop("data"),
+                          col=self.params_df.pop("hue"),
+                          height=10, sharey=False)
+        self.params_df.pop("hue_order")
+        g.map_dataframe(annotator.plot_and_annotate_facets,
+                        plot="boxplot",
+                        plot_params=self.params_df,
+                        configuration={'test': 'Mann-Whitney',
+                                       'text_format': 'simple'},
+                        annotation_func='apply_test',
+                        ax_op_after=[['set_xlabel', ['Group'], None]],
+                        annotation_params={'num_comparisons': 'auto'}
+                        )

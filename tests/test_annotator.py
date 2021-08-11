@@ -7,7 +7,7 @@ from packaging import version
 import pandas as pd
 import seaborn as sns
 
-from statannotations.Annotator import Annotator
+from statannotations.Annotator import Annotator, _ensure_ax_operation_format
 from statannotations.utils import DEFAULT, InvalidParametersError
 
 
@@ -218,3 +218,19 @@ class TestAnnotator(unittest.TestCase):
         annot.new_plot(self.ax, pairs=[("X", "Y")],
                        data=self.data2)
         annot.configure(test="Mann-Whitney")
+
+    def test_ensure_ax_operation_format_args_not_ok(self):
+        with self.assertRaises(ValueError):
+            _ensure_ax_operation_format(["func", "param", None])
+
+    def test_ensure_ax_operation_format_op_not_ok(self):
+        with self.assertRaises(ValueError):
+            _ensure_ax_operation_format(["func", ["param"]])
+
+    def test_ensure_ax_operation_format_kwargs_not_ok(self):
+        with self.assertRaises(ValueError):
+            _ensure_ax_operation_format(["func", ["param"], {"that"}])
+
+    def test_ensure_ax_operation_format_func_not_ok(self):
+        with self.assertRaises(ValueError):
+            _ensure_ax_operation_format([sum, ["param"], {"that": "this"}])
