@@ -164,3 +164,9 @@ def get_closest(a_list, value):
     if after - value < value - before:
         return after
     return before
+
+
+def empty_dict_if_none(data):
+    if data is None:
+        return {}
+    return data

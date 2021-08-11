@@ -1,4 +1,9 @@
 ## v0.4
+### v0.4.2
+ - Support of `FacetGrid` with
+   - Support empty initialization only defining pairs
+   - `plot_and_annotate_facets`
+
 ### v0.4.1
  - Support for horizontal orientation
 

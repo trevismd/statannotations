@@ -1,9 +1,10 @@
 import warnings
-from typing import List
+from typing import List, Optional, Union
 
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
 import numpy as np
+import seaborn as sns
 from matplotlib import lines
 from matplotlib.font_manager import FontProperties
 
@@ -18,7 +19,8 @@ from statannotations.stats.StatTest import StatTest
 from statannotations.stats.test import apply_test, IMPLEMENTED_TESTS
 from statannotations.stats.utils import check_alpha, check_pvalues, \
     check_num_comparisons, get_num_comparisons
-from statannotations.utils import check_is_in, InvalidParametersError
+from statannotations.utils import check_is_in, InvalidParametersError, \
+    empty_dict_if_none
 
 CONFIGURABLE_PARAMETERS = [
     'alpha',
@@ -131,6 +133,11 @@ class Annotator:
 
     @staticmethod
     def get_empty_annotator():
+        """
+        This instance will have to be initialized with `new_plot()` before
+        being used. This behavior can be useful to create an Annotator before
+        using it in a `FacetGrid` mapping.
+        """
         return Annotator(None, None)
 
     def new_plot(self, ax, pairs=None, plot='boxplot', data=None, x=None,
@@ -175,6 +182,9 @@ class Annotator:
     @property
     def _struct_pairs(self):
         return self._plotter.struct_pairs
+
+    def _get_output(self):
+        return self.ax, self.annotations
 
     def reset_configuration(self):
 
@@ -228,7 +238,7 @@ class Annotator:
         transformed = ax_to_data.transform(value_lims)
         set_lims(transformed[:, 1 if self.orient == 'v' else 0])
 
-        return self.ax, self.annotations
+        return self._get_output()
 
     def apply_and_annotate(self):
         """Applies a configured statistical test and annotates the plot"""
@@ -785,3 +795,116 @@ class Annotator:
             warnings.warn("Annotator was reconfigured without applying the "
                           "test (again) which will probably lead to "
                           "unexpected results")
+
+    def plot_and_annotate_facets(
+            self, plot: str, plot_params: dict, configuration: dict,
+            annotation_func: str, *args, annotation_params: dict = None,
+            ax_op_before: List[Union[str, Optional[list],
+                                     Optional[dict]]] = None,
+            ax_op_after: List[Union[str, Optional[list],
+                                    Optional[dict]]] = None,
+            annotate_params: dict = None, **kwargs):
+        """
+        Plots using seaborn and annotates in a single call, to be used within
+        a `FacetGrid`.
+        First, initialize the Annotator with `Annotator(None, pairs)` to define
+        the pairs, then map this function onto the `FacetGrid`.
+
+        :param plot: seaborn plotting function to call
+        :param plot_params: parameters for plotting function call
+        :param configuration: parameters for Annotator.configure
+        :param annotation_func: name of annotation function to be called, from:
+            * 'set_custom_annotations'
+            * 'set_pvalues'
+            * 'apply_test'
+        :param annotation_params: parameters for the annotation function
+        :param ax_op_before: list of [func_name, args, kwargs] to apply on `ax`
+            before annotating
+        :param ax_op_after: list of [func_name, args, kwargs] to apply on `ax`
+            after annotating
+        :param annotate_params: parameters for `Annotator.annotate`
+        :param args: additional parameters for the seaborn function
+        :param kwargs: additional parameters for the seaborn function
+        """
+        annotate_params = empty_dict_if_none(annotate_params)
+        annotation_params = empty_dict_if_none(annotation_params)
+
+        ax = getattr(sns, plot)(*args, **plot_params, **kwargs)
+
+        _apply_ax_operations(ax, ax_op_before)
+
+        self.new_plot(ax, plot=plot, **plot_params, data=kwargs['data'])
+        self.configure(**configuration)
+        getattr(self, annotation_func)(**annotation_params)
+        self.annotate(**annotate_params)
+
+        _apply_ax_operations(ax, ax_op_after)
+        return self._get_output()
+
+    @staticmethod
+    def plot_and_annotate(
+            plot: str, pairs: list, plot_params: dict, configuration: dict,
+            annotation_func: str, annotation_params: dict = None,
+            ax_op_before: List[Union[str, Optional[list],
+                                     Optional[dict]]] = None,
+            ax_op_after: List[Union[str, Optional[list],
+                                    Optional[dict]]] = None,
+            annotate_params: dict = None):
+        """
+        Plots using seaborn and annotates in a single call.
+
+        :param plot: seaborn plotting function to call
+        :param pairs: pairs to compare (see Annotator)
+        :param plot_params: parameters for plotting function call
+        :param configuration: parameters for Annotator.configure
+        :param annotation_func: name of annotation function to be called, from:
+            * 'set_custom_annotations'
+            * 'set_pvalues'
+            * 'apply_test'
+        :param annotation_params: parameters for the annotation function
+        :param ax_op_before: list of [func_name, args, kwargs] to apply on `ax`
+            before annotating
+        :param ax_op_after: list of [func_name, args, kwargs] to apply on `ax`
+            after annotating
+        :param annotate_params: parameters for `Annotator.annotate`
+        """
+        annotate_params = empty_dict_if_none(annotate_params)
+        annotation_params = empty_dict_if_none(annotation_params)
+
+        ax = getattr(sns, plot)(**plot_params)
+
+        _apply_ax_operations(ax, ax_op_before)
+        annotator = Annotator(ax, pairs, plot=plot, **plot_params)
+        annotator.configure(**configuration)
+        getattr(annotator, annotation_func)(**annotation_params)
+        annotator.annotate(**annotate_params)
+
+        _apply_ax_operations(ax, ax_op_after)
+        return (*annotator._get_output(), annotator)
+
+
+def _apply_ax_operations(ax, operations):
+    if operations is None:
+        return
+    for operation in operations:
+        _ensure_ax_operation_format(operation)
+        getattr(ax, operation[0])(*operation[1],
+                                  **empty_dict_if_none(operation[2]))
+
+
+def _ensure_ax_operation_format(op):
+    if len(op) != 3:
+        raise ValueError("Please provide a string, a list and a "
+                         "dictionary in order to use an ax operation")
+    if not isinstance(op[0], str):
+        raise ValueError("The first element of an ax operation is the "
+                         "name of the method passed as a string")
+
+    if not isinstance(op[1], list):
+        raise ValueError("The second element of an ax operation is the "
+                         "arguments for the ax method passed as a list")
+
+    if not isinstance(op[2], dict) and op[2] is not None:
+        raise ValueError("The third element of an ax operation is the "
+                         "keyword arguments for the ax method passed as a "
+                         "dictionary")

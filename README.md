@@ -32,6 +32,7 @@ corresponding branch).
     - **Swarm plots**
     - **Strip plots**
     - **Violin plots** 
+    - Supporting `FacetGrid`
 - Integrated statistical tests (binding to `scipy.stats` methods):
     - Mann-Whitney
     - t-test (independent and paired)
@@ -101,20 +102,21 @@ annotator.apply_and_annotate()
 
 ## Examples
 
-![Example 1](https://raw.githubusercontent.com/trevismd/statannotations/master/usage/example_non-hue_outside.png)
-
 ![Example 2](https://raw.githubusercontent.com/trevismd/statannotations/master/usage/example_hue_layout.png)
 
 ![Example 3](https://raw.githubusercontent.com/trevismd/statannotations/master/usage/flu_dataset_log_scale_in_axes.svg)
 
 ![Example 4](https://raw.githubusercontent.com/trevismd/statannotations/master/usage/HorizontalBarplotOutside.png)
 
+![Example 5](https://raw.githubusercontent.com/trevismd/statannotations/master/usage/example_2facets.png)
+
 ## Documentation
 
 - Usage examples in a jupyter notebook [usage/example.ipynb](https://github.com/trevismd/statannotations/master/usage/example.ipynb),
-- A step-by-step introductory tutorial in a separate [repository](https://github.com/trevismd/statannotations-tutorials) 
-  &mdash; [First part here](https://github.com/trevismd/statannotations-tutorials/blob/main/Tutorial_1/Statannotations-Tutorial-1.ipynb)
-- *in-progress* sphinx documentation in `/docs`, available on https://statannotations.readthedocs.io/en/latest/index.html
+- A multipart step-by-step tutorial in a separate [repository](https://github.com/trevismd/statannotations-tutorials) 
+  &mdash; [First part here](https://github.com/trevismd/statannotations-tutorials/blob/main/Tutorial_1/Statannotations-Tutorial-1.ipynb),
+  also as a blog post on [Medium](https://levelup.gitconnected.com/statistics-on-seaborn-plots-with-statannotations-2bfce0394c00). 
+- *In-progress* sphinx documentation in `/docs`, available on https://statannotations.readthedocs.io/en/latest/index.html
 
 ## Requirements
 
