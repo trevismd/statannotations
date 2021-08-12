@@ -8,6 +8,13 @@ import pandas as pd
 DEFAULT = object()
 
 
+class InvalidParametersError(Exception):
+    def __init__(self, parameters):
+        super().__init__(
+            f"Invalid parameter(s) {render_collection(parameters)} to "
+            f"configure annotator.")
+
+
 def raise_expected_got(expected, for_, got, error_type=ValueError):
     """Raise a standardized error message.
 
@@ -84,9 +91,11 @@ def _check_pairs_in_data_with_hue(pairs: Union[list, tuple],
     hue_values = set(data[hue].unique())
 
     for group_value, hue_value in itertools.chain(itertools.chain(*pairs)):
-        if group_value not in seen_group_values and group_value not in x_values:
-            raise ValueError(f"Missing group value `{group_value}` in {group_coord}"
-                             f" (specified in `pairs`)")
+        if (group_value not in seen_group_values
+                and group_value not in x_values):
+            raise ValueError(
+                f"Missing group value `{group_value}` in {group_coord}"
+                f" (specified in `pairs`)")
         seen_group_values.add(group_value)
 
         if hue_value not in hue_values:
@@ -136,7 +145,8 @@ def check_valid_text_format(text_format):
 
 
 def render_collection(collection):
-    return '","'.join(map(str, collection))
+    substr = '", "'.join(map(str, collection))
+    return f'"{substr}"'
 
 
 def get_closest(a_list, value):
@@ -154,3 +164,9 @@ def get_closest(a_list, value):
     if after - value < value - before:
         return after
     return before
+
+
+def empty_dict_if_none(data):
+    if data is None:
+        return {}
+    return data

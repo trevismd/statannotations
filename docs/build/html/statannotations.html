@@ -294,16 +294,38 @@ calculated with number of pairs</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="statannotations.Annotator.Annotator.configure">
 <span class="sig-name descname"><span class="pre">configure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.configure" title="Permalink to this definition">¶</a></dt>
-<dd><ul class="simple">
+<dd><ul>
 <li><p><cite>alpha</cite>: Acceptable type 1 error for statistical tests, default 0.05</p></li>
 <li><p><cite>color</cite></p></li>
-<li><p><cite>comparisons_correction</cite></p></li>
+<li><dl class="simple">
+<dt><cite>comparisons_correction</cite>: Method for multiple comparisons correction.</dt><dd><p>One of <cite>statsmodels</cite> <cite>multipletests</cite> methods (w/ default FWER), or
+a <cite>ComparisonsCorrection</cite> instance.</p>
+</dd>
+</dl>
+</li>
 <li><p><cite>line_height</cite>: in axes fraction coordinates</p></li>
 <li><p><cite>line_offset</cite></p></li>
 <li><p><cite>line_offset_to_group</cite></p></li>
 <li><p><cite>line_width</cite></p></li>
 <li><p><cite>loc</cite></p></li>
-<li><p><cite>pvalue_format</cite></p></li>
+<li><dl>
+<dt><cite>pvalue_format</cite>: list of lists, or tuples. Default values are:</dt><dd><ul>
+<li><dl class="simple">
+<dt>For “star” text_format: <a href="#id1"><span class="problematic" id="id2">`</span></a>[[1e-4, “<a href="#id3"><span class="problematic" id="id4">**</span></a><strong>”], [1e-3, “*</strong>”],</dt><dd><p>[1e-2, “**”], [0.05, “*”],
+[1, “ns”]]`.</p>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>For “simple” text_format<span class="classifier"><a href="#id5"><span class="problematic" id="id6">`</span></a>[[1e-5, “1e-5”], [1e-4, “1e-4”],</span></dt><dd><p>[1e-3, “0.001”], [1e-2, “0.01”],
+[5e-2, “0.05”]]`</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
 <li><dl class="simple">
 <dt><cite>show_test_name</cite>: Set to False to not show the (short) name of</dt><dd><p>test</p>
 </dd>
@@ -333,6 +355,14 @@ calculated with number of pairs</p></li>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.get_empty_annotator">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_empty_annotator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.get_empty_annotator" title="Permalink to this definition">¶</a></dt>
+<dd><p>This instance will have to be initialized with <cite>new_plot()</cite> before
+being used. This behavior can be useful to create an Annotator before
+using it in a <cite>FacetGrid</cite> mapping.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="statannotations.Annotator.Annotator.get_offset_func">
 <em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">get_offset_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.get_offset_func" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -356,6 +386,62 @@ calculated with number of pairs</p></li>
 <dt class="sig sig-object py" id="statannotations.Annotator.Annotator.orient">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">orient</span></span><a class="headerlink" href="#statannotations.Annotator.Annotator.orient" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.plot_and_annotate">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">plot_and_annotate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pairs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_params</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">configuration</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotation_func</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotation_params</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax_op_before</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">list</span><span class="p"><span class="pre">,</span> </span><span class="pre">None</span><span class="p"><span class="pre">,</span> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax_op_after</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">list</span><span class="p"><span class="pre">,</span> </span><span class="pre">None</span><span class="p"><span class="pre">,</span> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotate_params</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.plot_and_annotate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots using seaborn and annotates in a single call.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>plot</strong> – seaborn plotting function to call</p></li>
+<li><p><strong>pairs</strong> – pairs to compare (see Annotator)</p></li>
+<li><p><strong>plot_params</strong> – parameters for plotting function call</p></li>
+<li><p><strong>configuration</strong> – parameters for Annotator.configure</p></li>
+<li><p><strong>annotation_func</strong> – name of annotation function to be called, from:
+* ‘set_custom_annotations’
+* ‘set_pvalues’
+* ‘apply_test’</p></li>
+<li><p><strong>annotation_params</strong> – parameters for the annotation function</p></li>
+<li><p><strong>ax_op_before</strong> – list of [func_name, args, kwargs] to apply on <cite>ax</cite>
+before annotating</p></li>
+<li><p><strong>ax_op_after</strong> – list of [func_name, args, kwargs] to apply on <cite>ax</cite>
+after annotating</p></li>
+<li><p><strong>annotate_params</strong> – parameters for <cite>Annotator.annotate</cite></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="statannotations.Annotator.Annotator.plot_and_annotate_facets">
+<span class="sig-name descname"><span class="pre">plot_and_annotate_facets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_params</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">configuration</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotation_func</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotation_params</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax_op_before</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">list</span><span class="p"><span class="pre">,</span> </span><span class="pre">None</span><span class="p"><span class="pre">,</span> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax_op_after</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">list</span><span class="p"><span class="pre">,</span> </span><span class="pre">None</span><span class="p"><span class="pre">,</span> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotate_params</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.plot_and_annotate_facets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots using seaborn and annotates in a single call, to be used within
+a <cite>FacetGrid</cite>.
+First, initialize the Annotator with <cite>Annotator(None, pairs)</cite> to define
+the pairs, then map this function onto the <cite>FacetGrid</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>plot</strong> – seaborn plotting function to call</p></li>
+<li><p><strong>plot_params</strong> – parameters for plotting function call</p></li>
+<li><p><strong>configuration</strong> – parameters for Annotator.configure</p></li>
+<li><p><strong>annotation_func</strong> – name of annotation function to be called, from:
+* ‘set_custom_annotations’
+* ‘set_pvalues’
+* ‘apply_test’</p></li>
+<li><p><strong>annotation_params</strong> – parameters for the annotation function</p></li>
+<li><p><strong>ax_op_before</strong> – list of [func_name, args, kwargs] to apply on <cite>ax</cite>
+before annotating</p></li>
+<li><p><strong>ax_op_after</strong> – list of [func_name, args, kwargs] to apply on <cite>ax</cite>
+after annotating</p></li>
+<li><p><strong>annotate_params</strong> – parameters for <cite>Annotator.annotate</cite></p></li>
+<li><p><strong>args</strong> – additional parameters for the seaborn function</p></li>
+<li><p><strong>kwargs</strong> – additional parameters for the seaborn function</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="statannotations.Annotator.Annotator.print_pvalue_legend">
@@ -531,6 +617,12 @@ provided, a string otherwise.</p>
 </div>
 <div class="section" id="module-statannotations.utils">
 <span id="statannotations-utils-module"></span><h2>statannotations.utils module<a class="headerlink" href="#module-statannotations.utils" title="Permalink to this headline">¶</a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="statannotations.utils.InvalidParametersError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">statannotations.utils.</span></span><span class="sig-name descname"><span class="pre">InvalidParametersError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.utils.InvalidParametersError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="statannotations.utils.check_is_in">
 <span class="sig-prename descclassname"><span class="pre">statannotations.utils.</span></span><span class="sig-name descname"><span class="pre">check_is_in</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">x</span></em>, <em class="sig-param"><span class="pre">valid_values</span></em>, <em class="sig-param"><span class="pre">error_type=&lt;class</span> <span class="pre">'ValueError'&gt;</span></em>, <em class="sig-param"><span class="pre">label=None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.utils.check_is_in" title="Permalink to this definition">¶</a></dt>
@@ -556,6 +648,11 @@ provided, a string otherwise.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="statannotations.utils.check_valid_text_format">
 <span class="sig-prename descclassname"><span class="pre">statannotations.utils.</span></span><span class="sig-name descname"><span class="pre">check_valid_text_format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text_format</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.utils.check_valid_text_format" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="statannotations.utils.empty_dict_if_none">
+<span class="sig-prename descclassname"><span class="pre">statannotations.utils.</span></span><span class="sig-name descname"><span class="pre">empty_dict_if_none</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.utils.empty_dict_if_none" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">

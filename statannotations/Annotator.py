@@ -1,9 +1,10 @@
 import warnings
-from typing import List
+from typing import List, Optional, Union
 
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
 import numpy as np
+import seaborn as sns
 from matplotlib import lines
 from matplotlib.font_manager import FontProperties
 
@@ -18,7 +19,8 @@ from statannotations.stats.StatTest import StatTest
 from statannotations.stats.test import apply_test, IMPLEMENTED_TESTS
 from statannotations.stats.utils import check_alpha, check_pvalues, \
     check_num_comparisons, get_num_comparisons
-from statannotations.utils import check_is_in, render_collection
+from statannotations.utils import check_is_in, InvalidParametersError, \
+    empty_dict_if_none
 
 CONFIGURABLE_PARAMETERS = [
     'alpha',
@@ -98,9 +100,12 @@ class Annotator:
         self.pairs = pairs
         self.ax = ax
 
-        self._plotter = self._get_plotter(engine, ax, pairs, plot, data, x, y,
-                                          hue, order, hue_order,
-                                          verbose=verbose, **plot_params)
+        if self.ax is None:
+            self._plotter = None
+        else:
+            self._plotter = self._get_plotter(engine, ax, pairs, plot, data,
+                                              x, y, hue, order, hue_order,
+                                              verbose=verbose, **plot_params)
 
         self._test = None
         self.perform_stat_test = None
@@ -125,6 +130,15 @@ class Annotator:
         self.line_width = 1.5
         self.value_offset = None
         self.custom_annotations = None
+
+    @staticmethod
+    def get_empty_annotator():
+        """
+        This instance will have to be initialized with `new_plot()` before
+        being used. This behavior can be useful to create an Annotator before
+        using it in a `FacetGrid` mapping.
+        """
+        return Annotator(None, None)
 
     def new_plot(self, ax, pairs=None, plot='boxplot', data=None, x=None,
                  y=None, hue=None, order=None, hue_order=None,
@@ -169,6 +183,9 @@ class Annotator:
     def _struct_pairs(self):
         return self._plotter.struct_pairs
 
+    def _get_output(self):
+        return self.ax, self.annotations
+
     def reset_configuration(self):
 
         self._reset_default_values()
@@ -178,10 +195,9 @@ class Annotator:
 
     def annotate(self, line_offset=None, line_offset_to_group=None):
         """Add configured annotations to the plot."""
-        if self._should_warn_about_configuration:
-            warnings.warn("Annotator was reconfigured without applying the "
-                          "test (again) which will probably lead to "
-                          "unexpected results")
+        self._check_has_plotter()
+
+        self._maybe_warn_about_configuration()
 
         self._update_value_for_loc()
 
@@ -222,10 +238,11 @@ class Annotator:
         transformed = ax_to_data.transform(value_lims)
         set_lims(transformed[:, 1 if self.orient == 'v' else 0])
 
-        return self.ax, self.annotations
+        return self._get_output()
 
     def apply_and_annotate(self):
         """Applies a configured statistical test and annotates the plot"""
+
         self.apply_test()
         return self.annotate()
 
@@ -233,13 +250,21 @@ class Annotator:
         """
         * `alpha`: Acceptable type 1 error for statistical tests, default 0.05
         * `color`
-        * `comparisons_correction`
+        * `comparisons_correction`: Method for multiple comparisons correction.
+            One of `statsmodels` `multipletests` methods (w/ default FWER), or
+            a `ComparisonsCorrection` instance.
         * `line_height`: in axes fraction coordinates
         * `line_offset`
         * `line_offset_to_group`
         * `line_width`
         * `loc`
-        * `pvalue_format`
+        * `pvalue_format`: list of lists, or tuples. Default values are:
+            * For "star" text_format: `[[1e-4, "****"], [1e-3, "***"],
+                                        [1e-2, "**"], [0.05, "*"],
+                                        [1, "ns"]]`.
+            * For "simple" text_format : `[[1e-5, "1e-5"], [1e-4, "1e-4"],
+                                           [1e-3, "0.001"], [1e-2, "0.01"],
+                                           [5e-2, "0.05"]]`
         * `show_test_name`: Set to False to not show the (short) name of
             test
         * `test`
@@ -248,6 +273,7 @@ class Annotator:
         * `use_fixed_offset`
         * `verbose`
         """
+        self._check_has_plotter()
 
         if parameters.get("pvalue_format") is None:
             parameters["pvalue_format"] = {
@@ -260,9 +286,7 @@ class Annotator:
         unmatched_parameters -= parameters["pvalue_format"].keys()
 
         if unmatched_parameters:
-            raise ValueError(f"Invalid parameter(s) "
-                             f"`{render_collection(unmatched_parameters)}` "
-                             f"to configure annotator.")
+            raise InvalidParametersError(unmatched_parameters)
 
         for parameter, value in parameters.items():
             setattr(self, parameter, value)
@@ -279,7 +303,7 @@ class Annotator:
         :param num_comparisons: Override number of comparisons otherwise
             calculated with number of pairs
         """
-
+        self._check_has_plotter()
         self._check_test_pvalues_perform()
 
         if stats_params is None:
@@ -303,6 +327,8 @@ class Annotator:
         :param num_comparisons: Override number of comparisons otherwise
             calculated with number of pairs
         """
+        self._check_has_plotter()
+
         self.perform_stat_test = False
 
         self._check_pvalues_no_perform(pvalues)
@@ -322,6 +348,8 @@ class Annotator:
         :param text_annot_custom: List of strings to annotate for each
             `pair`
         """
+        self._check_has_plotter()
+
         self._check_correct_number_custom_annotations(text_annot_custom)
         self.annotations = [Annotation(struct, text) for
                             struct, text in zip(self._struct_pairs,
@@ -374,6 +402,8 @@ class Annotator:
             correction. One of `statsmodels` `multipletests` methods
             (w/ default FWER), or a `ComparisonsCorrection` instance.
         """
+        self._check_has_plotter()
+
         self._comparisons_correction = get_validated_comparisons_correction(
             comparisons_correction)
 
@@ -456,6 +486,12 @@ class Annotator:
 
         return test_result_list
 
+    def _check_has_plotter(self):
+        if self._plotter is None:
+            raise RuntimeError(
+                "Not plotter is defined. If `get_empty_annotator` was used, "
+                "`new_plot` must be called to provide data")
+
     def _annotate_pair(self, annotation, ax_to_data, ann_list, orig_value_lim):
 
         if self._verbose >= 1:
@@ -513,8 +549,8 @@ class Annotator:
         else:
             value_top_annot = value + self.line_height
 
-        # Fill the highest value position of the annotation into the value_stack
-        # array for all positions in the range group_coord_1 to group_coord_2
+        # Fill the highest value position of the annotation into value_stack
+        # for all positions in the range group_coord_1 to group_coord_2
         self._value_stack_arr[
             1, (group_coord_1 <= self._value_stack_arr[0, :])
             & (self._value_stack_arr[0, :] <= group_coord_2)] = value_top_annot
@@ -753,3 +789,122 @@ class Annotator:
 
         return self._get_xy_params_vertical(group_coord_1, group_coord_2,
                                             line_y)
+
+    def _maybe_warn_about_configuration(self):
+        if self._should_warn_about_configuration:
+            warnings.warn("Annotator was reconfigured without applying the "
+                          "test (again) which will probably lead to "
+                          "unexpected results")
+
+    def plot_and_annotate_facets(
+            self, plot: str, plot_params: dict, configuration: dict,
+            annotation_func: str, *args, annotation_params: dict = None,
+            ax_op_before: List[Union[str, Optional[list],
+                                     Optional[dict]]] = None,
+            ax_op_after: List[Union[str, Optional[list],
+                                    Optional[dict]]] = None,
+            annotate_params: dict = None, **kwargs):
+        """
+        Plots using seaborn and annotates in a single call, to be used within
+        a `FacetGrid`.
+        First, initialize the Annotator with `Annotator(None, pairs)` to define
+        the pairs, then map this function onto the `FacetGrid`.
+
+        :param plot: seaborn plotting function to call
+        :param plot_params: parameters for plotting function call
+        :param configuration: parameters for Annotator.configure
+        :param annotation_func: name of annotation function to be called, from:
+            * 'set_custom_annotations'
+            * 'set_pvalues'
+            * 'apply_test'
+        :param annotation_params: parameters for the annotation function
+        :param ax_op_before: list of [func_name, args, kwargs] to apply on `ax`
+            before annotating
+        :param ax_op_after: list of [func_name, args, kwargs] to apply on `ax`
+            after annotating
+        :param annotate_params: parameters for `Annotator.annotate`
+        :param args: additional parameters for the seaborn function
+        :param kwargs: additional parameters for the seaborn function
+        """
+        annotate_params = empty_dict_if_none(annotate_params)
+        annotation_params = empty_dict_if_none(annotation_params)
+
+        ax = getattr(sns, plot)(*args, **plot_params, **kwargs)
+
+        _apply_ax_operations(ax, ax_op_before)
+
+        self.new_plot(ax, plot=plot, **plot_params, data=kwargs['data'])
+        self.configure(**configuration)
+        getattr(self, annotation_func)(**annotation_params)
+        self.annotate(**annotate_params)
+
+        _apply_ax_operations(ax, ax_op_after)
+        return self._get_output()
+
+    @staticmethod
+    def plot_and_annotate(
+            plot: str, pairs: list, plot_params: dict, configuration: dict,
+            annotation_func: str, annotation_params: dict = None,
+            ax_op_before: List[Union[str, Optional[list],
+                                     Optional[dict]]] = None,
+            ax_op_after: List[Union[str, Optional[list],
+                                    Optional[dict]]] = None,
+            annotate_params: dict = None):
+        """
+        Plots using seaborn and annotates in a single call.
+
+        :param plot: seaborn plotting function to call
+        :param pairs: pairs to compare (see Annotator)
+        :param plot_params: parameters for plotting function call
+        :param configuration: parameters for Annotator.configure
+        :param annotation_func: name of annotation function to be called, from:
+            * 'set_custom_annotations'
+            * 'set_pvalues'
+            * 'apply_test'
+        :param annotation_params: parameters for the annotation function
+        :param ax_op_before: list of [func_name, args, kwargs] to apply on `ax`
+            before annotating
+        :param ax_op_after: list of [func_name, args, kwargs] to apply on `ax`
+            after annotating
+        :param annotate_params: parameters for `Annotator.annotate`
+        """
+        annotate_params = empty_dict_if_none(annotate_params)
+        annotation_params = empty_dict_if_none(annotation_params)
+
+        ax = getattr(sns, plot)(**plot_params)
+
+        _apply_ax_operations(ax, ax_op_before)
+        annotator = Annotator(ax, pairs, plot=plot, **plot_params)
+        annotator.configure(**configuration)
+        getattr(annotator, annotation_func)(**annotation_params)
+        annotator.annotate(**annotate_params)
+
+        _apply_ax_operations(ax, ax_op_after)
+        return (*annotator._get_output(), annotator)
+
+
+def _apply_ax_operations(ax, operations):
+    if operations is None:
+        return
+    for operation in operations:
+        _ensure_ax_operation_format(operation)
+        getattr(ax, operation[0])(*operation[1],
+                                  **empty_dict_if_none(operation[2]))
+
+
+def _ensure_ax_operation_format(op):
+    if len(op) != 3:
+        raise ValueError("Please provide a string, a list and a "
+                         "dictionary in order to use an ax operation")
+    if not isinstance(op[0], str):
+        raise ValueError("The first element of an ax operation is the "
+                         "name of the method passed as a string")
+
+    if not isinstance(op[1], list):
+        raise ValueError("The second element of an ax operation is the "
+                         "arguments for the ax method passed as a list")
+
+    if not isinstance(op[2], dict) and op[2] is not None:
+        raise ValueError("The third element of an ax operation is the "
+                         "keyword arguments for the ax method passed as a "
+                         "dictionary")

@@ -7,8 +7,8 @@ from packaging import version
 import pandas as pd
 import seaborn as sns
 
-from statannotations.Annotator import Annotator
-from statannotations.utils import DEFAULT
+from statannotations.Annotator import Annotator, _ensure_ax_operation_format
+from statannotations.utils import DEFAULT, InvalidParametersError
 
 
 # noinspection DuplicatedCode
@@ -102,7 +102,7 @@ class TestAnnotator(unittest.TestCase):
     def test_unknown_parameter(self):
         self.test_init_simple()
         with self.assertRaisesRegex(
-                ValueError, re.escape("parameter(s) `that`")):
+                InvalidParametersError, re.escape("parameter(s) \"that\"")):
             self.annot.configure(that="this")
 
     def test_format(self):
@@ -206,3 +206,31 @@ class TestAnnotator(unittest.TestCase):
                           data=self.data2)
         annot.configure(test="Mann-Whitney", comparisons_correction="BH")
         annot.apply_and_annotate()
+
+    def test_empty_annotator_wo_new_plot_raises(self):
+        annot = Annotator.get_empty_annotator()
+        with self.assertRaises(RuntimeError):
+            annot.configure(test="Mann-Whitney")
+
+    def test_empty_annotator_then_new_plot_ok(self):
+        annot = Annotator.get_empty_annotator()
+        self.ax = sns.boxplot(ax=self.ax, data=self.data2)
+        annot.new_plot(self.ax, pairs=[("X", "Y")],
+                       data=self.data2)
+        annot.configure(test="Mann-Whitney")
+
+    def test_ensure_ax_operation_format_args_not_ok(self):
+        with self.assertRaises(ValueError):
+            _ensure_ax_operation_format(["func", "param", None])
+
+    def test_ensure_ax_operation_format_op_not_ok(self):
+        with self.assertRaises(ValueError):
+            _ensure_ax_operation_format(["func", ["param"]])
+
+    def test_ensure_ax_operation_format_kwargs_not_ok(self):
+        with self.assertRaises(ValueError):
+            _ensure_ax_operation_format(["func", ["param"], {"that"}])
+
+    def test_ensure_ax_operation_format_func_not_ok(self):
+        with self.assertRaises(ValueError):
+            _ensure_ax_operation_format([sum, ["param"], {"that": "this"}])
