@@ -108,7 +108,8 @@ class Test(unittest.TestCase):
     def test_get_configuration(self):
         pvalue_format = PValueFormat()
         self.assertDictEqual(pvalue_format.get_configuration(),
-                             {'fontsize': 'medium',
+                             {'correction_format': '{star} ({suffix})',
+                              'fontsize': 'medium',
                               'pvalue_format_string': '{:.3e}',
                               'simple_format_string': '{:.2f}',
                               'text_format': 'star',
