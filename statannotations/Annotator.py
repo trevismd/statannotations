@@ -253,6 +253,14 @@ class Annotator:
         * `comparisons_correction`: Method for multiple comparisons correction.
             One of `statsmodels` `multipletests` methods (w/ default FWER), or
             a `ComparisonsCorrection` instance.
+        * `correction_format`: How to format the star notation on the plot when
+            the multiple comparisons correction method removes the significance
+            * `default`: a ' (ns)' suffix is added, such as in printed output,
+                corresponds to "{star} ({suffix})"
+            * `replace`: the original star value is replaced with 'ns'
+                corresponds to "{suffix}"
+            * a custom formatting string using "{star}" for the original
+                pvalue and '{suffix}' for 'ns'
         * `line_height`: in axes fraction coordinates
         * `line_offset`
         * `line_offset_to_group`

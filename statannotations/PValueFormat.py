@@ -1,9 +1,12 @@
+from statannotations.stats.StatResult import StatResult
+
 from statannotations.format_annotations import pval_annotation_text, \
     simple_text
 from statannotations.utils import DEFAULT, check_valid_text_format, \
     InvalidParametersError
 
 CONFIGURABLE_PARAMETERS = [
+    'correction_format',
     'fontsize',
     'pvalue_format_string',
     'simple_format_string',
@@ -32,6 +35,7 @@ class PValueFormat(Formatter):
         self.fontsize = 'medium'
         self._default_pvalue_thresholds = True
         self._pvalue_thresholds = self._get_pvalue_thresholds(DEFAULT)
+        self._correction_format = "{star} ({suffix})"
 
     def config(self, **parameters):
 
@@ -90,6 +94,17 @@ class PValueFormat(Formatter):
         self._pvalue_format_string, self._simple_format_string = (
             self._get_pvalue_and_simple_formats(pvalue_format_string)
         )
+
+    @property
+    def correction_format(self):
+        return self._correction_format
+
+    @correction_format.setter
+    def correction_format(self, correction_format: str):
+        self._correction_format = {
+            "replace": "{suffix}",
+            "default": "{star} ({suffix})",
+        }.get(correction_format, correction_format)
 
     @property
     def pvalue_thresholds(self):
@@ -162,7 +177,20 @@ class PValueFormat(Formatter):
                             result.significance_suffix))
 
         elif self.text_format == 'star':
-            return pval_annotation_text(result, self.pvalue_thresholds)
+            was_list = False
+
+            if not isinstance(result, list):
+                result = [result]
+
+            annotations = [
+                get_corrected_star(star, res, self._correction_format)
+                for star, res
+                in pval_annotation_text(result, self.pvalue_thresholds)]
+
+            if was_list:
+                return annotations
+
+            return annotations[0]
 
         elif self.text_format == 'simple':
             return simple_text(result, self.simple_format_string,
@@ -175,3 +203,11 @@ class PValueFormat(Formatter):
 def sort_pvalue_thresholds(pvalue_thresholds):
     return sorted(pvalue_thresholds,
                   key=lambda threshold_notation: threshold_notation[0])
+
+
+def get_corrected_star(star: str, res: StatResult,
+                       correction_format="{star} ({suffix})") -> str:
+    if res.significance_suffix:
+        return correction_format.format(star=star,
+                                        suffix=res.significance_suffix)
+    return star

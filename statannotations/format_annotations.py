@@ -5,8 +5,8 @@ import pandas as pd
 from operator import itemgetter
 
 
-def pval_annotation_text(result: Union[List[StatResult], StatResult],
-                         pvalue_thresholds: List) -> Union[List[str], str]:
+def pval_annotation_text(result: List[StatResult],
+                         pvalue_thresholds: List) -> List[tuple]:
     """
 
     :param result: StatResult instance or list thereof
@@ -14,11 +14,6 @@ def pval_annotation_text(result: Union[List[StatResult], StatResult],
     :returns: A List of rendered annotations if a list of StatResults was
         provided, a string otherwise.
     """
-    was_list = True
-
-    if not isinstance(result, list):
-        was_list = False
-        result = [result]
 
     x1_pval = np.array([res.pvalue for res in result])
 
@@ -34,10 +29,7 @@ def pval_annotation_text(result: Union[List[StatResult], StatResult],
 
     x_annot[x1_pval <= pvalue_thresholds[-1][0]] = pvalue_thresholds[-1][1]
 
-    x_annot = [f"{star}{res.significance_suffix}"
-               for star, res in zip(x_annot, result)]
-
-    return x_annot if was_list else x_annot[0]
+    return [(star, res) for star, res in zip(x_annot, result)]
 
 
 def simple_text(result: StatResult, pvalue_format, pvalue_thresholds) -> str:
@@ -63,4 +55,4 @@ def simple_text(result: StatResult, pvalue_format, pvalue_thresholds) -> str:
     else:
         pval_text = "p = {}".format(pvalue_format).format(result.pvalue)
 
-    return text + pval_text + result.significance_suffix
+    return result.adjust(text + pval_text)

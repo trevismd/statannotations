@@ -1,4 +1,9 @@
 ## v0.4
+### v0.4.3
+- The `correction_format` parameter allows to change how the multiple 
+comparisons correction method  adjusts the annotation when changing a result
+to non-significant.
+
 ### v0.4.2
  - Support of `FacetGrid` with
    - Support empty initialization only defining pairs

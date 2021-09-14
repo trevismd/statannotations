@@ -44,7 +44,7 @@ class StatResult:
 
         stat_summary = '{}, P_val:{:.3e}'.format(description, self.pvalue)
 
-        stat_summary += self.significance_suffix
+        stat_summary = self.adjust(stat_summary)
 
         if self.stat_str is not None or self.stat_value is not None:
             stat_summary += ' {}={:.3e}'.format(self.stat_str, self.stat_value)
@@ -55,8 +55,13 @@ class StatResult:
     def significance_suffix(self):
         # will add this only if a correction method is specified
         if self._corrected_significance is False and self.pvalue <= self.alpha:
-            return ' (ns)'
+            return 'ns'
         return ""
 
     def __str__(self):
         return self.formatted_output
+
+    def adjust(self, stat_summary):
+        if self.significance_suffix:
+            return f"{stat_summary} ({self.significance_suffix})"
+        return stat_summary

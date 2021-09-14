@@ -49,6 +49,14 @@ class Test(unittest.TestCase):
         self.assertEqual(["* (ns)", "* (ns)", "ns"],
                          self.annotator.get_annotations_text())
 
+    def test_signif_with_type1_correction_star_replace(self):
+        bh = ComparisonsCorrection("BH")
+        self.annotator.configure(comparisons_correction=bh,
+                                 correction_format="replace")
+        self.annotator.set_pvalues(self.pvalues)
+        self.assertEqual(["ns", "ns", "ns"],
+                         self.annotator.get_annotations_text())
+
     def test_signif_with_type1_correction_star_incorrect_num_comparisons(self):
         bh = ComparisonsCorrection("BH")
         self.annotator.configure(comparisons_correction=bh)
