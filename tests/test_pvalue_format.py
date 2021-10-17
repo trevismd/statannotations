@@ -111,6 +111,7 @@ class Test(unittest.TestCase):
                              {'correction_format': '{star} ({suffix})',
                               'fontsize': 'medium',
                               'pvalue_format_string': '{:.3e}',
+                              'show_test_name': True,
                               'simple_format_string': '{:.2f}',
                               'text_format': 'star',
                               'pvalue_thresholds': [

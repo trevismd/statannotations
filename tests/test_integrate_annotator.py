@@ -55,6 +55,21 @@ class TestAnnotator(unittest.TestCase):
                     else ['M.W.W. p = 0.33', 'M.W.W. p = 1.00'])
         self.assertEqual(expected, annotator.get_annotations_text())
 
+    def test_plot_and_annotate_without_test_name(self):
+        ax, annotations, annotator = Annotator.plot_and_annotate(
+            plot="boxplot", pairs=self.pairs_for_df,
+            plot_params=self.params_df,
+            configuration={
+                'test': 'Mann-Whitney',
+                'text_format': 'full',
+                'show_test_name': False
+            },
+            annotation_func='apply_test',
+            ax_op_after=[['set_xlabel', ['Group'], None]],
+            annotation_params={'num_comparisons': 'auto'})
+
+        self.assertEqual("p =", annotator.get_annotations_text()[0][:3])
+
     def test_plot_and_annotate_facets(self):
         annotator = Annotator(None, self.simple_pairs)
         g = sns.FacetGrid(self.params_df.pop("data"),

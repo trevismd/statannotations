@@ -17,6 +17,12 @@ class TestFormatAnnotations(unittest.TestCase):
             simple_text(self.result, "{:.2f}", [(0.5, 0.5)]),
             "This p ≤ 0.5")
 
+    def test_format_simple_without_test_name(self):
+
+        self.assertEqual(
+            simple_text(self.result, "{:.2f}", [(0.5, 0.5)], False),
+            "p ≤ 0.5")
+
     def test_format_simple_setting_multiple_thresholds(self):
 
         self.assertEqual(

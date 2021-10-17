@@ -32,21 +32,24 @@ def pval_annotation_text(result: List[StatResult],
     return [(star, res) for star, res in zip(x_annot, result)]
 
 
-def simple_text(result: StatResult, pvalue_format, pvalue_thresholds) -> str:
+def simple_text(result: StatResult, pvalue_format, pvalue_thresholds,
+                short_test_name=True) -> str:
     """
     Generates simple text for test name and pvalue.
 
     :param result: StatResult instance
     :param pvalue_format: format string for pvalue
     :param pvalue_thresholds: String to display per pvalue range
-    :param result: StatResult
+    :param short_test_name: whether to display the test (short) name
     :returns: simple annotation
 
     """
     # Sort thresholds
     thresholds = sorted(pvalue_thresholds, key=lambda x: x[0])
 
-    text = result.test_short_name and f"{result.test_short_name} " or ""
+    text = (f"{result.test_short_name} "
+            if short_test_name and result.test_short_name
+            else "")
 
     for threshold in thresholds:
         if result.pvalue < threshold[0]:

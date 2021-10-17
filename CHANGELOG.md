@@ -3,6 +3,7 @@
 - The `correction_format` parameter allows to change how the multiple 
 comparisons correction method  adjusts the annotation when changing a result
 to non-significant.
+- Fix the `show_test_name` configuration.
 
 ### v0.4.2
  - Support of `FacetGrid` with
