@@ -117,7 +117,7 @@ class Annotator:
         self._comparisons_correction = None
 
         self._loc = "inside"
-        self._verbose = 1
+        self._verbose = verbose
         self._just_configured = True
         self.show_test_name = True
         self.use_fixed_offset = False
