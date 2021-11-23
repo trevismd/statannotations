@@ -1,9 +1,12 @@
 ## v0.4
 ### v0.4.3
-- The `correction_format` parameter allows to change how the multiple 
+- The `correction_format` parameter allows changing how the multiple 
 comparisons correction method  adjusts the annotation when changing a result
 to non-significant.
 - Fix the `show_test_name` configuration.
+- Fix the `verbose` parameter 
+ ([#37](https://github.com/trevismd/statannotations/pull/37) by 
+   [mxposed](https://github.com/mxposed))
 
 ### v0.4.2
  - Support of `FacetGrid` with
