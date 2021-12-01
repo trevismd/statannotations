@@ -1,4 +1,9 @@
 ## v0.4
+### v0.4.4
+- The label for Kruskal-Wallis test explicitly states that it is run pairwise 
+  ([#40](https://github.com/trevismd/statannotations/pull/40) by
+  [sepro](https://github.com/sepro))
+
 ### v0.4.3
 - The `correction_format` parameter allows changing how the multiple 
 comparisons correction method  adjusts the annotation when changing a result
