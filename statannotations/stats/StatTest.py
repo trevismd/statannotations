@@ -86,6 +86,10 @@ class StatTest:
 
 
 STATTEST_LIBRARY = {
+    'Kruskal':          StatTest(stats.kruskal,
+                                 'Kruskal-Wallis independent samples '
+                                 '(pairwise between groups)', 'Kruskal'),
+    
     'Levene':           StatTest(stats.levene,
                                  'Levene test of variance', 'levene'),
 
@@ -117,8 +121,4 @@ STATTEST_LIBRARY = {
 
     'Wilcoxon-legacy':  StatTest(wilcoxon,
                                  'Wilcoxon test (paired samples)', 'Wilcoxon'),
-
-
-    'Kruskal':          StatTest(stats.kruskal,
-                                 'Kruskal-Wallis paired samples', 'Kruskal')
 }
