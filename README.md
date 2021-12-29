@@ -112,7 +112,7 @@ annotator.apply_and_annotate()
 
 ## Documentation
 
-- Usage examples in a jupyter notebook [usage/example.ipynb](https://github.com/trevismd/statannotations/master/usage/example.ipynb),
+- Usage examples in a jupyter notebook [usage/example.ipynb](https://github.com/trevismd/statannotations/blob/master/usage/example.ipynb),
 - A multipart step-by-step tutorial in a separate [repository](https://github.com/trevismd/statannotations-tutorials) 
   &mdash; [First part here](https://github.com/trevismd/statannotations-tutorials/blob/main/Tutorial_1/Statannotations-Tutorial-1.ipynb),
   also as a blog post on [Medium](https://levelup.gitconnected.com/statistics-on-seaborn-plots-with-statannotations-2bfce0394c00). 
