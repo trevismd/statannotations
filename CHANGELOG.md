@@ -1,8 +1,13 @@
 ## v0.4
 ### v0.4.4
 - The label for Kruskal-Wallis test explicitly states that it is run pairwise 
-  ([#40](https://github.com/trevismd/statannotations/pull/40) by
+  (PR [#40](https://github.com/trevismd/statannotations/pull/40) by
   [sepro](https://github.com/sepro))
+- Fix broken link in readme
+  (PR [#43](https://github.com/trevismd/statannotations/pull/43) by
+  [sepro](https://github.com/))
+- Fix custom annotations order with respect to the given pairs (Issue 
+  [#45](https://github.com/trevismd/statannotations/issues/45))
 
 ### v0.4.3
 - The `correction_format` parameter allows changing how the multiple 
@@ -10,7 +15,7 @@ comparisons correction method  adjusts the annotation when changing a result
 to non-significant.
 - Fix the `show_test_name` configuration.
 - Fix the `verbose` parameter 
- ([#37](https://github.com/trevismd/statannotations/pull/37) by 
+ (PR [#37](https://github.com/trevismd/statannotations/pull/37) by 
    [mxposed](https://github.com/mxposed))
 
 ### v0.4.2
@@ -57,7 +62,7 @@ to non-significant.
    `stat_func` parameter, and `test_long_name`.
  - Annotations y-positions based on plot coordinates instead of data 
    coordinates 
-   ([#5](https://github.com/trevismd/statannotations/pull/5) by 
+   (PR [#5](https://github.com/trevismd/statannotations/pull/5) by 
    [JosephLalli](https://github.com/JosephLalli), 
    fixes https://github.com/webermarcolivier/statannot/issues/21).
  - Add this CHANGELOG

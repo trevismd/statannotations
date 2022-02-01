@@ -359,9 +359,9 @@ class Annotator:
         self._check_has_plotter()
 
         self._check_correct_number_custom_annotations(text_annot_custom)
-        self.annotations = [Annotation(struct, text) for
-                            struct, text in zip(self._struct_pairs,
-                                                text_annot_custom)]
+        self.annotations = [Annotation(
+            struct, self._value_for_group_struct(text_annot_custom, struct[0]))
+                            for struct in self._struct_pairs]
         self.show_test_name = False
         self._deactivate_configured_warning()
         return self
@@ -626,8 +626,12 @@ class Annotator:
 
         return result
 
+    @staticmethod
+    def _value_for_group_struct(values, group_struct):
+        return values[group_struct['i_group_pair']]
+
     def _get_custom_results(self, group_struct1, pvalues) -> StatResult:
-        pvalue = pvalues[group_struct1['i_group_pair']]
+        pvalue = self._value_for_group_struct(pvalues, group_struct1)
 
         if self.has_type0_comparisons_correction():
             pvalue = self.comparisons_correction(pvalue, len(pvalues))
