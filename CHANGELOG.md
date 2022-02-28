@@ -5,7 +5,7 @@
   [sepro](https://github.com/sepro))
 - Fix broken link in readme
   (PR [#43](https://github.com/trevismd/statannotations/pull/43) by
-  [sepro](https://github.com/))
+  [orena1](https://github.com/orena1))
 - Fix custom annotations order with respect to the given pairs (Issue 
   [#45](https://github.com/trevismd/statannotations/issues/45))
 
