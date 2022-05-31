@@ -240,10 +240,10 @@ class Annotator:
 
         return self._get_output()
 
-    def apply_and_annotate(self):
+    def apply_and_annotate(self, num_comparisons='auto', **stats_params):
         """Applies a configured statistical test and annotates the plot"""
 
-        self.apply_test()
+        self.apply_test(num_comparisons='auto', **stats_params)
         return self.annotate()
 
     def configure(self, **parameters):
