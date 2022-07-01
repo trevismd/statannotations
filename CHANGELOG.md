@@ -1,3 +1,6 @@
+- Fix adding annotations with hue if arrays are provided instead of a Dataframe
+  and column names as strings (data=None).
+
 ## v0.4
 ### v0.4.4
 - The label for Kruskal-Wallis test explicitly states that it is run pairwise 

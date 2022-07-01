@@ -80,10 +80,16 @@ def _check_pairs_in_data_no_hue(pairs: Union[list, tuple],
 
 
 def _check_pairs_in_data_with_hue(pairs: Union[list, tuple],
-                                  data: Union[List[list],
+                                  data: Union[None, List[list],
                                               pd.DataFrame] = None,
-                                  group_coord: Union[str, list] = None,
-                                  hue: str = None) -> set:
+                                  group_coord: Union[None, str, list] = None,
+                                  hue: Union[None, str, list] = None,
+                                 ) -> set:
+
+    # Arrays provided, not Dataframe
+    if data is None:
+        hue_values = set(hue)
+        return hue_values
 
     x_values = get_x_values(data, group_coord)
     seen_group_values = set()

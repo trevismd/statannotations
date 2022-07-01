@@ -394,10 +394,10 @@ class _SeabornPlotter(_Plotter):
 
     @staticmethod
     def fix_and_warn(dodge, hue, plot):
-        if dodge is False and hue:
+        if dodge is False and hue is not None:
             raise ValueError("`dodge` cannot be False in statannotations.")
 
-        if plot in ("swarmplot", 'stripplot') and hue:
+        if plot in ("swarmplot", 'stripplot') and hue is not None:
             if dodge is None:
                 warnings.warn(
                     "Implicitly setting dodge to True as it is necessary in "
