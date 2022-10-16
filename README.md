@@ -2,6 +2,7 @@
 ![coverage](https://raw.githubusercontent.com/trevismd/statannotations/master/coverage.svg)  
 ![Python](https://img.shields.io/badge/Python-3.6%2B-blue)
 [![Documentation Status](https://readthedocs.org/projects/statannotations/badge/?version=latest)](https://statannotations.readthedocs.io/en/master/?badge=latest)
+[![DOI](https://zenodo.org/badge/296015778.svg)](https://zenodo.org/badge/latestdoi/296015778)
 
 ## What is it
 
@@ -138,6 +139,44 @@ annotator.apply_and_annotate()
 + pandas >= 0.23.0
 + scipy >= 1.1.0
 + statsmodels (optional, for multiple testing corrections)
+
+
+## Citation
+If you are using this work, please use the following information to cite it.  
+
+Bibtex
+```tex
+@software{florian_charlier_2022_7213391,
+  author       = {Florian Charlier and
+                  Marc Weber and
+                  Dariusz Izak and
+                  Emerson Harkin and
+                  Marcin Magnus and
+                  Joseph Lalli and
+                  Louison Fresnais and
+                  Matt Chan and
+                  Nikolay Markov and
+                  Oren Amsalem and
+                  Sebastian Proost and
+                  Agamemnon Krasoulis and
+                  getzze and
+                  Stefan Repplinger},
+  title        = {Statannotations},
+  month        = oct,
+  year         = 2022,
+  publisher    = {Zenodo},
+  version      = {v0.5},
+  doi          = {10.5281/zenodo.7213391},
+  url          = {https://doi.org/10.5281/zenodo.7213391}
+}
+```
+Example
+```
+Florian Charlier, Marc Weber, Dariusz Izak, Emerson Harkin, Marcin Magnus, 
+Joseph Lalli, Louison Fresnais, Matt Chan, Nikolay Markov, Oren Amsalem, 
+Sebastian Proost, Agamemnon Krasoulis, getzze, & Stefan Repplinger. (2022). 
+Statannotations (v0.5). Zenodo. https://doi.org/10.5281/zenodo.7213391
+```
 
 ## Contributing
 
