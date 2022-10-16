@@ -1,4 +1,7 @@
-[![Active Development](https://img.shields.io/badge/Maintenance%20Level-Actively%20Developed-brightgreen.svg)](https://gist.github.com/cheerfulstoic/d107229326a01ff0f333a1d3476e068d) ![coverage](https://raw.githubusercontent.com/trevismd/statannotations/master/coverage.svg)  ![Python](https://img.shields.io/badge/Python-3.6%2B-blue)[![Documentation Status](https://readthedocs.org/projects/statannotations/badge/?version=latest)](https://statannotations.readthedocs.io/en/master/?badge=latest)
+[![Active Development](https://img.shields.io/badge/Maintenance%20Level-Actively%20Developed-brightgreen.svg)](https://gist.github.com/cheerfulstoic/d107229326a01ff0f333a1d3476e068d) 
+![coverage](https://raw.githubusercontent.com/trevismd/statannotations/master/coverage.svg)  
+![Python](https://img.shields.io/badge/Python-3.6%2B-blue)
+[![Documentation Status](https://readthedocs.org/projects/statannotations/badge/?version=latest)](https://statannotations.readthedocs.io/en/master/?badge=latest)
 
 ## What is it
 
@@ -65,7 +68,7 @@ corresponding branch).
 ## Installation
 
 From version 0.3.0 on, the package is distributed on PyPi.
-The latest stable release (v0.4.6) can be downloaded and installed with:
+The latest stable release (v0.5.0) can be downloaded and installed with:
 ```bash
 pip install statannotations
 ```
