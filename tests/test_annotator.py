@@ -165,6 +165,11 @@ class TestAnnotator(unittest.TestCase):
         self.annot.apply_test()
         self.assertEqual(["ns"], self.annot.get_annotations_text())
 
+    def test_support_int_labels(self):
+        self.test_init_simple()
+        self.annot.configure(test="Mann-Whitney")
+        self.annot.apply_and_annotate()
+
     def test_get_annotation_text_in_input_order(self):
         self.test_init_df()
         self.annot.configure(test="Mann-Whitney", text_format="simple")

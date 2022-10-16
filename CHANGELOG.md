@@ -1,6 +1,8 @@
 ## v0.5
 ### v0.5.0
 - Add scipy's Brunner-Munzel test
+- Fix applying statannotations for non-string group labels (Issue 
+  [#65](https://github.com/trevismd/statannotations/issues/65))
 - Get Zenodo DOI
 
 ### v0.4.5
