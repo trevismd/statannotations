@@ -1,4 +1,8 @@
-## v0.4
+## v0.5
+### v0.5.0
+- Add scipy's Brunner-Munzel test
+- Get Zenodo DOI
+
 ### v0.4.5
 - Add MANIFEST.IN (PR [#56](https://github.com/trevismd/statannotations/pull/56)
   by [Matt Chan](https://github.com/thewchan))

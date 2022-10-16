@@ -9,7 +9,7 @@ from statannotations.stats.StatTest import StatTest
 
 IMPLEMENTED_TESTS = ['t-test_ind', 't-test_welch', 't-test_paired',
                      'Mann-Whitney', 'Mann-Whitney-gt', 'Mann-Whitney-ls',
-                     'Levene', 'Wilcoxon', 'Kruskal']
+                     'Levene', 'Wilcoxon', 'Kruskal', 'Brunner-Munzel']
 
 
 def apply_test(
@@ -27,6 +27,7 @@ def apply_test(
     :param group_data2: data
     :param test: Union[StatTest, str]: Statistical test to run.
         Either a `StatTest` instance or one of:
+        - `Brunner-Munzel`
         - `Levene`
         - `Mann-Whitney`
         - `Mann-Whitney-gt`

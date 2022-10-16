@@ -19,7 +19,7 @@ is no longer usable in `statannotations`**.
 Please use the latest v0.3.2 release if you must keep `statannot`'s API in your 
 code, but are looking for bug fixes we have covered.
 
-Indeed, the statannot interface, at least until its version 0.2.3, is usable in
+`statannot`'s interface, at least until its version 0.2.3, is usable in 
 statannotations until v.0.3.x, which already provides additional features (see
 corresponding branch).
 
@@ -40,6 +40,7 @@ corresponding branch).
     - Levene test
     - Wilcoxon test
     - Kruskal-Wallis test
+    - **Brunner-Munzel test**
 - **Interface to use any other function from any source with minimal extra
   code**
 - Smart layout of multiple annotations with correct y offsets.
@@ -64,7 +65,7 @@ corresponding branch).
 ## Installation
 
 From version 0.3.0 on, the package is distributed on PyPi.
-The latest stable release (v0.4.5) can be downloaded and installed with:
+The latest stable release (v0.4.6) can be downloaded and installed with:
 ```bash
 pip install statannotations
 ```
@@ -76,6 +77,13 @@ pip install .
 # OR, to have optional dependencies too (multiple comparisons & testing)
 pip install -r requirements.txt .
 ```
+
+## Important note
+
+**! Seaborn ≥ v0.12 is not officially supported, we know there are at least 
+some bugs. Issues can still be reported (and upvoted) in order to plan further
+development to support these versions. Also see 
+[discussion](https://github.com/trevismd/statannotations/discussions/81)**.
 
 ## Usage
 
