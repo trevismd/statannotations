@@ -1,11 +1,11 @@
-- Fix adding annotations with hue if arrays are provided instead of a Dataframe
-  and column names as strings (data=None).
-
 ## v0.4
 ### v0.4.5
 - Add MANIFEST.IN (PR [#56](https://github.com/trevismd/statannotations/pull/56)
   by [Matt Chan](https://github.com/thewchan))
 - Limit supported Seaborn version to v.0.11.x
+- Fix adding annotations with hue if data is passed as arrays 
+  (PR [#64](https://github.com/trevismd/statannotations/pull/64) by 
+  [getzze](https://github.com/getzze))
 
 ### v0.4.4
 - The label for Kruskal-Wallis test explicitly states that it is run pairwise 
