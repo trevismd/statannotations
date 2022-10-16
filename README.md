@@ -64,7 +64,7 @@ corresponding branch).
 ## Installation
 
 From version 0.3.0 on, the package is distributed on PyPi.
-The latest stable release (v0.4.4) can be downloaded and installed with:
+The latest stable release (v0.4.5) can be downloaded and installed with:
 ```bash
 pip install statannotations
 ```
@@ -122,7 +122,7 @@ annotator.apply_and_annotate()
 
 + Python >= 3.6
 + numpy >= 1.12.1
-+ seaborn >= 0.9
++ seaborn >= 0.9,<0.12
 + matplotlib >= 2.2.2
 + pandas >= 0.23.0
 + scipy >= 1.1.0
