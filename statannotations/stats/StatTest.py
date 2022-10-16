@@ -89,7 +89,7 @@ STATTEST_LIBRARY = {
     'Kruskal':          StatTest(stats.kruskal,
                                  'Kruskal-Wallis independent samples '
                                  '(pairwise between groups)', 'Kruskal'),
-    
+
     'Levene':           StatTest(stats.levene,
                                  'Levene test of variance', 'levene'),
 

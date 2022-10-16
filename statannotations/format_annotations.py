@@ -1,5 +1,5 @@
 from statannotations.stats.StatResult import StatResult
-from typing import Union, List
+from typing import List
 import numpy as np
 import pandas as pd
 from operator import itemgetter

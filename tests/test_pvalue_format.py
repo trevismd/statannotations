@@ -44,7 +44,7 @@ class Test(unittest.TestCase):
         annotations = self.annotator._get_results("auto", pvalues=self.pvalues)
         self.assertEqual(["p ≤ 0.05", "p ≤ 0.05", "p = 0.90"],
                          [annotation.text for annotation in annotations])
-    
+
     def test_format_simple_in_annotator(self):
         self.annotator.configure(text_format="simple")
         annotations = self.annotator._get_results("auto", pvalues=self.pvalues)
