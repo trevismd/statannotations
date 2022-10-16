@@ -1,3 +1,6 @@
+- Fix adding annotations with hue if arrays are provided instead of a Dataframe
+  and column names as strings (data=None).
+
 ## v0.4
 ### v0.4.5
 - Add MANIFEST.IN (PR [#56](https://github.com/trevismd/statannotations/pull/56)

@@ -26,6 +26,14 @@ class TestPlotter(unittest.TestCase):
             "y": "y",
             "hue": 'color',
         }
+
+        self.plotting_arrays = {
+            "data": None,
+            "x": self.df["x"],
+            "y": self.df["y"],
+            "hue": self.df["color"],
+        }
+
         self.pairs = [(("a", "blue"), ("a", "red")),
                       (("b", "blue"), ("b", "red")),
                       (("a", "blue"), ("b", "blue"))]
@@ -58,6 +66,16 @@ class TestPlotter(unittest.TestCase):
             plotting = {**self.plotting, 'x': 'y', 'y': 'x', 'orient': 'h'}
             if plotter in ("stripplot", "swarmplot"):
                 plotting = {**plotting, "dodge": True}
+            ax = getattr(sns, plotter)(**plotting)
+            _SeabornPlotter(ax, self.pairs, plot=plotter, verbose=False,
+                            **plotting)
+
+    def test_seaborn_plots_with_arrays(self):
+        for plotter in IMPLEMENTED_PLOTTERS["seaborn"]:
+            if plotter in ("stripplot", "swarmplot"):
+                plotting = {**self.plotting_arrays, "dodge": True}
+            else:
+                plotting = self.plotting_arrays
             ax = getattr(sns, plotter)(**plotting)
             _SeabornPlotter(ax, self.pairs, plot=plotter, verbose=False,
                             **plotting)
