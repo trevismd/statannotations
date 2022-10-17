@@ -8,3 +8,6 @@ statannot.egg-info/PKG-INFO
 statannot.egg-info/requires.txt
 statannot.egg-info/SOURCES.txt
 statannot.egg-info/top_level.txt
+
+# IDE files
+.idea/
