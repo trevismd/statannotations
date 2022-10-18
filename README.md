@@ -74,6 +74,12 @@ The latest stable release (v0.5.0) can be downloaded and installed with:
 pip install statannotations
 ```
 
+or, with conda ![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/statannotations)
+
+```bash
+conda install -c conda-forge statannotations
+```
+
 or, after cloning the repository,
 ```bash
 pip install .
