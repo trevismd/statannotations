@@ -111,6 +111,14 @@ STATTEST_LIBRARY = {
     't-test_ind':       StatTest(stats.ttest_ind,
                                  't-test independent samples',
                                  't-test_ind', 't'),
+    
+    't-test_paired-gt':    StatTest(stats.ttest_rel,
+                                 't-test paired samples', 't-test_rel', 't',
+                                 alternative="greater"),
+
+    't-test_paired-ls':    StatTest(stats.ttest_rel,
+                                 't-test paired samples', 't-test_rel', 't',
+                                 alternative="less"),
 
     't-test_welch':     StatTest(stats.ttest_ind,
                                  'Welch\'s t-test independent samples',
