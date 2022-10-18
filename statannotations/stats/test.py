@@ -7,7 +7,8 @@ from statannotations.stats.ComparisonsCorrection import \
 from statannotations.stats.StatResult import StatResult
 from statannotations.stats.StatTest import StatTest
 
-IMPLEMENTED_TESTS = ['t-test_ind', 't-test_welch', 't-test_paired',
+IMPLEMENTED_TESTS = ['t-test_ind', 't-test_welch',
+                    't-test_paired', 't-test_paired-gt', 't-test_paired-ls',
                      'Mann-Whitney', 'Mann-Whitney-gt', 'Mann-Whitney-ls',
                      'Levene', 'Wilcoxon', 'Kruskal', 'Brunner-Munzel']
 
