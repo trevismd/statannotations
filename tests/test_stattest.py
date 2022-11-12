@@ -37,6 +37,34 @@ class TestStatTest(unittest.TestCase):
         test = StatTest.from_library("Mann-Whitney")
         self.assertEqual("M.W.W.", test.short_name)
 
+    def test_ttest_ind(self):
+        test = StatTest(stats.ttest_ind, 't-test independent samples', 't-test_ind', 't')
+        res1 = test(self.x, self.y)
+        test2 = StatTest.from_library("t-test_ind")
+        res2 = test2(self.x, self.y)
+        self.assertEqual(res1.pvalue, res2.pvalue)
+
+    def test_ttest_rel(self):
+        test = StatTest(stats.ttest_ind, 't-test paired samples', 't-test_rel', 't')
+        res1 = test(self.x, self.y)
+        test2 = StatTest.from_library("t-test_paired")
+        res2 = test2(self.x, self.y)
+        self.assertEqual(res1.pvalue, res2.pvalue)
+
+    def test_ttest_rel_ls(self):
+        test = StatTest(stats.ttest_rel, 't-test paired samples', 't-test_rel', 't', alternative="less")
+        res1 = test(self.x, self.y)
+        test2 = StatTest.from_library("t-test_paired-ls")
+        res2 = test2(self.x, self.y)
+        self.assertEqual(res1.pvalue, res2.pvalue)
+
+    def test_ttest_rel_gt(self):
+        test = StatTest(stats.ttest_rel, 't-test paired samples', 't-test_rel', 't', alternative="greater")
+        res1 = test(self.x, self.y)
+        test2 = StatTest.from_library("t-test_paired-gt")
+        res2 = test2(self.x, self.y)
+        self.assertEqual(res1.pvalue, res2.pvalue)
+
     def test_wilcoxon_legacy_set_wilcox(self):
         test = StatTest(wilcoxon, "Wilcoxon (legacy)", "Wilcox (L)")
         res1 = test(self.x, self.y, zero_method="wilcox")
