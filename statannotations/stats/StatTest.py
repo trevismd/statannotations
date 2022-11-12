@@ -117,7 +117,8 @@ STATTEST_LIBRARY = {
                                  't-test_welch', 't', equal_var=False),
 
     't-test_paired':    StatTest(stats.ttest_rel,
-                                 't-test paired samples', 't-test_rel', 't'),
+                                 't-test paired samples', 't-test_rel', 't'
+                                 alternative="two-sided"),
 
     't-test_paired-gt':    StatTest(stats.ttest_rel,
                                  't-test paired samples', 't-test_rel', 't',

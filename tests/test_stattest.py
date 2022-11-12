@@ -45,7 +45,7 @@ class TestStatTest(unittest.TestCase):
         self.assertEqual(res1.pvalue, res2.pvalue)
 
     def test_ttest_rel(self):
-        test = StatTest(stats.ttest_ind, 't-test paired samples', 't-test_rel', 't')
+        test = StatTest(stats.ttest_ind, 't-test paired samples', 't-test_rel', 't', alternative="two-sided")
         res1 = test(self.x, self.y)
         test2 = StatTest.from_library("t-test_paired")
         res2 = test2(self.x, self.y)
