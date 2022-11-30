@@ -294,7 +294,7 @@ calculated with number of pairs</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="statannotations.Annotator.Annotator.configure">
 <span class="sig-name descname"><span class="pre">configure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator.configure" title="Permalink to this definition">¶</a></dt>
-<dd><ul>
+<dd><ul class="simple">
 <li><p><cite>alpha</cite>: Acceptable type 1 error for statistical tests, default 0.05</p></li>
 <li><p><cite>color</cite></p></li>
 <li><dl class="simple">
@@ -303,24 +303,14 @@ a <cite>ComparisonsCorrection</cite> instance.</p>
 </dd>
 </dl>
 </li>
-<li><dl>
+<li><dl class="simple">
 <dt><cite>correction_format</cite>: How to format the star notation on the plot when</dt><dd><p>the multiple comparisons correction method removes the significance
-* <cite>default</cite>: a ‘ (ns)’ suffix is added, such as in printed output,</p>
-<blockquote>
-<div><p>corresponds to “{star} ({suffix})”</p>
-</div></blockquote>
-<ul class="simple">
-<li><dl class="simple">
-<dt><cite>replace</cite>: the original star value is replaced with ‘ns’</dt><dd><p>corresponds to “{suffix}”</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>a custom formatting string using “{star}” for the original</dt><dd><p>pvalue and ‘{suffix}’ for ‘ns’</p>
-</dd>
-</dl>
-</li>
-</ul>
+* <cite>default</cite>: a ‘ (ns)’ suffix is added, such as in printed output,
+corresponds to “{star} ({suffix})”
+* <cite>replace</cite>: the original star value is replaced with ‘ns’
+corresponds to “{suffix}”
+* a custom formatting string using “{star}” for the original
+pvalue and ‘{suffix}’ for ‘ns’</p>
 </dd>
 </dl>
 </li>
@@ -329,20 +319,12 @@ a <cite>ComparisonsCorrection</cite> instance.</p>
 <li><p><cite>line_offset_to_group</cite></p></li>
 <li><p><cite>line_width</cite></p></li>
 <li><p><cite>loc</cite></p></li>
-<li><dl>
-<dt><cite>pvalue_format</cite>: list of lists, or tuples. Default values are:</dt><dd><ul>
 <li><dl class="simple">
-<dt>For “star” text_format: <a href="#id1"><span class="problematic" id="id2">`</span></a>[[1e-4, “<a href="#id3"><span class="problematic" id="id4">**</span></a><strong>”], [1e-3, “*</strong>”],</dt><dd><p>[1e-2, “**”], [0.05, “*”],
-[1, “ns”]]`.</p>
-</dd>
-</dl>
-</li>
-<li><dl>
-<dt>For “simple” text_format<span class="classifier"><a href="#id5"><span class="problematic" id="id6">`</span></a>[[1e-5, “1e-5”], [1e-4, “1e-4”],</span></dt><dd><p>[1e-3, “0.001”], [1e-2, “0.01”],
-[5e-2, “0.05”]]`</p>
-</dd>
-</dl>
-</li>
+<dt><cite>pvalue_format</cite>: list of lists, or tuples. Default values are:</dt><dd><ul>
+<li><p>For “star” text_format:
+<cite>[[1e-4, “****”], [1e-3, “***”], [1e-2, “**”], [0.05, “*”], [1, “ns”]]</cite>.</p></li>
+<li><p>For “simple” text_format:
+<cite>[[1e-5, “1e-5”], [1e-4, “1e-4”], [1e-3, “0.001”], [1e-2, “0.01”], [5e-2, “0.05”]]</cite>.</p></li>
 </ul>
 </dd>
 </dl>

@@ -1,4 +1,18 @@
-## v0.4
+## v0.5
+### v0.5.0
+- Add scipy's Brunner-Munzel test
+- Fix applying statannotations for non-string group labels (Issue 
+  [#65](https://github.com/trevismd/statannotations/issues/65))
+- Get Zenodo DOI
+
+### v0.4.5
+- Add MANIFEST.IN (PR [#56](https://github.com/trevismd/statannotations/pull/56)
+  by [Matt Chan](https://github.com/thewchan))
+- Limit supported Seaborn version to v.0.11.x
+- Fix adding annotations with hue if data is passed as arrays 
+  (PR [#64](https://github.com/trevismd/statannotations/pull/64) by 
+  [getzze](https://github.com/getzze))
+
 ### v0.4.4
 - The label for Kruskal-Wallis test explicitly states that it is run pairwise 
   (PR [#40](https://github.com/trevismd/statannotations/pull/40) by

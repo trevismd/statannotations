@@ -79,20 +79,22 @@ def _check_pairs_in_data_no_hue(pairs: Union[list, tuple],
                          f" (specified in `pairs`) in data")
 
 
-def _check_pairs_in_data_with_hue(pairs: Union[list, tuple],
-                                  data: Union[List[list],
-                                              pd.DataFrame] = None,
-                                  group_coord: Union[str, list] = None,
-                                  hue: str = None) -> set:
+def _check_pairs_in_data_with_hue(
+        pairs: Union[list, tuple],
+        data: Union[None, List[list], pd.DataFrame] = None,
+        group_coord: Union[None, str, list] = None,
+        hue: Union[None, str, list] = None) -> set:
+
+    if data is None:
+        hue_values = set(hue)
+    else:
+        hue_values = set(data[hue].unique())
 
     x_values = get_x_values(data, group_coord)
     seen_group_values = set()
 
-    hue_values = set(data[hue].unique())
-
     for group_value, hue_value in itertools.chain(itertools.chain(*pairs)):
-        if (group_value not in seen_group_values
-                and group_value not in x_values):
+        if group_value not in seen_group_values and group_value not in x_values:
             raise ValueError(
                 f"Missing group value `{group_value}` in {group_coord}"
                 f" (specified in `pairs`)")

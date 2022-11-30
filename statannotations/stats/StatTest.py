@@ -86,10 +86,13 @@ class StatTest:
 
 
 STATTEST_LIBRARY = {
+    'Brunner-Munzel':   StatTest(stats.brunnermunzel,
+                                 'Brunner-Munzel test', 'B-M', 'W'),
+
     'Kruskal':          StatTest(stats.kruskal,
                                  'Kruskal-Wallis independent samples '
                                  '(pairwise between groups)', 'Kruskal'),
-    
+
     'Levene':           StatTest(stats.levene,
                                  'Levene test of variance', 'levene'),
 

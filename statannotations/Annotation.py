@@ -39,7 +39,7 @@ class Annotation:
             return self.data.formatted_output
 
     def print_labels_and_content(self, sep=" vs. "):
-        labels_string = sep.join([struct["label"]
-                                  for struct in self.structs])
+        labels_string = sep.join(str(struct["label"])
+                                 for struct in self.structs)
 
         print(f"{labels_string}: {self.formatted_output}")

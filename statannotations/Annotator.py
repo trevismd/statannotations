@@ -259,23 +259,21 @@ class Annotator:
         * `correction_format`: How to format the star notation on the plot when
             the multiple comparisons correction method removes the significance
             * `default`: a ' (ns)' suffix is added, such as in printed output,
-                corresponds to "{star} ({suffix})"
+            corresponds to "{star} ({suffix})"
             * `replace`: the original star value is replaced with 'ns'
-                corresponds to "{suffix}"
+            corresponds to "{suffix}"
             * a custom formatting string using "{star}" for the original
-                pvalue and '{suffix}' for 'ns'
+            pvalue and '{suffix}' for 'ns'
         * `line_height`: in axes fraction coordinates
         * `line_offset`
         * `line_offset_to_group`
         * `line_width`
         * `loc`
         * `pvalue_format`: list of lists, or tuples. Default values are:
-            * For "star" text_format: `[[1e-4, "****"], [1e-3, "***"],
-                                        [1e-2, "**"], [0.05, "*"],
-                                        [1, "ns"]]`.
-            * For "simple" text_format : `[[1e-5, "1e-5"], [1e-4, "1e-4"],
-                                           [1e-3, "0.001"], [1e-2, "0.01"],
-                                           [5e-2, "0.05"]]`
+            * For "star" text_format:
+              `[[1e-4, "****"], [1e-3, "***"], [1e-2, "**"], [0.05, "*"], [1, "ns"]]`.
+            * For "simple" text_format:
+              `[[1e-5, "1e-5"], [1e-4, "1e-4"], [1e-3, "0.001"], [1e-2, "0.01"], [5e-2, "0.05"]]`.
         * `show_test_name`: Set to False to not show the (short) name of
             test
         * `test`

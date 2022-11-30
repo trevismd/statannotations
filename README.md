@@ -1,4 +1,8 @@
-[![Active Development](https://img.shields.io/badge/Maintenance%20Level-Actively%20Developed-brightgreen.svg)](https://gist.github.com/cheerfulstoic/d107229326a01ff0f333a1d3476e068d) ![coverage](https://raw.githubusercontent.com/trevismd/statannotations/master/coverage.svg)  ![Python](https://img.shields.io/badge/Python-3.6%2B-blue)[![Documentation Status](https://readthedocs.org/projects/statannotations/badge/?version=latest)](https://statannotations.readthedocs.io/en/master/?badge=latest)
+[![Active Development](https://img.shields.io/badge/Maintenance%20Level-Actively%20Developed-brightgreen.svg)](https://gist.github.com/cheerfulstoic/d107229326a01ff0f333a1d3476e068d) 
+![coverage](https://raw.githubusercontent.com/trevismd/statannotations/master/coverage.svg)  
+![Python](https://img.shields.io/badge/Python-3.6%2B-blue)
+[![Documentation Status](https://readthedocs.org/projects/statannotations/badge/?version=latest)](https://statannotations.readthedocs.io/en/master/?badge=latest)
+[![DOI](https://zenodo.org/badge/296015778.svg)](https://zenodo.org/badge/latestdoi/296015778)
 
 ## What is it
 
@@ -19,7 +23,7 @@ is no longer usable in `statannotations`**.
 Please use the latest v0.3.2 release if you must keep `statannot`'s API in your 
 code, but are looking for bug fixes we have covered.
 
-Indeed, the statannot interface, at least until its version 0.2.3, is usable in
+`statannot`'s interface, at least until its version 0.2.3, is usable in 
 statannotations until v.0.3.x, which already provides additional features (see
 corresponding branch).
 
@@ -40,6 +44,7 @@ corresponding branch).
     - Levene test
     - Wilcoxon test
     - Kruskal-Wallis test
+    - **Brunner-Munzel test**
 - **Interface to use any other function from any source with minimal extra
   code**
 - Smart layout of multiple annotations with correct y offsets.
@@ -64,9 +69,15 @@ corresponding branch).
 ## Installation
 
 From version 0.3.0 on, the package is distributed on PyPi.
-The latest stable release (v0.4.4) can be downloaded and installed with:
+The latest stable release (v0.5.0) can be downloaded and installed with:
 ```bash
 pip install statannotations
+```
+
+or, with conda ![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/statannotations)
+
+```bash
+conda install -c conda-forge statannotations
 ```
 
 or, after cloning the repository,
@@ -76,6 +87,13 @@ pip install .
 # OR, to have optional dependencies too (multiple comparisons & testing)
 pip install -r requirements.txt .
 ```
+
+## Important note
+
+**! Seaborn ≥ v0.12 is not officially supported, we know there are at least 
+some bugs. Issues can still be reported (and upvoted) in order to plan further
+development to support these versions. Also see 
+[discussion](https://github.com/trevismd/statannotations/discussions/81)**.
 
 ## Usage
 
@@ -122,11 +140,49 @@ annotator.apply_and_annotate()
 
 + Python >= 3.6
 + numpy >= 1.12.1
-+ seaborn >= 0.9
++ seaborn >= 0.9,<0.12
 + matplotlib >= 2.2.2
 + pandas >= 0.23.0
 + scipy >= 1.1.0
 + statsmodels (optional, for multiple testing corrections)
+
+
+## Citation
+If you are using this work, please use the following information to cite it.  
+
+Bibtex
+```tex
+@software{florian_charlier_2022_7213391,
+  author       = {Florian Charlier and
+                  Marc Weber and
+                  Dariusz Izak and
+                  Emerson Harkin and
+                  Marcin Magnus and
+                  Joseph Lalli and
+                  Louison Fresnais and
+                  Matt Chan and
+                  Nikolay Markov and
+                  Oren Amsalem and
+                  Sebastian Proost and
+                  Agamemnon Krasoulis and
+                  getzze and
+                  Stefan Repplinger},
+  title        = {Statannotations},
+  month        = oct,
+  year         = 2022,
+  publisher    = {Zenodo},
+  version      = {v0.5},
+  doi          = {10.5281/zenodo.7213391},
+  url          = {https://doi.org/10.5281/zenodo.7213391}
+}
+```
+Example
+```
+Florian Charlier, Marc Weber, Dariusz Izak, Emerson Harkin, Marcin Magnus, 
+Joseph Lalli, Louison Fresnais, Matt Chan, Nikolay Markov, Oren Amsalem, 
+Sebastian Proost, Agamemnon Krasoulis, getzze, & Stefan Repplinger. (2022). 
+Statannotations (v0.5). Zenodo. https://doi.org/10.5281/zenodo.7213391
+```
 
 ## Contributing
 
