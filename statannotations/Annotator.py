@@ -78,7 +78,7 @@ class Annotator:
 
     def __init__(self, ax, pairs, plot='boxplot', data=None, x=None,
                  y=None, hue=None, order=None, hue_order=None,
-                 engine="seaborn", verbose=True, show_non_significant=True, **plot_params):
+                 engine="seaborn", verbose=True, hide_non_significant=False, **plot_params):
         """
         :param ax: Ax of existing plot
         :param pairs: can be of either form:
@@ -95,7 +95,7 @@ class Annotator:
         :param hue_order: seaborn plot's hue_order
         :param engine: currently only "seaborn" is implemented
         :param verbose: verbosity flag
-        :param show_non_significant: show non significant pairs
+        :param hide_non_significant: enable this to hide annotations for non-significant pairs
         :param plot_params: Other parameters for plotter engine
         """
         self.pairs = pairs
@@ -131,7 +131,7 @@ class Annotator:
         self.line_width = 1.5
         self.value_offset = None
         self.custom_annotations = None
-        self.show_non_significant = show_non_significant
+        self.hide_non_significant = hide_non_significant
 
     @staticmethod
     def get_empty_annotator():
@@ -218,7 +218,12 @@ class Annotator:
         self.validate_test_short_name()
 
         for annotation in self.annotations:
-            if self.show_non_significant or annotation.data.pvalue < 0.05:
+            if not isinstance(annotation.data, StatResult):
+                warnings.warn("Annotation data has incorrect class." +
+                              "Should be StatResult. Cannot annotate current pair.")
+                continue
+
+            if not self.hide_non_significant or annotation.data.is_significant:
                 self._annotate_pair(annotation,
                                     ax_to_data=ax_to_data,
                                     ann_list=ann_list,

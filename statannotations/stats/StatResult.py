@@ -58,6 +58,13 @@ class StatResult:
             return 'ns'
         return ""
 
+    @property
+    def is_significant(self):
+        if self.corrected_significance is not None:
+            return self.corrected_significance <= self.alpha
+        else:
+            return self.pvalue <= self.alpha
+
     def __str__(self):
         return self.formatted_output
 
