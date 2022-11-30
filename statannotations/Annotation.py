@@ -1,3 +1,4 @@
+import warnings
 from typing import Union
 
 from statannotations.PValueFormat import Formatter
@@ -43,3 +44,12 @@ class Annotation:
                                  for struct in self.structs)
 
         print(f"{labels_string}: {self.formatted_output}")
+
+    def check_data_stat_result(self):
+        if not isinstance(self.data, StatResult):
+            warnings.warn("Annotation data has incorrect class." +
+                          "Should be StatResult. Cannot annotate current pair.")
+            return False
+        return True
+
+

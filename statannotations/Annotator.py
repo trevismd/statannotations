@@ -218,12 +218,7 @@ class Annotator:
         self.validate_test_short_name()
 
         for annotation in self.annotations:
-            if not isinstance(annotation.data, StatResult):
-                warnings.warn("Annotation data has incorrect class." +
-                              "Should be StatResult. Cannot annotate current pair.")
-                continue
-
-            if not self.hide_non_significant or annotation.data.is_significant:
+            if annotation.check_data_stat_result() and (not self.hide_non_significant or annotation.data.is_significant):
                 self._annotate_pair(annotation,
                                     ax_to_data=ax_to_data,
                                     ann_list=ann_list,
