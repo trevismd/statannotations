@@ -60,6 +60,8 @@ class StatResult:
 
     @property
     def is_significant(self):
+        if self._corrected_significance is False:
+            return False
         return self.pvalue <= self.alpha
 
     def __str__(self):
