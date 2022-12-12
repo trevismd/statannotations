@@ -12,7 +12,7 @@ class TestStatResult(unittest.TestCase):
         self.stat_result = StatResult("Test X", "X", "Stat", 1, 0.02,
                                       alpha=0.05)
         self.stat_result.correction_method = self.benjamini_hochberg.name
-        self.stat_result_insignificant = StatResult("Test X", "X", "Stat", 1, 0.06,
+        self.stat_result_non_significant = StatResult("Test X", "X", "Stat", 1, 0.06,
                                                     alpha=0.05)
         self.stat_result_insignificant.correction_method = self.benjamini_hochberg.name
 
