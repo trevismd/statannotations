@@ -218,11 +218,13 @@ class Annotator:
         self.validate_test_short_name()
 
         for annotation in self.annotations:
-            if annotation.check_data_stat_result() and (not self.hide_non_significant or annotation.data.is_significant):
-                self._annotate_pair(annotation,
-                                    ax_to_data=ax_to_data,
-                                    ann_list=ann_list,
-                                    orig_value_lim=orig_value_lim)
+            if self.hide_non_significant and isinstance(self.data, StatResult) \
+                    and not annotation.data.is_significant:
+                continue
+            self._annotate_pair(annotation,
+                                ax_to_data=ax_to_data,
+                                ann_list=ann_list,
+                                orig_value_lim=orig_value_lim)
 
         # reset transformation
         y_stack_max = max(self._value_stack_arr[1, :])
