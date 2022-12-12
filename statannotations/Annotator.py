@@ -78,7 +78,8 @@ class Annotator:
 
     def __init__(self, ax, pairs, plot='boxplot', data=None, x=None,
                  y=None, hue=None, order=None, hue_order=None,
-                 engine="seaborn", verbose=True, hide_non_significant=False, **plot_params):
+                 engine="seaborn", verbose=True, hide_non_significant=False, 
+                 **plot_params):
         """
         :param ax: Ax of existing plot
         :param pairs: can be of either form:
