@@ -14,7 +14,7 @@ class TestStatResult(unittest.TestCase):
         self.stat_result.correction_method = self.benjamini_hochberg.name
         self.stat_result_non_significant = StatResult("Test X", "X", "Stat", 1, 0.06,
                                                     alpha=0.05)
-        self.stat_result_insignificant.correction_method = self.benjamini_hochberg.name
+        self.stat_result_non_significant.correction_method = self.benjamini_hochberg.name
 
     def test_ns_if_ns(self):
         self.stat_result.corrected_significance = False
@@ -35,4 +35,4 @@ class TestStatResult(unittest.TestCase):
         self.stat_result.corrected_significance = False
 
         self.assertFalse(self.stat_result.is_significant)
-        self.assertFalse(self.stat_result_insignificant.is_significant)
+        self.assertFalse(self.stat_result_non_significant.is_significant)
