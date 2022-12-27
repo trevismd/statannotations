@@ -31,8 +31,10 @@ class TestStatResult(unittest.TestCase):
     def test_is_significant(self):
         assert self.stat_result.is_significant
 
-    def test_is_insignificant(self):
+    def test_is_non_significant(self):
+        self.assertFalse(self.stat_result_non_significant.is_significant)
+
+    def test_corrected_significance(self):
         self.stat_result.corrected_significance = False
 
         self.assertFalse(self.stat_result.is_significant)
-        self.assertFalse(self.stat_result_non_significant.is_significant)

@@ -219,7 +219,7 @@ class Annotator:
         self.validate_test_short_name()
 
         for annotation in self.annotations:
-            if self.hide_non_significant and isinstance(self.data, StatResult) \
+            if self.hide_non_significant and isinstance(annotation.data, StatResult) \
                     and not annotation.data.is_significant:
                 continue
             self._annotate_pair(annotation,

@@ -52,17 +52,17 @@ class StatResult:
         return stat_summary
 
     @property
+    def is_significant(self):
+        if self._corrected_significance is False:
+            return False
+        return self.pvalue <= self.alpha
+
+    @property
     def significance_suffix(self):
         # will add this only if a correction method is specified
         if self._corrected_significance is False and self.pvalue <= self.alpha:
             return 'ns'
         return ""
-
-    @property
-    def is_significant(self):
-        if self._corrected_significance is False:
-            return False
-        return self.pvalue <= self.alpha
 
     def __str__(self):
         return self.formatted_output
