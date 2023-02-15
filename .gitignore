@@ -3,6 +3,7 @@ __pycache__
 build
 dist
 
+statannot.egg-info/
 statannot.egg-info/dependency_links.txt
 statannot.egg-info/PKG-INFO
 statannot.egg-info/requires.txt
