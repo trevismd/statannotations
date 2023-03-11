@@ -693,7 +693,7 @@ class Annotator:
 
     def _plot_line(self, line_x, line_y):
         if self.loc == 'inside':
-            self.ax.plot(line_x, line_y, lw=self.line_width, c=self.color)
+            self.ax.plot(line_x, line_y, lw=self.line_width, c=self.color, clip_on=False)
         else:
             line = lines.Line2D(line_x, line_y, lw=self.line_width,
                                 c=self.color, transform=self.ax.transData)
