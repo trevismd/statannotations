@@ -1,4 +1,8 @@
 ## v0.5
+### v0.5.1
+- Fix keeping annotation with reduced ylim (Issue [#91]
+  (https://github.com/trevismd/statannotations/issues/91))
+
 ### v0.5.0
 - Add scipy's Brunner-Munzel test
 - Fix applying statannotations for non-string group labels (Issue 
