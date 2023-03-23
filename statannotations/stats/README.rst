@@ -1,5 +1,7 @@
 1. Write your function that takes in two sets of data, and outputs a test statistic and a p-value::
 
+.. code-block:: python
+
     import numpy as np
     from scipy.stats import ttest_ind
 
