@@ -18,7 +18,7 @@
     custom_func = log_ttest
     custom_test = StatTest(custom_func, custom_long_name, custom_short_name)
 
-3. When you create a ``statannotations.Annotator.Annotator`` :ref:`object <Annotator_module>`, you can configure it with yout StatTest::
+3. When you configure the ``statannotations.Annotator.Annotator`` :ref:`object <Annotator_module>`, you can pass your StatTest::
 
     annot = Annotator(<ax>, <pairs>)
     annot.configure(test=custom_test, comparisons_correction=None,
