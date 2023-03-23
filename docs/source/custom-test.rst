@@ -1,4 +1,4 @@
-Implementing Your Own Statistical Test
+Extending to other statistical functions
 **************************************
 
 .. include:: ../../statannotations/stats/README.rst
