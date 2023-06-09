@@ -20,6 +20,8 @@ statannotations.Annotation module
    :undoc-members:
    :show-inheritance:
 
+.. _Annotator_module:
+
 statannotations.Annotator module
 --------------------------------
 
