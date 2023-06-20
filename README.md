@@ -62,6 +62,7 @@ corresponding branch).
 - Optionally, custom p-values can be given as input.
       In this case, no statistical test is performed, but **corrections for
       multiple testing can be applied.**
+- It is also possible to hide non statistically significant annotations
 - Any text can be used as annotation
 - And various fixes (see
   [CHANGELOG.md](https://github.com/trevismd/statannotations/blob/master/CHANGELOG.md)).
@@ -69,7 +70,7 @@ corresponding branch).
 ## Installation
 
 From version 0.3.0 on, the package is distributed on PyPi.
-The latest stable release (v0.5.0) can be downloaded and installed with:
+The latest stable release (v0.6.0) can be downloaded and installed with:
 ```bash
 pip install statannotations
 ```
@@ -90,9 +91,9 @@ pip install -r requirements.txt .
 
 ## Important note
 
-**! Seaborn ≥ v0.12 is not officially supported, we know there are at least 
-some bugs. Issues can still be reported (and upvoted) in order to plan further
-development to support these versions. Also see 
+**! Seaborn ≥ v0.12 and pandas 2 are not officially supported, we know there are
+at least some bugs. Issues can still be reported (and upvoted) in order to plan 
+further development to support these versions. Also see 
 [discussion](https://github.com/trevismd/statannotations/discussions/81)**.
 
 ## Usage
@@ -171,7 +172,7 @@ Bibtex
   month        = oct,
   year         = 2022,
   publisher    = {Zenodo},
-  version      = {v0.5},
+  version      = {v0.6},
   doi          = {10.5281/zenodo.7213391},
   url          = {https://doi.org/10.5281/zenodo.7213391}
 }
@@ -181,7 +182,7 @@ Example
 Florian Charlier, Marc Weber, Dariusz Izak, Emerson Harkin, Marcin Magnus, 
 Joseph Lalli, Louison Fresnais, Matt Chan, Nikolay Markov, Oren Amsalem, 
 Sebastian Proost, Agamemnon Krasoulis, getzze, & Stefan Repplinger. (2022). 
-Statannotations (v0.5). Zenodo. https://doi.org/10.5281/zenodo.7213391
+Statannotations (v0.6). Zenodo. https://doi.org/10.5281/zenodo.7213391
 ```
 
 ## Contributing

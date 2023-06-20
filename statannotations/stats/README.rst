@@ -28,4 +28,4 @@
 
     annot = Annotator(<ax>, <pairs>)
     annot.configure(test=custom_test, comparisons_correction=None,
-                text_format='star')
+                    text_format='star')

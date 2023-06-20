@@ -96,7 +96,8 @@ class Annotator:
         :param hue_order: seaborn plot's hue_order
         :param engine: currently only "seaborn" is implemented
         :param verbose: verbosity flag
-        :param hide_non_significant: enable this to hide annotations for non-significant pairs
+        :param hide_non_significant: enable this to hide annotations for
+            non-significant pairs
         :param plot_params: Other parameters for plotter engine
         """
         self.pairs = pairs

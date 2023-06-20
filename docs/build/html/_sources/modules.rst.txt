@@ -5,3 +5,4 @@ statannotations
    :maxdepth: 4
 
    statannotations
+   custom-test

@@ -51,5 +51,3 @@ class Annotation:
                           "Should be StatResult. Cannot annotate current pair.")
             return False
         return True
-
-
