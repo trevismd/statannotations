@@ -38,6 +38,7 @@ CONFIGURABLE_PARAMETERS = [
     'text_offset',
     'use_fixed_offset',
     'verbose',
+    'hide_non_significant'
 ]
 
 
@@ -268,6 +269,7 @@ class Annotator:
             corresponds to "{suffix}"
             * a custom formatting string using "{star}" for the original
             pvalue and '{suffix}' for 'ns'
+        * `hide_non_significant`: Hide annotations for non-significant pairs
         * `line_height`: in axes fraction coordinates
         * `line_offset`
         * `line_offset_to_group`
