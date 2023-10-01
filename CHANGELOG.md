@@ -1,5 +1,25 @@
-## v0.5
-### v0.5.0
+## v0.6
+### v0.6.0
+#### Features
+- Add option to skip annotation of non-significant results 
+  (PR [#95](https://github.com/trevismd/statannotations/pull/95) by 
+  [sepro](https://github.com/sepro))
+
+#### Fixes
+- Fix keeping annotation with reduced ylim (
+  PR [#116](https://github.com/trevismd/statannotations/issues/116) by
+  [amkorb](https://github.com/amkorb))
+- Fix pvalue legend (usually for NS range)
+
+#### Additional testing and documentation:
+  - PR [#84](https://github.com/trevismd/statannotations/pull/84) by
+    [JasonMendoza2008 ](https://github.com/JasonMendoza2008)
+  - PR [#86](https://github.com/trevismd/statannotations/pull/86) by 
+    [mbhall88](https://github.com/mbhall88)
+  - PR [#117](https://github.com/trevismd/statannotations/pull/117) by
+    [tathey1](https://github.com/tathey1)
+
+## v0.5.0
 - Add scipy's Brunner-Munzel test
 - Fix applying statannotations for non-string group labels (Issue 
   [#65](https://github.com/trevismd/statannotations/issues/65))

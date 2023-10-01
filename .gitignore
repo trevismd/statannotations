@@ -3,8 +3,12 @@ __pycache__
 build
 dist
 
+statannot.egg-info/
 statannot.egg-info/dependency_links.txt
 statannot.egg-info/PKG-INFO
 statannot.egg-info/requires.txt
 statannot.egg-info/SOURCES.txt
 statannot.egg-info/top_level.txt
+
+# IDE files
+.idea/

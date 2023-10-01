@@ -40,6 +40,32 @@ class TestAnnotator(unittest.TestCase):
             "hue": "color",
             "order": ["a", "b"],
             "hue_order": ['red', 'blue']}
+
+        self.df_x_float = pd.DataFrame(
+            data={
+                "x_axis": [1.01, 1.02, 1.03, 1.01, 1.02, 1.03, 1.01, 1.02,
+                           1.03, 1.01, 1.02, 1.03, 1.01, 1.02, 1.03, 1.01,
+                           1.02, 1.03, 1.01, 1.02, 1.03, 1.01, 1.02, 1.03],
+                "y_axis": [16.99, 10.34, 21.01, 23.68, 24.59, 25.29, 8.77,
+                           26.88, 15.04, 14.78, 10.27, 35.26, 15.42, 18.43,
+                           14.83, 21.58, 10.33, 16.29, 16.97, 20.65, 17.92,
+                           20.29, 15.77, 39.42],
+                "hue": ["hue_2", "hue_2", "hue_1", "hue_1", "hue_2", "hue_2",
+                        "hue_2", "hue_1", "hue_2", "hue_1", "hue_1", "hue_2",
+                        "hue_1", "hue_1", "hue_0", "hue_0", "hue_2", "hue_1",
+                        "hue_0", "hue_0", "hue_2", "hue_0", "hue_2", "hue_1"]
+            }
+        )
+        self.params_float = {
+            "data": self.df_x_float,
+            "x": "x_axis",
+            "y": "y_axis",
+            "hue": "hue",
+            "hue_order": ["hue_0", "hue_1", "hue_2"],
+            "order": [1.01, 1.02, 1.03]
+        }
+        self.ax_float = sns.boxplot(**self.params_float)
+
         self.params_arrays = {
             "data": None,
             "x": self.df['x'],
@@ -50,6 +76,16 @@ class TestAnnotator(unittest.TestCase):
 
     def test_init_simple(self):
         self.annot = Annotator(self.ax, [(0, 1)], data=self.data)
+
+    def test_init_float(self):
+        self.annot_float = Annotator(
+            self.ax_float,
+            pairs=[
+                ((1.01, "hue_0"), (1.01, "hue_1")),
+                ((1.02, "hue_0"), (1.02, "hue_1"))
+            ],
+            **self.params_float
+        )
 
     def test_init_df(self):
         self.ax = sns.boxplot(**self.params_df)
@@ -168,6 +204,16 @@ class TestAnnotator(unittest.TestCase):
     def test_support_int_labels(self):
         self.test_init_simple()
         self.annot.configure(test="Mann-Whitney")
+        self.annot.apply_and_annotate()
+
+    def test_support_float_labels(self):
+        self.test_init_float()
+        self.annot_float.configure(test='Mann-Whitney')
+        self.annot_float.apply_and_annotate()
+
+    def test_configure_hide_non_significant(self):
+        self.test_init_simple()
+        self.annot.configure(test='Mann-Whitney', hide_non_significant=True)
         self.annot.apply_and_annotate()
 
     def test_get_annotation_text_in_input_order(self):

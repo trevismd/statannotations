@@ -20,6 +20,8 @@ statannotations.stats.StatResult module
    :undoc-members:
    :show-inheritance:
 
+.. _StatTest_module:
+
 statannotations.stats.StatTest module
 -------------------------------------
 

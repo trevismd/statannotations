@@ -104,6 +104,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#module-statannotations">Module contents</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="custom-test.html">Extending to other statistical functions</a></li>
 </ul>
 </li>
 </ul>
@@ -204,6 +205,11 @@
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">statannotations.Annotation.</span></span><span class="sig-name descname"><span class="pre">Annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="statannotations.stats.html#statannotations.stats.StatResult.StatResult" title="statannotations.stats.StatResult.StatResult"><span class="pre">statannotations.stats.StatResult.StatResult</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formatter</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#statannotations.PValueFormat.Formatter" title="statannotations.PValueFormat.Formatter"><span class="pre">statannotations.PValueFormat.Formatter</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotation.Annotation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Holds data, linked structs and an optional Formatter.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="statannotations.Annotation.Annotation.check_data_stat_result">
+<span class="sig-name descname"><span class="pre">check_data_stat_result</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotation.Annotation.check_data_stat_result" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="statannotations.Annotation.Annotation.formatted_output">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">formatted_output</span></span><a class="headerlink" href="#statannotations.Annotation.Annotation.formatted_output" title="Permalink to this definition">¶</a></dt>
@@ -223,7 +229,7 @@
 
 </div>
 <div class="section" id="module-statannotations.Annotator">
-<span id="statannotations-annotator-module"></span><h2>statannotations.Annotator module<a class="headerlink" href="#module-statannotations.Annotator" title="Permalink to this headline">¶</a></h2>
+<span id="statannotations-annotator-module"></span><span id="annotator-module"></span><h2>statannotations.Annotator module<a class="headerlink" href="#module-statannotations.Annotator" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="statannotations.Annotator.Annotator">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">statannotations.Annotator.</span></span><span class="sig-name descname"><span class="pre">Annotator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pairs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'boxplot'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hue_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'seaborn'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">plot_params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#statannotations.Annotator.Annotator" title="Permalink to this definition">¶</a></dt>
@@ -311,6 +317,11 @@ corresponds to “{star} ({suffix})”
 corresponds to “{suffix}”
 * a custom formatting string using “{star}” for the original
 pvalue and ‘{suffix}’ for ‘ns’</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><cite>hide_non_significant</cite>: hide annotations for non-significant pair</dt><dd><p>comparisons</p>
 </dd>
 </dl>
 </li>
