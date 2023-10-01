@@ -38,6 +38,7 @@ CONFIGURABLE_PARAMETERS = [
     'text_offset',
     'use_fixed_offset',
     'verbose',
+    'hide_non_significant',
 ]
 
 
@@ -56,7 +57,8 @@ _DEFAULT_VALUES = {
     "text_offset": 1,
     "color": '0.2',
     "line_width": 1.5,
-    "custom_annotations": None
+    "custom_annotations": None,
+    "hide_non_significant": False,
 }
 
 ENGINE_PLOTTERS = {"seaborn": _SeabornPlotter}
@@ -78,8 +80,7 @@ class Annotator:
 
     def __init__(self, ax, pairs, plot='boxplot', data=None, x=None,
                  y=None, hue=None, order=None, hue_order=None,
-                 engine="seaborn", verbose=True, hide_non_significant=False, 
-                 **plot_params):
+                 engine="seaborn", verbose=True, **plot_params):
         """
         :param ax: Ax of existing plot
         :param pairs: can be of either form:
@@ -96,8 +97,6 @@ class Annotator:
         :param hue_order: seaborn plot's hue_order
         :param engine: currently only "seaborn" is implemented
         :param verbose: verbosity flag
-        :param hide_non_significant: enable this to hide annotations for
-            non-significant pairs
         :param plot_params: Other parameters for plotter engine
         """
         self.pairs = pairs
@@ -133,7 +132,7 @@ class Annotator:
         self.line_width = 1.5
         self.value_offset = None
         self.custom_annotations = None
-        self.hide_non_significant = hide_non_significant
+        self.hide_non_significant = False
 
     @staticmethod
     def get_empty_annotator():
@@ -268,6 +267,8 @@ class Annotator:
             corresponds to "{suffix}"
             * a custom formatting string using "{star}" for the original
             pvalue and '{suffix}' for 'ns'
+        * `hide_non_significant`: hide annotations for non-significant pair
+            comparisons
         * `line_height`: in axes fraction coordinates
         * `line_offset`
         * `line_offset_to_group`

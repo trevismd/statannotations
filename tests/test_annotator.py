@@ -66,7 +66,6 @@ class TestAnnotator(unittest.TestCase):
         }
         self.ax_float = sns.boxplot(**self.params_float)
 
-
         self.params_arrays = {
             "data": None,
             "x": self.df['x'],
@@ -211,6 +210,11 @@ class TestAnnotator(unittest.TestCase):
         self.test_init_float()
         self.annot_float.configure(test='Mann-Whitney')
         self.annot_float.apply_and_annotate()
+
+    def test_configure_hide_non_significant(self):
+        self.test_init_simple()
+        self.annot.configure(test='Mann-Whitney', hide_non_significant=True)
+        self.annot.apply_and_annotate()
 
     def test_get_annotation_text_in_input_order(self):
         self.test_init_df()
