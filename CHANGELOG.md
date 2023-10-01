@@ -9,6 +9,7 @@
 - Fix keeping annotation with reduced ylim (
   PR [#116](https://github.com/trevismd/statannotations/issues/116) by
   [amkorb](https://github.com/amkorb))
+- Fix pvalue legend (usually for NS range)
 
 #### Additional testing and documentation:
   - PR [#84](https://github.com/trevismd/statannotations/pull/84) by

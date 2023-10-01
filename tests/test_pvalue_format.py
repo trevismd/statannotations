@@ -83,7 +83,7 @@ class Test(unittest.TestCase):
         pvalue_format = PValueFormat()
         self.assert_print_pvalue(pvalue_format,
                                  "p-value annotation legend:\n"
-                                 "      ns: p <= 1.00e+00\n"
+                                 "      ns: 5.00e-02 < p <= 1.00e+00\n"
                                  "       *: 1.00e-02 < p <= 5.00e-02\n"
                                  "      **: 1.00e-03 < p <= 1.00e-02\n"
                                  "     ***: 1.00e-04 < p <= 1.00e-03\n"
@@ -94,7 +94,7 @@ class Test(unittest.TestCase):
         pvalue_format.config(text_format="star")
         self.assert_print_pvalue(pvalue_format,
                                  "p-value annotation legend:\n"
-                                 "      ns: p <= 1.00e+00\n"
+                                 "      ns: 5.00e-02 < p <= 1.00e+00\n"
                                  "       *: 1.00e-02 < p <= 5.00e-02\n"
                                  "      **: 1.00e-03 < p <= 1.00e-02\n"
                                  "     ***: 1.00e-04 < p <= 1.00e-03\n"
@@ -130,6 +130,6 @@ class Test(unittest.TestCase):
         ])
         self.assert_print_pvalue(pvalue_format,
                                  "p-value annotation legend:\n"
-                                 "      ns: p <= 1.00e+00\n"
+                                 "      ns: 5.00e-02 < p <= 1.00e+00\n"
                                  " <= 0.05: 1.00e-03 < p <= 5.00e-02\n"
                                  "<= 0.001: p <= 1.00e-03\n\n")
