@@ -143,7 +143,7 @@ annotator.apply_and_annotate()
 + numpy >= 1.12.1
 + seaborn >= 0.9,<0.12
 + matplotlib >= 2.2.2
-+ pandas >= 0.23.0
++ pandas >= 0.23.0,<2.0.0
 + scipy >= 1.1.0
 + statsmodels (optional, for multiple testing corrections)
 
