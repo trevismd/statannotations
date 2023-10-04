@@ -1,5 +1,5 @@
 import warnings
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Iterator, Dict, Any
 
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
@@ -357,7 +357,7 @@ class Annotator:
 
         return self
 
-    def set_custom_annotations(self, text_annot_custom):
+    def set_custom_annotations(self, text_annot_custom: List):
         """
         :param text_annot_custom: List of strings to annotate for each
             `pair`
@@ -816,12 +816,16 @@ class Annotator:
 
     def plot_and_annotate_facets(
             self, plot: str, plot_params: dict, configuration: dict,
-            annotation_func: str, *args, annotation_params: dict = None,
+            annotation_func: str, *args,
+            annotation_params: dict = None,
+            annotation_params_each: Optional[
+                Iterator[Dict[str, Any]]] = None,
             ax_op_before: List[Union[str, Optional[list],
                                      Optional[dict]]] = None,
             ax_op_after: List[Union[str, Optional[list],
                                     Optional[dict]]] = None,
-            annotate_params: dict = None, **kwargs):
+            annotate_params: dict = None,
+            **kwargs):
         """
         Plots using seaborn and annotates in a single call, to be used within
         a `FacetGrid`.
@@ -836,6 +840,8 @@ class Annotator:
             * 'set_pvalues'
             * 'apply_test'
         :param annotation_params: parameters for the annotation function
+        :param annotation_params_each: parameters for the annotation function to
+            iterate on to find values for each facet.
         :param ax_op_before: list of [func_name, args, kwargs] to apply on `ax`
             before annotating
         :param ax_op_after: list of [func_name, args, kwargs] to apply on `ax`
@@ -846,14 +852,17 @@ class Annotator:
         """
         annotate_params = empty_dict_if_none(annotate_params)
         annotation_params = empty_dict_if_none(annotation_params)
-
         ax = getattr(sns, plot)(*args, **plot_params, **kwargs)
 
         _apply_ax_operations(ax, ax_op_before)
 
         self.new_plot(ax, plot=plot, **plot_params, data=kwargs['data'])
         self.configure(**configuration)
-        getattr(self, annotation_func)(**annotation_params)
+        if annotation_params_each:
+            annotation_args, annotation_kwargs = next(annotation_params_each)
+            getattr(self, annotation_func)(*annotation_args, **annotation_params, **annotation_kwargs)
+        else:
+            getattr(self, annotation_func)(**annotation_params)
         self.annotate(**annotate_params)
 
         _apply_ax_operations(ax, ax_op_after)
