@@ -85,3 +85,24 @@ class TestAnnotator(unittest.TestCase):
                         ax_op_after=[['set_xlabel', ['Group'], None]],
                         annotation_params={'num_comparisons': 'auto'}
                         )
+
+    def test_plot_and_annotate_facets_custom_annotation_params_each(self):
+        custom_annotations = iter([
+            [[["this"]], {}],
+            [[["that"]], {}]
+        ])
+
+        annotator = Annotator(None, self.simple_pairs)
+        g = sns.FacetGrid(self.params_df.pop("data"),
+                          col=self.params_df.pop("hue"),
+                          height=10, sharey=False)
+        self.params_df.pop("hue_order")
+        g.map_dataframe(annotator.plot_and_annotate_facets,
+                        plot="boxplot",
+                        plot_params=self.params_df,
+                        configuration={"comparisons_correction": None},
+                        annotation_func="set_custom_annotations",
+                        annotation_params_each=custom_annotations,
+                        ax_op_after=[['set_xlabel', ['Group'], None]],
+                        )
+        self.assertEqual(annotator.get_annotations_text(), ["that"])  # last facet

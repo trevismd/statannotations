@@ -1,4 +1,9 @@
 ## v0.6
+
+### v0.6.1
+- Add option to give facet-specific annotation parameters, such as to
+  set custom annotations
+
 ### v0.6.0
 #### Features
 - Add option to skip annotation of non-significant results 
