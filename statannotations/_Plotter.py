@@ -347,6 +347,10 @@ class _SeabornPlotter(_Plotter):
         return group_name, value_pos[value_coord]
 
     def _get_value_pos_for_line2d_or_rectangle(self, child, data_to_ax):
+
+        if (type(child) == Rectangle) and ((child.get_width()<=0) or (child.get_height()<=0)):
+            return None, None
+            
         bbox = self.ax.transData.inverted().transform(
             child.get_window_extent(self.fig.canvas.get_renderer()))
 
