@@ -39,6 +39,7 @@ CONFIGURABLE_PARAMETERS = [
     'use_fixed_offset',
     'verbose',
     'hide_non_significant',
+    'fontcolor'
 ]
 
 
@@ -59,6 +60,7 @@ _DEFAULT_VALUES = {
     "line_width": 1.5,
     "custom_annotations": None,
     "hide_non_significant": False,
+    "fontcolor" : '0.2',
 }
 
 ENGINE_PLOTTERS = {"seaborn": _SeabornPlotter}
@@ -133,6 +135,7 @@ class Annotator:
         self.value_offset = None
         self.custom_annotations = None
         self.hide_non_significant = False
+        self.fontcolor = self.color
 
     @staticmethod
     def get_empty_annotator():
@@ -549,7 +552,7 @@ class Annotator:
             annotation.text, textcoords='offset points',
             xycoords='data', ha='center', va='bottom',
             fontsize=self._pvalue_format.fontsize, clip_on=False,
-            annotation_clip=False, **xy_params)
+            annotation_clip=False, color=self.fontcolor, **xy_params)
 
         if annotation.text is not None:
             ann_list.append(ann)
