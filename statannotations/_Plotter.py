@@ -116,9 +116,9 @@ class _SeabornPlotter(_Plotter):
         self.fix_and_warn(dodge, hue, plot)
 
         if plot == 'boxplot':
-            plotter = sns.categorical._BoxPlotter(
+            plotter = sns.categorical.boxplot(
 
-                x, y, hue, data, order, hue_order,
+                x=x, y=y, hue=hue, data=data, order=order, hue_order=hue_order,
                 orient=plot_params.get("orient"),
                 width=plot_params.get("width", 0.8),
                 dodge=True,
@@ -178,6 +178,7 @@ class _SeabornPlotter(_Plotter):
     def _get_group_names_and_labels(self):
 
         if self.plotter.plot_hues is None:
+            print('hello')
             group_names = self.plotter.group_names
             labels = group_names
 

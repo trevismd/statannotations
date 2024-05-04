@@ -6,11 +6,19 @@
 Welcome to statannotations's documentation!
 ===========================================
 
+The source code for this project can be found on the `GitHub Page <https://github.com/trevismd/statannotations/tree/master>`_.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
    modules
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Tutorial:
+
+   example
 
 Indices and tables
 ==================
