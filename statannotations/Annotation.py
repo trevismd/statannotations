@@ -47,7 +47,10 @@ class Annotation:
 
     def check_data_stat_result(self):
         if not isinstance(self.data, StatResult):
-            warnings.warn("Annotation data has incorrect class." +
-                          "Should be StatResult. Cannot annotate current pair.")
+            msg = (
+                "Cannot annotate current pair. Annotation data has incorrect "
+                f"class, should be StatResult: {type(self.data)}"
+            )
+            warnings.warn(msg)
             return False
         return True

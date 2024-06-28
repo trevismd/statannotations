@@ -1,3 +1,10 @@
+## v0.7
+### v0.7.0
+#### Features
+- Compatibility with pandas v2+ and seaborn above v0.12+ 
+  (PR [#155](https://github.com/trevismd/statannotations/pull/155) by
+  [getzze](https://github.com/getzze))
+
 ## v0.6
 ### v0.6.0
 #### Features
