@@ -1,7 +1,8 @@
 import itertools
 from bisect import bisect_left
-from typing import List, Union
+from typing import List, Tuple, Union
 
+import numpy as np
 import pandas as pd
 
 
@@ -116,16 +117,33 @@ def _check_hue_order_in_data(hue, hue_values: set,
                              f"`{render_collection(unmatched)}`"
                              f" in {hue} (specified in `hue_order`)")
 
+def check_redundant_hue(
+    data: Union[List[list], pd.DataFrame, None] = None,
+    coord: Union[str, list, None] = None,
+    hue: Union[str, None] = None,
+    hue_order: Union[List[str], None] = None,
+) -> bool:
+    # redundant hue
+    if data is None:
+        # arrays
+        if np.array_equal(hue, coord):
+            return True
+
+    else:
+        # column names
+        if hue == coord or (isinstance(coord, list) and hue in coord):
+            return True
+    return False
+
 
 def check_pairs_in_data(pairs: Union[list, tuple],
-                        data: Union[List[list], pd.DataFrame] = None,
-                        coord: Union[str, list] = None,
-                        hue: str = None,
-                        hue_order: List[str] = None):
+                        data: Union[List[list], pd.DataFrame, None] = None,
+                        coord: Union[str, list, None] = None,
+                        hue: Union[str, None] = None,
+                        hue_order: Union[List[str], None] = None):
     """
     Checks that values referred to in `order` and `pairs` exist in data.
     """
-
     if hue is None and hue_order is None:
         _check_pairs_in_data_no_hue(pairs, data, coord)
     else:
