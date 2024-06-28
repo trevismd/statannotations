@@ -41,6 +41,10 @@ class TestAnnotator(unittest.TestCase):
             "order": ["a", "b"],
             "hue_order": ['red', 'blue']}
 
+    def tearDown(self) -> None:
+        sns.mpl.pyplot.clf()
+        return super().tearDown()
+
     def test_plot_and_annotate(self):
         ax, annotations, annotator = Annotator.plot_and_annotate(
             plot="boxplot", pairs=self.pairs_for_df,

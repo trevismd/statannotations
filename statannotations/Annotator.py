@@ -162,11 +162,15 @@ class Annotator:
         return self
 
     @property
-    def orient(self):
+    def orient(self) -> str:
         return self._plotter.orient
 
     @property
-    def verbose(self):
+    def is_vertical(self) -> bool:
+        return self._plotter.orient in ('v', 'x')
+
+    @property
+    def verbose(self):  # pragma: no cover
         return self._verbose
 
     @verbose.setter
@@ -211,7 +215,7 @@ class Annotator:
         self.value_offset, self.line_offset_to_group = offset_func(
             line_offset, line_offset_to_group)
 
-        if self._verbose:
+        if self._verbose:  # pragma: no branch
             self.print_pvalue_legend()
 
         ax_to_data = self._plotter.get_transform_func('ax_to_data')
@@ -219,30 +223,29 @@ class Annotator:
         self.validate_test_short_name()
 
         for annotation in self.annotations:
-            if self.hide_non_significant and isinstance(annotation.data, StatResult) \
-                    and not annotation.data.is_significant:
+            if (
+                self.hide_non_significant
+                and isinstance(annotation.data, StatResult)
+                and not annotation.data.is_significant
+            ):
                 continue
-            self._annotate_pair(annotation,
-                                ax_to_data=ax_to_data,
-                                ann_list=ann_list,
-                                orig_value_lim=orig_value_lim)
+            self._annotate_pair(
+                annotation,
+                ax_to_data=ax_to_data,
+                ann_list=ann_list,
+                orig_value_lim=orig_value_lim,
+            )
 
         # reset transformation
         y_stack_max = max(self._value_stack_arr[1, :])
         ax_to_data = self._plotter.get_transform_func('ax_to_data')
-        value_lims = (
-            ([(0, 0), (0, max(1.04 * y_stack_max, 1))]
-             if self.loc == 'inside'
-             else [(0, 0), (0, 1)])
-            if self.orient == 'v'
-            else
-            ([(0, 0), (max(1.04 * y_stack_max, 1), 0)]
-             if self.loc == 'inside'
-             else [(0, 0), (1, 0)])
-        )
-        set_lims = self.ax.set_ylim if self.orient == 'v' else self.ax.set_xlim
+
+        max_value = max(1.04 * y_stack_max, 1) if self.loc == 'inside' else 1
+        up_limit = (0, max_value) if self.is_vertical else (max_value, 0)
+        value_lims = [(0, 0), up_limit]
+
         transformed = ax_to_data.transform(value_lims)
-        set_lims(transformed[:, 1 if self.orient == 'v' else 0])
+        self._plotter.set_value_lim(transformed[:, 1 if self.is_vertical else 0])
 
         return self._get_output()
 
@@ -320,9 +323,6 @@ class Annotator:
         self._check_has_plotter()
         self._check_test_pvalues_perform()
 
-        if stats_params is None:
-            stats_params = dict()
-
         self.perform_stat_test = True
 
         self.annotations = self._get_results(num_comparisons=num_comparisons,
@@ -359,38 +359,35 @@ class Annotator:
 
     def set_custom_annotations(self, text_annot_custom):
         """
-        :param text_annot_custom: List of strings to annotate for each
-            `pair`
+        :param text_annot_custom: List of strings to annotate for each `pair`
         """
         self._check_has_plotter()
 
         self._check_correct_number_custom_annotations(text_annot_custom)
-        self.annotations = [Annotation(
-            struct, self._value_for_group_struct(text_annot_custom, struct[0]))
-                            for struct in self._struct_pairs]
+        self.annotations = [
+            Annotation(struct, self._value_for_group_struct(text_annot_custom, struct[0]))
+            for struct in self._struct_pairs
+        ]
         self.show_test_name = False
         self._deactivate_configured_warning()
         return self
 
     def annotate_custom_annotations(self, text_annot_custom):
         """
-        :param text_annot_custom: List of strings to annotate for each
-            `pair`
+        :param text_annot_custom: List of strings to annotate for each `pair`
         """
         self.set_custom_annotations(text_annot_custom)
         return self.annotate()
 
     def get_configuration(self):
-        configuration = {key: getattr(self, key)
-                         for key in CONFIGURABLE_PARAMETERS}
+        configuration = {key: getattr(self, key) for key in CONFIGURABLE_PARAMETERS}
         configuration["pvalue_format"] = self.pvalue_format.get_configuration()
         return configuration
 
     def get_annotations_text(self):
-        if self.annotations is not None:
-            return [self.annotations[new_idx].text
-                    for new_idx in self._reordering]
-        return None
+        if self.annotations is None:
+            return None
+        return [self.annotations[new_idx].text for new_idx in self._reordering]
 
     @property
     def _reordering(self):
@@ -466,7 +463,7 @@ class Annotator:
         self._just_configured = False
 
     def print_pvalue_legend(self):
-        if not self.custom_annotations:
+        if not self.custom_annotations:  # pragma: no branch
             self._pvalue_format.print_legend_if_used()
 
     def _get_results(self, num_comparisons, pvalues=None,
@@ -508,7 +505,7 @@ class Annotator:
 
     def _annotate_pair(self, annotation, ax_to_data, ann_list, orig_value_lim):
 
-        if self._verbose >= 1:
+        if self._verbose >= 1:  # pragma: no branch
             annotation.print_labels_and_content()
 
         group_coord_1 = annotation.structs[0]['group_coord']
@@ -517,57 +514,59 @@ class Annotator:
         group_i2 = annotation.structs[1]['group_i']
 
         # Find y maximum for all the y_stacks *in between* group1 and group2
+        in_between_groups_mask = np.where(
+            (group_coord_1 <= self._value_stack_arr[0, :])
+            & (self._value_stack_arr[0, :] <= group_coord_2)
+        )
         i_value_max_in_range_g1_g2 = group_i1 + np.nanargmax(
-            self._value_stack_arr[1,
-                                  np.where((group_coord_1
-                                            <= self._value_stack_arr[0, :])
-                                           & (self._value_stack_arr[0, :]
-                                              <= group_coord_2))])
+            self._value_stack_arr[1, in_between_groups_mask]
+        )
 
         value = self._get_value_for_pair(i_value_max_in_range_g1_g2)
 
         # Determine lines in axes coordinates
-        ax_line_group = [group_coord_1, group_coord_1,
-                         group_coord_2, group_coord_2]
-        ax_line_value = [value, value + self.line_height,
-                         value + self.line_height, value]
+        ax_line_group = [group_coord_1, group_coord_1, group_coord_2, group_coord_2]
+        ax_line_value = [value, value + self.line_height, value + self.line_height, value]
 
-        lists = ((ax_line_group, ax_line_value) if self.orient == 'v'
-                 else (ax_line_value, ax_line_group))
+        lists = (
+            (ax_line_group, ax_line_value)
+            if self.is_vertical
+            else (ax_line_value, ax_line_group)
+        )
 
-        points = [ax_to_data.transform((x, y))
-                  for x, y
-                  in zip(*lists)]
+        points = [ax_to_data.transform((x, y)) for x, y in zip(*lists)]
 
         line_x, line_y = zip(*points)
         self._plot_line(line_x, line_y)
 
-        xy_params = self._get_xy_params(group_coord_1, group_coord_2, line_x,
-                                        line_y)
+        xy_params = self._get_xy_params(
+            group_coord_1, group_coord_2, line_x, line_y
+        )
 
         ann = self.ax.annotate(
-            annotation.text, textcoords='offset points',
-            xycoords='data', ha='center', va='bottom',
-            fontsize=self._pvalue_format.fontsize, clip_on=False,
-            annotation_clip=False, **xy_params)
+            annotation.text,
+            textcoords='offset points',
+            xycoords='data',
+            ha='center',
+            va='bottom',
+            fontsize=self._pvalue_format.fontsize,
+            clip_on=False,
+            annotation_clip=False,
+            **xy_params,
+        )
 
         if annotation.text is not None:
             ann_list.append(ann)
             plt.draw()
-            set_lim = {'v': 'set_ylim',
-                       'h': 'set_xlim'}[self.orient]
-
-            getattr(self.ax, set_lim)(orig_value_lim)
+            self._plotter.set_value_lim(orig_value_lim)
 
             value_top_annot = self._annotate_pair_text(ann, value)
-        else:
+        else:  # pragma: no cover
             value_top_annot = value + self.line_height
 
         # Fill the highest value position of the annotation into value_stack
         # for all positions in the range group_coord_1 to group_coord_2
-        self._value_stack_arr[
-            1, (group_coord_1 <= self._value_stack_arr[0, :])
-            & (self._value_stack_arr[0, :] <= group_coord_2)] = value_top_annot
+        self._value_stack_arr[1, in_between_groups_mask] = value_top_annot
 
         # Increment the counter of annotations in the value_stack array
         self._value_stack_arr[2, group_i1:group_i2 + 1] += 1
@@ -578,43 +577,51 @@ class Annotator:
 
     def _check_test_pvalues_perform(self):
         if self.test is None:
-            raise ValueError("If `perform_stat_test` is True, "
-                             "`test` must be specified.")
+            raise ValueError(
+                "If `perform_stat_test` is True, `test` must be specified."
+            )
 
-        if self.test not in IMPLEMENTED_TESTS and \
-                not isinstance(self.test, StatTest):
-            raise ValueError("test value should be a StatTest instance "
-                             "or one of the following strings: {}."
-                             .format(', '.join(IMPLEMENTED_TESTS)))
+        if (
+            self.test not in IMPLEMENTED_TESTS
+            and not isinstance(self.test, StatTest)
+        ):
+            raise ValueError(  # pragma: no cover
+                "test value should be a StatTest instance "
+                "or one of the following strings: {}."
+                .format(', '.join(IMPLEMENTED_TESTS))
+            )
 
     def _check_pvalues_no_perform(self, pvalues):
-        if pvalues is None:
-            raise ValueError("If `perform_stat_test` is False, "
-                             "custom `pvalues` must be specified.")
+        if pvalues is None:  # pragma: no cover
+            raise ValueError(
+                "If `perform_stat_test` is False, "
+                "custom `pvalues` must be specified."
+            )
         check_pvalues(pvalues)
-        if len(pvalues) != len(self.pairs):
-            raise ValueError("`pvalues` should be of the same length as "
-                             "`pairs`.")
+        if len(pvalues) != len(self.pairs):  # pragma: no cover
+            raise ValueError(
+                "`pvalues` should be of the same length as `pairs`."
+            )
 
     def _check_test_no_perform(self):
-        if self.test is not None:
-            raise ValueError("If `perform_stat_test` is False, "
-                             "`test` must be None.")
+        if self.test is not None:  # pragma: no cover
+            raise ValueError(
+                "If `perform_stat_test` is False, `test` must be None."
+            )
 
     def _check_correct_number_custom_annotations(self, text_annot_custom):
-        if text_annot_custom is None:
+        if text_annot_custom is None:  # pragma: no cover
             return
 
-        if len(text_annot_custom) != len(self._struct_pairs):
+        if len(text_annot_custom) != len(self._struct_pairs):  # pragma: no branch
             raise ValueError(
-                "`text_annot_custom` should be of same length as `pairs`.")
+                "`text_annot_custom` should be of same length as `pairs`."
+            )
 
     def _apply_comparisons_correction(self, annotations):
         if self.comparisons_correction is None:
             return
-        else:
-            self.comparisons_correction.apply(
-                [annotation.data for annotation in annotations])
+        self.comparisons_correction.apply([annotation.data for annotation in annotations])
 
     def _get_stat_result_from_test(self, group_struct1, group_struct2,
                                    num_comparisons,
@@ -681,7 +688,7 @@ class Annotator:
             return
 
         if self.show_test_name and self.pvalue_format.text_format != "star":
-            if self.test:
+            if self.test:  # pragma: no branch
                 self.test_short_name = (self.test
                                         if isinstance(self.test, str)
                                         else self.test.short_name)
@@ -715,11 +722,11 @@ class Annotator:
                 value_coord_max = {'v': 'ymax', 'h': 'xmax'}[self.orient]
                 value_top_annot = getattr(bbox_ax, value_coord_max)
 
-            except RuntimeError:
+            except RuntimeError:  # pragma: no cover
                 got_mpl_error = True
 
         if self.use_fixed_offset or got_mpl_error:
-            if self._verbose >= 1:
+            if self._verbose >= 1:  # pragma: no branch
                 print("Warning: cannot get the text bounding box. Falling "
                       "back to a fixed y offset. Layout may be not "
                       "optimal.")
@@ -729,9 +736,13 @@ class Annotator:
 
             direction = {'h': -1, 'v': 1}[self.orient]
             x, y = [0, fontsize_points + self.text_offset][::direction]
-            offset_trans = mtransforms.offset_copy(trans=self.ax.transAxes,
-                                                   fig=self.fig,
-                                                   units='points', x=x, y=y)
+            offset_trans = mtransforms.offset_copy(
+                trans=self.ax.transAxes,
+                fig=self.fig,
+                units='points',
+                x=x,
+                y=y,
+            )
 
             value_top_display = offset_trans.transform(
                 (value + self.line_height, value + self.line_height))
@@ -801,12 +812,13 @@ class Annotator:
 
     def _get_xy_params(self, group_coord_1, group_coord_2, line_x: np.ndarray,
                        line_y: np.ndarray):
-        if self.orient == 'h':
-            return self._get_xy_params_horizontal(group_coord_1, group_coord_2,
-                                                  line_x)
-
-        return self._get_xy_params_vertical(group_coord_1, group_coord_2,
-                                            line_y)
+        if self.is_vertical:
+            return self._get_xy_params_vertical(
+                group_coord_1, group_coord_2, line_y
+            )
+        return self._get_xy_params_horizontal(
+            group_coord_1, group_coord_2, line_x
+        )
 
     def _maybe_warn_about_configuration(self):
         if self._should_warn_about_configuration:

@@ -39,6 +39,10 @@ class Test(unittest.TestCase):
             **plotting)
         self.pvalues = [0.03, 0.04, 0.9]
 
+    def tearDown(self) -> None:
+        sns.mpl.pyplot.clf()
+        return super().tearDown()
+
     def test_format_simple(self):
         self.annotator.configure(pvalue_format={"text_format": "simple"})
         annotations = self.annotator._get_results("auto", pvalues=self.pvalues)

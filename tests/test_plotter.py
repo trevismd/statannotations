@@ -1,8 +1,9 @@
 import unittest
 import pandas as pd
 
-from statannotations._Plotter import _SeabornPlotter, IMPLEMENTED_PLOTTERS
 import seaborn as sns
+
+from statannotations._Plotter import _SeabornPlotter, IMPLEMENTED_PLOTTERS
 
 
 class TestPlotter(unittest.TestCase):
@@ -37,6 +38,10 @@ class TestPlotter(unittest.TestCase):
         self.pairs = [(("a", "blue"), ("a", "red")),
                       (("b", "blue"), ("b", "red")),
                       (("a", "blue"), ("b", "blue"))]
+
+    def tearDown(self) -> None:
+        sns.mpl.pyplot.clf()
+        return super().tearDown()
 
     def test_seaborn_plots(self):
         for plotter in IMPLEMENTED_PLOTTERS["seaborn"]:
