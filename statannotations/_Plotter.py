@@ -212,7 +212,7 @@ class _SeabornPlotter(_Plotter):
         if self.plot == 'violinplot' and self.plotter.has_violin_support:
             return self.plotter._populate_value_maxes_violin(value_maxes, data_to_ax)
 
-        for child in (*self.ax.get_children(), *self.ax.collections):
+        for child in self.ax.get_children():
             group_name, value_pos = self._get_value_pos(child, data_to_ax)
             if value_pos is None or group_name is None:
                 continue
@@ -253,8 +253,7 @@ class _SeabornPlotter(_Plotter):
             return None, None
 
         value_max = offsets[:, value_coord].max()
-        x_coords = offsets[:, group_coord]
-        group_pos = float(np.round(np.mean(x_coords), 1))
+        group_pos = float(np.round(np.mean(offsets[:, group_coord]), 1))
 
         # Set strict=True to skip the legend artists
         group_name = self.groups_positions.find_group_at_pos(

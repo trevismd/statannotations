@@ -91,6 +91,10 @@ class TestAnnotator(unittest.TestCase):
             "order": ["a", "b"],
             "hue_order": ['b', 'a']}
 
+    def tearDown(self) -> None:
+        sns.mpl.pyplot.clf()
+        return super().tearDown()
+
     def test_init_simple(self):
         self.annot = Annotator(self.ax, [(0, 1)], data=self.data)
 
