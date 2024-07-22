@@ -1,6 +1,6 @@
 import itertools
 from bisect import bisect_left
-from typing import List, Tuple, Union
+from typing import List, Union
 
 import numpy as np
 import pandas as pd

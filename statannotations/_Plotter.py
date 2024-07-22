@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING
 
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import lines
-from matplotlib.collections import PathCollection
+from matplotlib.collections import PathCollection, PolyCollection
 from matplotlib.patches import Rectangle
 
 from statannotations._GroupsPositions import _GroupsPositions
@@ -16,6 +17,7 @@ from .compat import get_plotter
 if TYPE_CHECKING:
     from .compat import TupleGroup, Struct
 
+logger = logging.getLogger(__name__)
 
 IMPLEMENTED_PLOTTERS = {
     'seaborn': ['barplot', 'boxplot', 'stripplot', 'swarmplot', 'violinplot']
@@ -38,6 +40,13 @@ class _Plotter:
         self._struct_pairs = None
         self.verbose = verbose
         self.orient = plot_params.get('orient', 'v')
+        if self.orient in ('y', 'h'):
+            self.orient = 'h'
+        elif self.orient in ('x', 'v'):
+            self.orient = 'v'
+        else:
+            logger.debug(f"Fallback to 'v', `orient` should be one of 'h' or 'v', got: {self.orient}")
+            self.orient = 'v'
 
     def get_transform_func(self, kind: str):
         """
@@ -123,6 +132,7 @@ class _SeabornPlotter(_Plotter):
         self.reordering = None
         self.value_maxes = self._generate_value_maxes()
 
+
         self.structs = self._get_structs()
         self.pairs = self.plotter.parse_pairs(pairs, self.structs, formatter=plot_params.get('formatter'))
         self._struct_pairs = self._get_group_struct_pairs()
@@ -202,9 +212,9 @@ class _SeabornPlotter(_Plotter):
         if self.plot == 'violinplot' and self.plotter.has_violin_support:
             return self.plotter._populate_value_maxes_violin(value_maxes, data_to_ax)
 
-        for child in self.ax.get_children():
+        for child in (*self.ax.get_children(), *self.ax.collections):
             group_name, value_pos = self._get_value_pos(child, data_to_ax)
-            if value_pos is None:
+            if value_pos is None or group_name is None:
                 continue
             if value_pos > value_maxes[group_name]:
                 value_maxes[group_name] = value_pos
@@ -212,30 +222,45 @@ class _SeabornPlotter(_Plotter):
         return value_maxes
 
     def _get_value_pos(self, child, data_to_ax):
-        if (type(child) == PathCollection
-                and len(child.properties()['offsets'])):
+        if (
+            isinstance(child, PathCollection)
+            and len(child.properties()['offsets'])
+        ):
             return self._get_value_pos_for_path_collection(
                 child, data_to_ax)
 
-        elif type(child) in (lines.Line2D, Rectangle):
+        elif isinstance(child, PolyCollection):
+            # Should be for violinplot body but not working
+            return None, None
+
+        elif isinstance(child, (lines.Line2D, Rectangle)):
             return self._get_value_pos_for_line2d_or_rectangle(
                 child, data_to_ax)
 
         return None, None
 
-    def _get_value_pos_for_path_collection(self, child, data_to_ax):
+    def _get_value_pos_for_path_collection(self, child: PathCollection, data_to_ax):
         group_coord = {'v': 0, 'h': 1}[self.orient]
         value_coord = (group_coord + 1) % 2
 
         direction = {'v': 1, 'h': -1}[self.orient]
 
-        value_max = child.properties()['offsets'][:, value_coord].max()
-        group_pos = float(np.round(np.nanmean(
-            child.properties()['offsets'][:, group_coord]), 1))
+        offsets = child.get_offsets()
+        # remove nans
+        offsets = offsets[np.all(np.isfinite(offsets), axis=1), :]
+        if len(offsets) == 0:
+            logger.debug("skip the empty or all-NaNs PathCollection")
+            return None, None
 
+        value_max = offsets[:, value_coord].max()
+        x_coords = offsets[:, group_coord]
+        group_pos = float(np.round(np.mean(x_coords), 1))
+
+        # Set strict=True to skip the legend artists
         group_name = self.groups_positions.find_group_at_pos(
             group_pos,
             verbose=self.verbose,
+            strict=True,
         )
 
         value_pos = data_to_ax.transform((0, value_max)[::direction])
@@ -253,7 +278,8 @@ class _SeabornPlotter(_Plotter):
         rect_width = rect_max - rect_min
         rect_center = (rect_max + rect_min) / 2
 
-        if self.groups_positions.compatible_width(rect_width):
+        if not self.groups_positions.compatible_width(rect_width):
+            logger.debug(f"rectangle width is larger than the typical group artist: {rect_width}")
             return None, None
 
         group_name = self.groups_positions.find_group_at_pos(
