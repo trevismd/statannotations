@@ -227,7 +227,6 @@ def _get_categorical_plotter(
 class Wrapper:
     """Compatibility wrapper for seaborn.categorical._CategoricalPlotter."""
 
-    plot_kwargs: dict[str, Any]
     width: float
     gap: float
     dodge: bool
@@ -251,8 +250,6 @@ class Wrapper:
         self.width = kwargs.get("width", 0.8)
         self.native_group_offsets = None
         self.is_redundant_hue = is_redundant_hue
-
-        self.plot_kwargs = {**kwargs, "dodge": True}
 
     @property
     def has_violin_support(self) -> bool:
@@ -660,6 +657,7 @@ class CategoricalPlotterWrapper_v13(Wrapper):
     """Compatibility wrapper for seaborn v11."""
 
     _plotter: _CategoricalPlotter
+    kde_kwargs: dict[str, Any]
 
     def __init__(
         self,
@@ -696,6 +694,14 @@ class CategoricalPlotterWrapper_v13(Wrapper):
         # Native scaling of the group variable
         if native_scale:
             self.native_group_offsets = self._plotter.plot_data[self.axis]
+
+        bw_method = kwargs.get("bw_method", kwargs.get("bw", "scott"))
+        self.kde_kwargs = dict(
+            cut=kwargs.get("cut", 2),
+            gridsize=kwargs.get("gridsize", 100),
+            bw_adjust=kwargs.get("bw_adjust", 1),
+            bw_method=bw_method,
+        )
 
     @property
     def has_hue(self) -> bool:
@@ -832,17 +838,8 @@ class CategoricalPlotterWrapper_v13(Wrapper):
 
         The keys should follow the tuples of `get_group_names_and_labels`.
         """
-        bw_method = self.plot_kwargs.get(
-            "bw_method", self.plot_kwargs.get("bw", "scott")
-        )
-        kde_kws = dict(
-            cut=self.plot_kwargs.pop("cut", 2),
-            gridsize=self.plot_kwargs.pop("gridsize", 100),
-            bw_adjust=self.plot_kwargs.pop("bw_adjust", 1),
-            bw_method=bw_method,
-        )
 
-        kde = sns._stats.density.KDE(**kde_kws)
+        kde = sns._stats.density.KDE(**self.kde_kwargs)
 
         iter_vars = [self.axis]
         if self.has_hue:

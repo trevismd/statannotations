@@ -30,6 +30,10 @@ class Test(unittest.TestCase):
         }
         self.df.y = self.df.y.astype(float)
 
+    def tearDown(self) -> None:
+        sns.mpl.pyplot.clf()
+        return super().tearDown()
+
     def test_dodge_false_raises(self):
         ax = sns.barplot(dodge=False, **self.plotting)
         with self.assertRaisesRegex(ValueError, "dodge"):
