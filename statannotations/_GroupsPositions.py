@@ -54,7 +54,7 @@ class _GroupsPositions:
 
         self._group_names = group_names
         self._hue_names = hue_names
-        self.use_hue = len(hue_names) == 0
+        self.use_hue = len(hue_names) > 0
 
         # Compute the coordinates of the groups (without hue) and the width
         self.group_offsets, self.width = self._set_group_offsets(
@@ -115,7 +115,13 @@ class _GroupsPositions:
 
         return data, artist_width
 
-    def find_group_at_pos(self, pos: float, *, verbose: bool = False) -> TupleGroup | None:
+    def find_group_at_pos(
+        self,
+        pos: float,
+        *,
+        verbose: bool = False,
+        strict: bool = False,
+    ) -> TupleGroup | None:
         positions = self._data['pos']
         if len(positions) == 0:
             return None
@@ -124,13 +130,15 @@ class _GroupsPositions:
         found_pos = positions.loc[index]
 
         if verbose and abs(found_pos - pos) > self.POSITION_TOLERANCE:
+            if strict:
+                return None
             # The requested position is not an artist position
             msg = (
                 'Invalid x-position found. Are the same parameters passed to '
                 'seaborn and statannotations calls? Or are there few data points? '
                 f'The closest group position to {pos} is {found_pos}'
             )
-            warnings.warn(msg)
+            warnings.warn(msg, UserWarning, stacklevel=2)
         return self._data.loc[index, 'group']
 
     def get_group_axis_position(self, group: TupleGroup) -> float:
