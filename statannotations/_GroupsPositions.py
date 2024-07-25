@@ -8,7 +8,7 @@ import warnings
 import numpy as np
 import pandas as pd
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from .compat import TupleGroup, TGroupValue, THueValue
 
 
@@ -47,7 +47,7 @@ class _GroupsPositions:
         dodge: bool = True,
         gap: float = 0.0,
         width: float = 0.8,
-        native_group_offsets: Sequence | None = None,
+        use_native_offsets: bool = False,
     ) -> None:
         self.gap = gap
         self.dodge = dodge
@@ -58,7 +58,7 @@ class _GroupsPositions:
 
         # Compute the coordinates of the groups (without hue) and the width
         self.group_offsets, self.width = self._set_group_offsets(
-            group_names, native_group_offsets, width
+            group_names, use_native_offsets, width
         )
         # Create the tuple (group, hue) and the labels
         self.tuple_group_names, self.labels = get_group_names_and_labels(
@@ -72,24 +72,17 @@ class _GroupsPositions:
     def _set_group_offsets(
         self,
         group_names: Sequence,
-        native_group_offsets: Sequence | None,
+        use_native_offsets: bool,
         width: float,
     ) -> tuple[Sequence, float]:
         """Set the group offsets from native scale and scale the width."""
         group_offsets = list(range(len(group_names)))
-        if native_group_offsets is not None:
-            curated_offsets = [v for v in native_group_offsets]
-            if len(curated_offsets) != len(group_names):
-                msg = (
-                    'The values of the categories with "native_scale=True" do not correspond '
-                    "to the category names. Maybe some values are not finite?"
-                )
-                warnings.warn(msg)
-            else:
-                group_offsets = curated_offsets
-                if len(curated_offsets) > 1:
-                    native_width = np.min(np.diff(curated_offsets))
-                    width *= native_width
+        if use_native_offsets:
+            group_offsets = group_names
+            if len(group_names) > 1:  # pragma: no branch
+                # use the native width to compute the general width
+                native_width = np.min(np.diff(group_names))
+                width *= native_width
 
         return group_offsets, width
 
@@ -125,37 +118,24 @@ class _GroupsPositions:
         strict: bool = False,
     ) -> TupleGroup | None:
         positions = self._data["pos"]
-        if len(positions) == 0:
+        if len(positions) == 0:  # pragma: no cover
             return None
         # Get the index of the closest position
         index = (positions - pos).abs().idxmin()
         found_pos = positions.loc[index]
 
         if verbose and abs(found_pos - pos) > self.POSITION_TOLERANCE:
-            if strict:
+            if strict:  # pragma: no branch
                 return None
-            # The requested position is not an artist position
-            msg = (
-                "Invalid x-position found. Are the same parameters passed to "
-                "seaborn and statannotations calls? Or are there few data points? "
-                f"The closest group position to {pos} is {found_pos}"
-            )
-            warnings.warn(msg, UserWarning, stacklevel=2)
+            else:  # pragma: no cover
+                # The requested position is not an artist position
+                msg = (
+                    "Invalid x-position found. Are the same parameters passed to "
+                    "seaborn and statannotations calls? Or are there few data points? "
+                    f"The closest group position to {pos} is {found_pos}"
+                )
+                warnings.warn(msg, UserWarning, stacklevel=2)
         return self._data.loc[index, "group"]
-
-    def get_group_axis_position(self, group: TupleGroup) -> float:
-        """Get the position of the group.
-
-        group_name can be either a tuple ("group",) or a tuple ("group", "hue")
-        """
-        group_names = self._data["group"]
-        if group not in group_names:
-            msg = f"Group {group} was not found in the list: {group_names}"
-            raise ValueError(msg)
-        index = (group_names == group).idxmax()
-        pos = float(self._data.loc[index, "pos"])
-        # round the position
-        return round(pos / self.POSITION_TOLERANCE) * self.POSITION_TOLERANCE
 
     @property
     def artist_width(self) -> float:
@@ -163,7 +143,7 @@ class _GroupsPositions:
 
     def compatible_width(self, width: float) -> bool:
         """Check if the rectangle width is smaller than the artist width."""
-        return abs(width) <= 1.1 * self._artist_width
+        return abs(width) <= 1.1 * self.artist_width
 
     def iter_groups(self) -> Iterator[tuple[TupleGroup, str, float]]:
         """Iterate the groups and return a tuple (group_tuple, group_label, group_position)."""

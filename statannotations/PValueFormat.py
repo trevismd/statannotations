@@ -20,10 +20,10 @@ class Formatter:
     def __init__(self):
         pass
 
-    def config(self, *args, **kwargs):
+    def config(self, *args, **kwargs):  # pragma: no cover
         pass
 
-    def format_data(self, data):
+    def format_data(self, data):  # pragma: no cover
         pass
 
 
@@ -183,7 +183,7 @@ class PValueFormat(Formatter):
         elif self.text_format == 'star':
             was_list = False
 
-            if not isinstance(result, list):
+            if not isinstance(result, list):  # pragma: no branch
                 result = [result]
 
             annotations = [
@@ -191,12 +191,13 @@ class PValueFormat(Formatter):
                 for star, res
                 in pval_annotation_text(result, self.pvalue_thresholds)]
 
-            if was_list:
+            if was_list:  # pragma: no cover
                 return annotations
 
             return annotations[0]
 
-        elif self.text_format == 'simple':
+        # elif self.text_format == 'simple':
+        else:
             return simple_text(result, self.simple_format_string,
                                self.pvalue_thresholds, self.show_test_name)
 

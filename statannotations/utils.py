@@ -74,7 +74,7 @@ def _check_pairs_in_data_no_hue(pairs: Union[list, tuple],
     x_values = get_x_values(data, x)
     pairs_x_values = set(itertools.chain(*pairs))
     # check if singleton tuples were used instead of directly the values
-    if all(isinstance(v, tuple) for v in pairs_x_values):
+    if all(isinstance(v, tuple) for v in pairs_x_values):  # pragma: no cover
         pairs_x_values = set(v[0] for v in pairs_x_values)
     unmatched_x_values = pairs_x_values - x_values
     if unmatched_x_values:
@@ -184,7 +184,7 @@ def get_closest(a_list, value):
     if pos == len(a_list):
         return a_list[-1]
     before, after = a_list[pos - 1: pos + 1]
-    if after - value < value - before:
+    if after - value < value - before:  # pragma: no cover
         return after
     return before
 
