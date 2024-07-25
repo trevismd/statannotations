@@ -56,6 +56,14 @@ else:
     _CategoricalPlotter = sns.categorical._CategoricalPlotter
 
 
+table_convert_orient_seaborn: dict[str, str] = {
+    "v": "v" if sns_version < (0, 13, 0) else "x",
+    "x": "v" if sns_version < (0, 13, 0) else "x",
+    "h": "h" if sns_version < (0, 13, 0) else "y",
+    "y": "h" if sns_version < (0, 13, 0) else "y",
+}
+
+
 def fix_and_warn(dodge, hue, plot):
     if dodge is False and hue is not None:
         raise ValueError("`dodge` cannot be False in statannotations.")
@@ -84,7 +92,7 @@ def _get_categorical_plotter(
     kwargs = {
         "data": data,
         "order": order,
-        "orient": plot_params.get("orient"),
+        "orient": table_convert_orient_seaborn[plot_params.get("orient", "v")],
         "color": None,
     }
     variables = {"x": x, "y": y, "hue": hue}
@@ -231,6 +239,7 @@ class Wrapper:
     gap: float
     dodge: bool
     is_redundant_hue: bool
+    formatter: Callable | None
     native_group_offsets: Sequence | None
 
     def __init__(
@@ -250,6 +259,7 @@ class Wrapper:
         self.width = kwargs.get("width", 0.8)
         self.native_group_offsets = None
         self.is_redundant_hue = is_redundant_hue
+        self.formatter = None
 
     @property
     def has_violin_support(self) -> bool:
@@ -279,15 +289,17 @@ class Wrapper:
         self,
         pairs: list[tuple],
         structs: list[Struct],
-        *,
-        formatter: Callable | None = None,
     ) -> list[tuple[TupleGroup, TupleGroup]]:
         struct_groups = [struct["group"] for struct in structs]
         ret: list[tuple[TupleGroup, TupleGroup]] = []
 
         def format_group(value) -> TupleGroup:
             """Format the group (but not the optional hue)."""
-            return value if isinstance(value, tuple) else (value,)
+            tvalue = value if isinstance(value, tuple) else (value,)
+            if not callable(self.formatter):
+                return tvalue
+            group = tvalue[0]
+            return tuple([self.formatter(group), *tvalue[1:]])
 
         for pair in pairs:
             if not isinstance(pair, Sequence) or len(pair) != 2:
@@ -338,6 +350,7 @@ class CategoricalPlotterWrapper_v11(Wrapper):
         **plot_params,
     ) -> None:
         super().__init__(plot_type, hue=hue, **plot_params)
+        self._cat_axis = {"v": "x", "h": "y"}[plot_params.get("orient", "v")]
 
         self._plotter = _get_categorical_plotter(
             plot_type,
@@ -348,6 +361,10 @@ class CategoricalPlotterWrapper_v11(Wrapper):
             order=order,
             **plot_params,
         )
+
+    @property
+    def axis(self) -> str:
+        return self._cat_axis
 
     @property
     def has_hue(self) -> bool:
@@ -424,7 +441,10 @@ class CategoricalPlotterWrapper_v11(Wrapper):
                         msg = f"key {key} was not found in the dict: {dict_keys}"
                         warnings.warn(msg)
                         continue
-                    value_maxes[key] = data_to_ax.transform((0, value_pos))[1]
+                    if self.axis == "x":
+                        value_maxes[key] = data_to_ax.transform((0, value_pos))[1]
+                    else:
+                        value_maxes[key] = data_to_ax.transform((value_pos, 0))[0]
             else:
                 value_pos = max(self._plotter.support[group_idx])
                 key = (group_name,)
@@ -432,7 +452,10 @@ class CategoricalPlotterWrapper_v11(Wrapper):
                     msg = f"key {key} was not found in the dict: {dict_keys}"
                     warnings.warn(msg)
                     continue
-                value_maxes[key] = data_to_ax.transform((0, value_pos))[1]
+                if self.axis == "x":
+                    value_maxes[key] = data_to_ax.transform((0, value_pos))[1]
+                else:
+                    value_maxes[key] = data_to_ax.transform((value_pos, 0))[0]
         return value_maxes
 
 
@@ -454,6 +477,7 @@ class CategoricalPlotterWrapper_v12(Wrapper):
     ) -> None:
         super().__init__(plot_type, hue=hue, **plot_params)
         self._group_names = None
+        self._cat_axis = {"v": "x", "h": "y"}[plot_params.get("orient", "v")]
 
         self._plotter = _get_categorical_plotter(
             plot_type,
@@ -475,6 +499,7 @@ class CategoricalPlotterWrapper_v12(Wrapper):
             if formatter is not None:
                 msg = "`formatter` is not supported with seaborn==0.12, update to seaborn>=0.13"
                 raise ValueError(msg)
+
             self._order_variable(
                 order=order, native_scale=native_scale, formatter=formatter
             )
@@ -482,6 +507,15 @@ class CategoricalPlotterWrapper_v12(Wrapper):
             # Native scaling of the group variable
             if native_scale:
                 self.native_group_offsets = self._plotter.plot_data[self.axis]
+
+    @property
+    def axis(self) -> str:
+        if not hasattr(self._plotter, "cat_axis"):
+            return self._cat_axis
+
+        else:
+            # _CategoricalPlotterNew
+            return self._plotter.cat_axis
 
     @property
     def has_hue(self) -> bool:
@@ -504,7 +538,7 @@ class CategoricalPlotterWrapper_v12(Wrapper):
 
         else:
             # _CategoricalPlotterNew
-            group_names = self._plotter.var_levels[self._plotter.cat_axis]
+            group_names = self._plotter.var_levels[self.axis]
             if isinstance(group_names, pd.Index):
                 return group_names.tolist()
             return group_names
@@ -533,16 +567,18 @@ class CategoricalPlotterWrapper_v12(Wrapper):
         native_scale: bool = False,
         formatter: Callable | None = None,
     ) -> None:
-        # Do not order if not categorical and native scale
-        if (
-            self._plotter.var_types.get(self._plotter.cat_axis) != "categorical"
-            and native_scale
-        ):
+        # Do not order if not categorical
+        # because it transforms groups to strings
+        if self._plotter.var_types.get(self.axis) != "categorical":
             return
+
+        # def default_formatter(x):
+        #     return x
+        default_formatter = None
 
         # Order the group variable
         self._plotter.scale_categorical(
-            self._plotter.cat_axis, order=order, formatter=None
+            self.axis, order=order, formatter=default_formatter
         )
 
     def _get_group_data_from_plotter(
@@ -604,7 +640,7 @@ class CategoricalPlotterWrapper_v12(Wrapper):
         # the value variable is the one that is no the group axis
         tgroup = group_name if isinstance(group_name, tuple) else (group_name,)
         # 'x' if vertical or 'y' if horizontal
-        cat_var = self._plotter.cat_axis
+        cat_var = self.axis
         # opposite: 'y' if vertical or 'x' if horizontal
         value_var = {"x": "y", "y": "x"}[cat_var]
         group = tgroup[0]
@@ -613,6 +649,11 @@ class CategoricalPlotterWrapper_v12(Wrapper):
         if self.has_hue and len(tgroup) > 1:
             iter_vars.append("hue")
             hue = tgroup[1]
+        else:
+            # Bug, remove hue column full of None.
+            # Otherwise the whole dataframe is discarded with `dropna` when calling `iter_data`
+            if "hue" in self._plotter.plot_data.columns:
+                del self._plotter.plot_data["hue"]
 
         for sub_vars, sub_data in self._plotter.iter_data(iter_vars):
             if sub_vars[cat_var] != group:
@@ -623,6 +664,8 @@ class CategoricalPlotterWrapper_v12(Wrapper):
             # Found a matching group, return the data
             group_data = remove_null(sub_data[value_var])
             return group_data
+        msg = f"Cannot find group {group_name!r} for {iter_vars} in data."
+        raise ValueError(msg)
 
     def _populate_value_maxes_violin(
         self, value_maxes: dict[TupleGroup, float], data_to_ax
@@ -641,7 +684,10 @@ class CategoricalPlotterWrapper_v12(Wrapper):
                         msg = f"key {key} was not found in the dict: {dict_keys}"
                         warnings.warn(msg)
                         continue
-                    value_maxes[key] = data_to_ax.transform((0, value_pos))[1]
+                    if self.axis == "x":
+                        value_maxes[key] = data_to_ax.transform((0, value_pos))[1]
+                    else:
+                        value_maxes[key] = data_to_ax.transform((value_pos, 0))[0]
             else:
                 value_pos = max(self._plotter.support[group_idx])
                 key = (group_name,)
@@ -649,7 +695,10 @@ class CategoricalPlotterWrapper_v12(Wrapper):
                     msg = f"key {key} was not found in the dict: {dict_keys}"
                     warnings.warn(msg)
                     continue
-                value_maxes[key] = data_to_ax.transform((0, value_pos))[1]
+                if self.axis == "x":
+                    value_maxes[key] = data_to_ax.transform((0, value_pos))[1]
+                else:
+                    value_maxes[key] = data_to_ax.transform((value_pos, 0))[0]
         return value_maxes
 
 
@@ -678,22 +727,21 @@ class CategoricalPlotterWrapper_v13(Wrapper):
             "data": data,
             "variables": variables,
             "order": order,
-            "orient": plot_params.get("orient"),
+            "orient": table_convert_orient_seaborn[plot_params.get("orient", "v")],
             "color": None,
             "legend": plot_params.get("legend"),
         }
         self._plotter = _CategoricalPlotter(**kwargs)
 
-        # Order the group variables
+        # Order the group variables,
+        # !! will define self.native_scale and self.formatter
+        formatter = plot_params.get("formatter", None)
         native_scale = plot_params.get("native_scale", False)
-        formatter = plot_params.get("formatter")
         self._order_variable(
             order=order, native_scale=native_scale, formatter=formatter
         )
 
-        # Native scaling of the group variable
-        if native_scale:
-            self.native_group_offsets = self._plotter.plot_data[self.axis]
+        self.log_scale = plot_params.get("log_scale", False)
 
         bw_method = kwargs.get("bw_method", kwargs.get("bw", "scott"))
         self.kde_kwargs = dict(
@@ -719,6 +767,7 @@ class CategoricalPlotterWrapper_v13(Wrapper):
     @property
     def group_names(self) -> list:
         if self._group_names is not None:
+            ## This is not used
             return self._group_names
         return self._plotter.var_levels[self.axis]
 
@@ -728,35 +777,35 @@ class CategoricalPlotterWrapper_v13(Wrapper):
             return []
         return self._plotter.var_levels["hue"]
 
+    @property
+    def is_categorical(self) -> bool:
+        """Return True if the categorical axis is really a categorical variable."""
+        return self._plotter.var_types.get(self.axis) == "categorical"
+
     def _order_variable(
         self,
         *,
         order,
         native_scale: bool = False,
         formatter: Callable | None = None,
-        raw_groups: bool = False,
     ) -> None:
-        if raw_groups:
-            # Save the group names before formatting, because they are transformed to str
-            self._group_names = list(self._plotter.var_levels[self.axis])
+        """Order, scale and format the categorical variable."""
+        # Order only if categorical
+        if self.is_categorical:
+            # Order the group variable
+            self._plotter.scale_categorical(self.axis, order=order, formatter=formatter)
 
-        # Do not order if not categorical and native scale
-        if self._plotter.var_types.get(self.axis) != "categorical" and native_scale:
+            # cannot be native_scale
+            self.native_scale = False
+            self.formatter = formatter or str
             return
 
-        # Order the group variable
-        self._plotter.scale_categorical(self.axis, order=order, formatter=formatter)
-
-        if raw_groups:
-            # Reorder group names
-            formatter = formatter if callable(formatter) else str
-            ordered_group_names = list(self._plotter.var_levels[self.axis])
-            formatted_group_names = [formatter(v) for v in self._group_names]
-
-            # find permutation indices
-            indices = [ordered_group_names.index(val) for val in formatted_group_names]
-            # Reorder raw group names
-            self._group_names = [self._group_names[i] for i in indices]
+        # Compute offsets if native_scale
+        if native_scale:
+            self.native_group_offsets = self.group_names
+        self.native_scale = native_scale
+        # do not format non-categorical variables
+        self.formatter = lambda x: x
 
     def get_group_data(self, group_name: TupleGroup) -> pd.Series:
         """Get the data for the (group[, hue]) tuple.
@@ -785,23 +834,25 @@ class CategoricalPlotterWrapper_v13(Wrapper):
             # Found a matching group, return the data
             group_data = remove_null(sub_data[value_var])
             return group_data
+        msg = f"Cannot find group {group_name!r} for {iter_vars} in data."
+        raise ValueError(msg)
 
     def parse_pairs(
         self,
         pairs: list[tuple],
         structs: list[Struct],
-        *,
-        formatter: Callable | None = None,
     ) -> list[tuple[TupleGroup, TupleGroup]]:
+        """Parse input pairs to match formatted pairs."""
         struct_groups = [struct["group"] for struct in structs]
         ret: list[tuple[TupleGroup, TupleGroup]] = []
-        formatter = formatter if callable(formatter) else str
 
-        def format_group(value, formatter) -> TupleGroup:
+        def format_group(value) -> TupleGroup:
             """Format the group (but not the optional hue)."""
             tvalue = value if isinstance(value, tuple) else (value,)
+            if not callable(self.formatter):
+                return tvalue
             group = tvalue[0]
-            return tuple([formatter(group), *tvalue[1:]])
+            return tuple([self.formatter(group), *tvalue[1:]])
 
         for pair in pairs:
             if not isinstance(pair, Sequence) or len(pair) != 2:
@@ -809,7 +860,7 @@ class CategoricalPlotterWrapper_v13(Wrapper):
                 warnings.warn(msg)
                 continue
             # Format the groups
-            new_pair = tuple(format_group(v, formatter) for v in pair)
+            new_pair = tuple(format_group(v) for v in pair)
 
             # Check that the groups are valid group names
             valid_group = True
@@ -827,7 +878,10 @@ class CategoricalPlotterWrapper_v13(Wrapper):
             ret.append(new_pair)
 
         if len(ret) == 0:
-            msg = f"pairs are empty after parsing: original_pairs={pairs}"
+            msg = (
+                f"pairs are empty after parsing: original_pairs={pairs}\n"
+                f"not in group_list={struct_groups}"
+            )
             raise ValueError(msg)
         return ret
 
@@ -856,9 +910,14 @@ class CategoricalPlotterWrapper_v13(Wrapper):
                 warnings.warn(msg)
                 continue
             sub_data["weight"] = sub_data.get("weights", 1)
+            # TODO: transform if log_scale is True. Seaborn doesn't do it though
             stat_data = kde._transform(sub_data, value_var, [])
             support = stat_data[value_var]
-            value_maxes[key] = data_to_ax.transform((0, max(support)))[1]
+            value_max = max(support)
+            if self.axis == "x":
+                value_maxes[key] = data_to_ax.transform((0, value_max))[1]
+            else:
+                value_maxes[key] = data_to_ax.transform((value_max, 0))[0]
         return value_maxes
 
 

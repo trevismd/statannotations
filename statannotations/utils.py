@@ -73,11 +73,14 @@ def _check_pairs_in_data_no_hue(pairs: Union[list, tuple],
 
     x_values = get_x_values(data, x)
     pairs_x_values = set(itertools.chain(*pairs))
+    # check if singleton tuples were used instead of directly the values
+    if all(isinstance(v, tuple) for v in pairs_x_values):
+        pairs_x_values = set(v[0] for v in pairs_x_values)
     unmatched_x_values = pairs_x_values - x_values
     if unmatched_x_values:
-        raise ValueError(f"Missing x value(s) "
-                         f"`{render_collection(unmatched_x_values)}` in {x}"
-                         f" (specified in `pairs`) in data")
+        raise ValueError(f"Missing value(s) "
+                         f"{list(unmatched_x_values)} for {x}"
+                         f" (specified in `pairs`) in data.")
 
 
 def _check_pairs_in_data_with_hue(

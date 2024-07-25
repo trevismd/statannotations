@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -10,11 +10,19 @@ from matplotlib.collections import PathCollection, PolyCollection
 from matplotlib.patches import Rectangle
 
 from statannotations._GroupsPositions import _GroupsPositions
-from statannotations.utils import check_not_none, check_order_in_data, \
-    check_pairs_in_data, render_collection, check_is_in, check_redundant_hue
+from statannotations.utils import (
+    check_not_none,
+    check_order_in_data,
+    check_pairs_in_data,
+    render_collection,
+    check_is_in,
+    check_redundant_hue,
+)
 from .compat import get_plotter
 
 if TYPE_CHECKING:
+    from typing import Literal
+
     from .compat import TupleGroup, Struct
 
 logger = logging.getLogger(__name__)
@@ -24,29 +32,34 @@ IMPLEMENTED_PLOTTERS = {
 }
 
 class _Plotter:
+    orient: Literal['v', 'h']
+
     def __init__(self, ax, pairs, data=None, x=None, y=None, hue=None,
                  order=None, hue_order=None, verbose=False, **plot_params):
         self.ax = ax
         self._fig = plt.gcf()
         check_not_none('pairs', pairs)
-        group_coord = y if plot_params.get('orient') in ('h', 'y') else x
+
+        orient = plot_params.get('orient', 'v')
+        if orient in ('y', 'h'):
+            self.orient = 'h'
+        elif orient in ('x', 'v'):
+            self.orient = 'v'
+        else:
+            logger.debug(f"Fallback to 'v', `orient` should be one of 'h' or 'v', got: {orient}")
+            self.orient = 'v'
+
+        group_coord = y if self.orient == 'h' else x
         self.is_redundant_hue = check_redundant_hue(data, group_coord, hue, hue_order)
         if self.is_redundant_hue:
             hue = None
             hue_order = None
+
         check_order_in_data(data, group_coord, order)
         check_pairs_in_data(pairs, data, group_coord, hue, hue_order)
         self.pairs = pairs
         self._struct_pairs = None
         self.verbose = verbose
-        self.orient = plot_params.get('orient', 'v')
-        if self.orient in ('y', 'h'):
-            self.orient = 'h'
-        elif self.orient in ('x', 'v'):
-            self.orient = 'v'
-        else:
-            logger.debug(f"Fallback to 'v', `orient` should be one of 'h' or 'v', got: {self.orient}")
-            self.orient = 'v'
 
     def get_transform_func(self, kind: str):
         """
@@ -70,11 +83,12 @@ class _Plotter:
         if kind == 'pix_to_ax':
             return self.ax.transAxes.inverted()
 
-        transform = {'v': self.ax.get_xaxis_transform,
-                     'h': self.ax.get_yaxis_transform}[self.orient]
+        transform = {
+            'v': self.ax.get_xaxis_transform,
+            'h': self.ax.get_yaxis_transform,
+        }[self.orient]
 
-        data_to_ax = \
-            self.ax.transData + transform().inverted()
+        data_to_ax = self.ax.transData + transform().inverted()
         if kind == 'data_to_ax':
             return data_to_ax
 
@@ -105,6 +119,9 @@ class _SeabornPlotter(_Plotter):
         super().__init__(
             ax, pairs, data, x, y, hue, order, hue_order, verbose, **plot_params
         )
+        if self.is_redundant_hue:
+            hue = None
+            hue_order = None
 
         self.check_plot_is_implemented(plot)
         self.plot = plot
@@ -134,7 +151,7 @@ class _SeabornPlotter(_Plotter):
 
 
         self.structs = self._get_structs()
-        self.pairs = self.plotter.parse_pairs(pairs, self.structs, formatter=plot_params.get('formatter'))
+        self.pairs = self.plotter.parse_pairs(pairs, self.structs)
         self._struct_pairs = self._get_group_struct_pairs()
 
         self._value_stack_arr = np.array(
@@ -321,3 +338,9 @@ class _SeabornPlotter(_Plotter):
         if self.orient == 'v':
             return self.ax.get_ylim()
         return self.ax.get_xlim()
+
+    def set_value_lim(self, value) -> None:
+        if self.orient == 'v':
+            self.ax.set_ylim(value)
+        else:
+            self.ax.set_xlim(value)

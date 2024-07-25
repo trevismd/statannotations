@@ -26,7 +26,7 @@ def get_group_names_and_labels(
         tuple_group_names = []
         for group_name, hue_name in itertools.product(group_names, hue_names):
             tuple_group_names.append((group_name, hue_name))
-            labels.append(f'{group_name}_{hue_name}')
+            labels.append(f"{group_name}_{hue_name}")
 
     return tuple_group_names, labels
 
@@ -61,7 +61,9 @@ class _GroupsPositions:
             group_names, native_group_offsets, width
         )
         # Create the tuple (group, hue) and the labels
-        self.tuple_group_names, self.labels = get_group_names_and_labels(group_names, hue_names)
+        self.tuple_group_names, self.labels = get_group_names_and_labels(
+            group_names, hue_names
+        )
 
         # Create dataframe with the groups, labels and positions
         # this should be done last, when the other attributes are defined
@@ -80,7 +82,7 @@ class _GroupsPositions:
             if len(curated_offsets) != len(group_names):
                 msg = (
                     'The values of the categories with "native_scale=True" do not correspond '
-                    'to the category names. Maybe some values are not finite?'
+                    "to the category names. Maybe some values are not finite?"
                 )
                 warnings.warn(msg)
             else:
@@ -98,9 +100,9 @@ class _GroupsPositions:
         artist_width = float(self.width)
         data = pd.DataFrame(
             {
-                'group': self.tuple_group_names,
-                'label': self.labels,
-                'pos': positions,
+                "group": self.tuple_group_names,
+                "label": self.labels,
+                "pos": positions,
             },
         )
         if dodge and self.use_hue:
@@ -109,7 +111,7 @@ class _GroupsPositions:
             # evenly space range centered in zero (subtracting the mean)
             offset = artist_width * (np.arange(n_hues) - (n_hues - 1) / 2)
             tiled_offset = np.tile(offset, len(self._group_names))
-            data['pos'] += tiled_offset
+            data["pos"] += tiled_offset
         if gap and gap >= 0 and gap <= 1:
             artist_width *= 1 - gap
 
@@ -122,7 +124,7 @@ class _GroupsPositions:
         verbose: bool = False,
         strict: bool = False,
     ) -> TupleGroup | None:
-        positions = self._data['pos']
+        positions = self._data["pos"]
         if len(positions) == 0:
             return None
         # Get the index of the closest position
@@ -134,24 +136,24 @@ class _GroupsPositions:
                 return None
             # The requested position is not an artist position
             msg = (
-                'Invalid x-position found. Are the same parameters passed to '
-                'seaborn and statannotations calls? Or are there few data points? '
-                f'The closest group position to {pos} is {found_pos}'
+                "Invalid x-position found. Are the same parameters passed to "
+                "seaborn and statannotations calls? Or are there few data points? "
+                f"The closest group position to {pos} is {found_pos}"
             )
             warnings.warn(msg, UserWarning, stacklevel=2)
-        return self._data.loc[index, 'group']
+        return self._data.loc[index, "group"]
 
     def get_group_axis_position(self, group: TupleGroup) -> float:
         """Get the position of the group.
 
         group_name can be either a tuple ("group",) or a tuple ("group", "hue")
         """
-        group_names = self._data['group']
+        group_names = self._data["group"]
         if group not in group_names:
-            msg = f'Group {group} was not found in the list: {group_names}'
+            msg = f"Group {group} was not found in the list: {group_names}"
             raise ValueError(msg)
         index = (group_names == group).idxmax()
-        pos = float(self._data.loc[index, 'pos'])
+        pos = float(self._data.loc[index, "pos"])
         # round the position
         return round(pos / self.POSITION_TOLERANCE) * self.POSITION_TOLERANCE
 
@@ -165,4 +167,6 @@ class _GroupsPositions:
 
     def iter_groups(self) -> Iterator[tuple[TupleGroup, str, float]]:
         """Iterate the groups and return a tuple (group_tuple, group_label, group_position)."""
-        yield from self._data[['group', 'label', 'pos']].itertuples(index=False, name=None)
+        yield from self._data[["group", "label", "pos"]].itertuples(
+            index=False, name=None
+        )
