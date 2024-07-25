@@ -1,0 +1,147 @@
+# https://hatch.pypa.io/latest/config/environment/overview/
+# ---------------------------------------------------------
+[envs.default]
+description = "Development environment"
+installer = "uv pip install"
+
+# ---------------------------------------------------------
+[envs.pkg]
+description = "package information"
+[envs.pkg.scripts]
+show = [
+  "uv pip list --format=columns",
+  'python -c "import sys; print(sys.version); print(sys.executable)"',
+]
+
+
+# ---------------------------------------------------------
+[envs.lint]
+template = "lint"
+installer = "uv pip install"
+description = "lint and format"
+detached = true
+dependencies = ["pre-commit"]
+
+[envs.lint.scripts]
+run = "pre-commit run --all-files"
+
+
+# ---------------------------------------------------------
+[envs.docs]
+template = "docs"
+installer = "uv pip install"
+description = "build and check documentation"
+features = ["docs"]
+
+[envs.docs.scripts]
+build = "sphinx-build -W --keep-going -b html docs/source docs/build"
+doctest = "sphinx-build -W --keep-going -b doctest docs/source docs/build"
+linkcheck = "sphinx-build -W --keep-going -b linkcheck docs/source docs/build"
+all = ["build", "doctest", "linkcheck"]
+
+
+# ---------------------------------------------------------
+[envs.types]
+template = "types"
+installer = "uv pip install"
+description = "Run the type checker"
+dev-mode = false
+dependencies = ["mypy"]
+
+[envs.types.scripts]
+run = [
+  """
+  mypy --install-types --non-interactive --ignore-missing-imports \
+    --config-file={root}/pyproject.toml {args:statannotations tests}
+  """,
+]
+
+
+# ---------------------------------------------------------
+[envs.tests]
+template = "tests"
+installer = "uv pip install"
+description = "Run the tests suite"
+features = ["tests"]
+extra-dependencies = [
+    "matplotlib<3.9",
+    "seaborn=={matrix:seaborn_version}",
+]
+
+[[envs.tests.matrix]]
+# python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
+# seaborn_version = ["0.11", "0.12", "0.13"]
+python = ["3.8", "3.9", "3.10", "3.11"]
+seaborn_version = ["0.11"]
+
+[envs.tests.overrides]
+matrix.seaborn_version.extra-dependencies = [
+    "matplotlib<3.9",
+    "seaborn=={matrix:seaborn_version}",
+    { value = "pandas<2", if = ["0.11", "0.12"]},
+    { value = "numpy<2", if = ["0.11", "0.12"]},
+]
+
+[envs.tests.env-vars]
+COVERAGE_FILE = "report/.coverage.{matrix:python}-{matrix:seaborn_version}"
+COVERAGE_PROCESS_START = "pyproject.toml"
+_COVERAGE_SRC = "statannotations"
+
+[envs.tests.scripts]
+run-cov = [
+  """
+  pytest --cov=statannotations \
+    --cov-config=pyproject.toml --cov-context=test \
+    --cov-report=term-missing:skip-covered \
+    --cov-report html:report/html{matrix:python} \
+    --cov-report xml:report/coverage{matrix:python}.xml \
+    {args:-n auto --slow}
+  """,
+]
+run = "pytest {args:-n auto}"
+
+
+# ---------------------------------------------------------
+[envs.coverage]
+template = "coverage"
+installer = "uv pip install"
+description = "combine coverage files"
+detached = true
+dependencies = [
+  "coverage[toml]>=7.3",
+]
+env-vars = { COVERAGE_FILE = "report/.coverage" }
+
+[envs.coverage.scripts]
+run = [
+  "- coverage combine --rcfile=pyproject.toml report",
+  "coverage report {args:--skip-covered --show-missing}",
+  "coverage xml -o report/coverage.xml",
+  "coverage html -d report/html",
+]
+
+
+# ---------------------------------------------------------
+[envs.examples]
+template = "examples"
+installer = "uv pip install"
+description = "Run the examples"
+python = "3.11"
+extra-dependencies = [
+    "matplotlib<3.9",
+    "seaborn=={matrix:seaborn_version}",
+]
+
+[[envs.examples.matrix]]
+seaborn_version = ["0.11", "0.12", "0.13"]
+
+[envs.examples.overrides]
+matrix.seaborn_version.extra-dependencies = [
+    "matplotlib<3.9",
+    "seaborn=={matrix:seaborn_version}",
+    { value = "pandas<2", if = ["0.11", "0.12"]},
+    { value = "numpy<2", if = ["0.11", "0.12"]},
+]
+
+[envs.examples.scripts]
+run = "- python usage/test_script.py {args}"

@@ -1,0 +1,103 @@
+# https://peps.python.org/pep-0517/
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# https://peps.python.org/pep-0621/
+[project]
+name = "statannotations"
+description = "add statistical significance or custom annotations on seaborn plots. Based on statannot 0.2.3"
+readme = "README.md"
+license = {text = "MIT License"}
+requires-python = ">=3.7"
+maintainers = [
+    { name = "Florian Charlier", email = "trevis@cascliniques.be" },
+]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dynamic = ["version"]
+dependencies = [
+    "matplotlib>=2.2.2",
+    "numpy>=1.12.1",
+    "pandas>=0.23.0",
+    "scipy>=1.1.0",
+    "seaborn>=0.9.0",
+]
+
+[project.optional-dependencies]
+extra = ["statsmodels"]
+tests = [
+    "statannotations[extra]",
+    "pytest>=6",
+    "pytest-cov>=4.1",
+    "pytest-skip-slow",
+    "pytest-xdist",
+    "packaging",
+    # "coverage[toml]>=7.3",
+]
+docs = [
+    "sphinx",
+    "sphinx-rtd-theme",
+]
+dev = [
+    "ipython",
+]
+
+[project.urls]
+Homepage = "https://github.com/trevismd/statannotations"
+
+# https://hatch.pypa.io/latest/config/metadata/
+[tool.hatch.version]
+path = "statannotations/_version.py"
+
+[tool.hatch.build.targets.sdist]
+only-include = [
+    "/statannotations",
+    # "usage",
+    # "tests",
+    # "docs",
+]
+
+
+# https://docs.pytest.org/en/stable/reference/customize.html
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = ["tests"]
+addopts = "--import-mode=importlib"
+
+
+# https://coverage.readthedocs.io/en/latest/config.html
+[tool.coverage.report]
+exclude_also = [
+    "pragma: no.cover",
+    "if TYPE_CHECKING:",
+    "@overload",
+    "except ImportError",
+    "\\.\\.\\.",
+    "raise NotImplementedError()",
+    "if __name__ == .__main__.:",
+]
+show_missing = true
+skip_covered = false
+
+[tool.coverage.run]
+source = ["."]
+branch = true
+parallel = true
+# Cannot use, it results in 'no-data-collected'
+# relative_files = true
+
+[tool.coverage.paths]
+source = [
+  "statannotations",
+  "**/site-packages/statannotations",
+]
