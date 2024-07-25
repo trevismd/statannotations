@@ -162,8 +162,12 @@ class Annotator:
         return self
 
     @property
-    def orient(self):
+    def orient(self) -> str:
         return self._plotter.orient
+
+    @property
+    def is_vertical(self) -> bool:
+        return self._plotter.orient in ('v', 'x')
 
     @property
     def verbose(self):
@@ -219,30 +223,29 @@ class Annotator:
         self.validate_test_short_name()
 
         for annotation in self.annotations:
-            if self.hide_non_significant and isinstance(annotation.data, StatResult) \
-                    and not annotation.data.is_significant:
+            if (
+                self.hide_non_significant
+                and isinstance(annotation.data, StatResult)
+                and not annotation.data.is_significant
+            ):
                 continue
-            self._annotate_pair(annotation,
-                                ax_to_data=ax_to_data,
-                                ann_list=ann_list,
-                                orig_value_lim=orig_value_lim)
+            self._annotate_pair(
+                annotation,
+                ax_to_data=ax_to_data,
+                ann_list=ann_list,
+                orig_value_lim=orig_value_lim,
+            )
 
         # reset transformation
         y_stack_max = max(self._value_stack_arr[1, :])
         ax_to_data = self._plotter.get_transform_func('ax_to_data')
-        value_lims = (
-            ([(0, 0), (0, max(1.04 * y_stack_max, 1))]
-             if self.loc == 'inside'
-             else [(0, 0), (0, 1)])
-            if self.orient == 'v'
-            else
-            ([(0, 0), (max(1.04 * y_stack_max, 1), 0)]
-             if self.loc == 'inside'
-             else [(0, 0), (1, 0)])
-        )
-        set_lims = self.ax.set_ylim if self.orient == 'v' else self.ax.set_xlim
+
+        max_value = max(1.04 * y_stack_max, 1) if self.loc == 'inside' else 1
+        up_limit = (0, max_value) if self.is_vertical else (max_value, 0)
+        value_lims = [(0, 0), up_limit]
+
         transformed = ax_to_data.transform(value_lims)
-        set_lims(transformed[:, 1 if self.orient == 'v' else 0])
+        self._plotter.set_value_lim(transformed[:, 1 if self.is_vertical else 0])
 
         return self._get_output()
 
@@ -532,8 +535,11 @@ class Annotator:
         ax_line_value = [value, value + self.line_height,
                          value + self.line_height, value]
 
-        lists = ((ax_line_group, ax_line_value) if self.orient == 'v'
-                 else (ax_line_value, ax_line_group))
+        lists = (
+            (ax_line_group, ax_line_value)
+            if self.is_vertical
+            else (ax_line_value, ax_line_group)
+        )
 
         points = [ax_to_data.transform((x, y))
                   for x, y
@@ -554,10 +560,7 @@ class Annotator:
         if annotation.text is not None:
             ann_list.append(ann)
             plt.draw()
-            set_lim = {'v': 'set_ylim',
-                       'h': 'set_xlim'}[self.orient]
-
-            getattr(self.ax, set_lim)(orig_value_lim)
+            self._plotter.set_value_lim(orig_value_lim)
 
             value_top_annot = self._annotate_pair_text(ann, value)
         else:
@@ -729,9 +732,13 @@ class Annotator:
 
             direction = {'h': -1, 'v': 1}[self.orient]
             x, y = [0, fontsize_points + self.text_offset][::direction]
-            offset_trans = mtransforms.offset_copy(trans=self.ax.transAxes,
-                                                   fig=self.fig,
-                                                   units='points', x=x, y=y)
+            offset_trans = mtransforms.offset_copy(
+                trans=self.ax.transAxes,
+                fig=self.fig,
+                units='points',
+                x=x,
+                y=y,
+            )
 
             value_top_display = offset_trans.transform(
                 (value + self.line_height, value + self.line_height))
@@ -801,12 +808,13 @@ class Annotator:
 
     def _get_xy_params(self, group_coord_1, group_coord_2, line_x: np.ndarray,
                        line_y: np.ndarray):
-        if self.orient == 'h':
-            return self._get_xy_params_horizontal(group_coord_1, group_coord_2,
-                                                  line_x)
-
-        return self._get_xy_params_vertical(group_coord_1, group_coord_2,
-                                            line_y)
+        if self.is_vertical:
+            return self._get_xy_params_vertical(
+                group_coord_1, group_coord_2, line_y
+            )
+        return self._get_xy_params_horizontal(
+            group_coord_1, group_coord_2, line_x
+        )
 
     def _maybe_warn_about_configuration(self):
         if self._should_warn_about_configuration:
