@@ -10,5 +10,8 @@ statannot.egg-info/requires.txt
 statannot.egg-info/SOURCES.txt
 statannot.egg-info/top_level.txt
 
+usage/figures/*
+report/
+
 # IDE files
 .idea/
