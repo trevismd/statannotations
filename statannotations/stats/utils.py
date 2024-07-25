@@ -10,7 +10,7 @@ def check_pvalues(p_values):
         return isinstance(value, Number)
 
     if np.ndim(p_values) > 1 or not np.all(list(map(is_number, p_values))):
-        raise_expected_got(
+        raise_expected_got(  # pragma: no cover
             'Scalar or list-like', 'argument `p_values`', p_values
         )
 

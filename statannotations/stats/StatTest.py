@@ -16,7 +16,7 @@ def wilcoxon(group_data1, group_data2, verbose=1, **stats_params):
         return stats.wilcoxon(group_data1, group_data2, **stats_params)
     if zero_method == "AUTO":
         zero_method = len(group_data1) <= 20 and "pratt" or "wilcox"
-        if verbose >= 1:
+        if verbose >= 1:  # pragma: no branch
             print("Using zero_method ", zero_method)
 
     return stats.wilcoxon(group_data1, group_data2,

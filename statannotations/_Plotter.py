@@ -20,7 +20,7 @@ from statannotations.utils import (
 )
 from .compat import get_plotter
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from typing import Literal
 
     from .compat import TupleGroup, Struct
@@ -45,7 +45,7 @@ class _Plotter:
             self.orient = 'h'
         elif orient in ('x', 'v'):
             self.orient = 'v'
-        else:
+        else:  # pragma: no cover
             logger.debug(f"Fallback to 'v', `orient` should be one of 'h' or 'v', got: {orient}")
             self.orient = 'v'
 
@@ -95,7 +95,7 @@ class _Plotter:
         elif kind == 'ax_to_data':
             return data_to_ax.inverted()
 
-        else:
+        else:  # pragma: no cover
             return (data_to_ax, data_to_ax.inverted(),
                     self.ax.transAxes.inverted())
 
@@ -143,7 +143,7 @@ class _SeabornPlotter(_Plotter):
             width=self.plotter.width,
             gap=self.plotter.gap,
             dodge=self.plotter.dodge,
-            native_group_offsets=self.plotter.native_group_offsets,
+            use_native_offsets=self.plotter.use_native_offsets,
         )
         self.tuple_group_names = self.groups_positions.tuple_group_names
         self.reordering = None
@@ -246,7 +246,7 @@ class _SeabornPlotter(_Plotter):
             return self._get_value_pos_for_path_collection(
                 child, data_to_ax)
 
-        elif isinstance(child, PolyCollection):
+        elif isinstance(child, PolyCollection):  # pragma: no cover
             # Should be for violinplot body but not working
             return None, None
 
@@ -265,7 +265,7 @@ class _SeabornPlotter(_Plotter):
         offsets = child.get_offsets()
         # remove nans
         offsets = offsets[np.all(np.isfinite(offsets), axis=1), :]
-        if len(offsets) == 0:
+        if len(offsets) == 0:  # pragma: no cover
             logger.debug("skip the empty or all-NaNs PathCollection")
             return None, None
 

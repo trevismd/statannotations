@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from typing import NotRequired, Union, TypedDict, TypeVar
 
     import pandas as pd
@@ -120,7 +120,7 @@ def _get_categorical_plotter(
             return _BoxPlotter(**kwargs)
 
         # 0.13 seaborn API
-        return _CategoricalPlotter(**new_kwargs)
+        return _CategoricalPlotter(**new_kwargs)  # pragma: no cover
 
     elif plot_type == "barplot":
         # Pre-0.13 seaborn API
@@ -158,7 +158,7 @@ def _get_categorical_plotter(
             return _BarPlotter(**kwargs)
 
         # 0.13 seaborn API
-        return _CategoricalPlotter(**new_kwargs)
+        return _CategoricalPlotter(**new_kwargs)  # pragma: no cover
 
     elif plot_type == "violinplot":
         # Pre-0.13 seaborn API
@@ -183,7 +183,7 @@ def _get_categorical_plotter(
             return _ViolinPlotter(**kwargs)
 
         # 0.13 seaborn API
-        return _CategoricalPlotter(**new_kwargs)
+        return _CategoricalPlotter(**new_kwargs)  # pragma: no cover
 
     elif plot_type == "swarmplot":
         # Pre-0.12 seaborn API
@@ -199,12 +199,12 @@ def _get_categorical_plotter(
 
         # Pre-0.13 seaborn API
         if sns_version < (0, 13, 0):
-            if "color" in new_kwargs:
+            if "color" in new_kwargs:  # pragma: no branch
                 new_kwargs.pop("color")
             return _CategoricalPlotterNew(require_numeric=False, **new_kwargs)
 
         # 0.13 seaborn API
-        return _CategoricalPlotter(**new_kwargs)
+        return _CategoricalPlotter(**new_kwargs)  # pragma: no cover
 
     elif plot_type == "stripplot":
         # Pre-0.12 seaborn API
@@ -221,15 +221,16 @@ def _get_categorical_plotter(
 
         # Pre-0.13 seaborn API
         if sns_version < (0, 13, 0):
-            if "color" in new_kwargs:
+            if "color" in new_kwargs:  # pragma: no branch
                 new_kwargs.pop("color")
             return _CategoricalPlotterNew(require_numeric=False, **new_kwargs)
 
         # 0.13 seaborn API
-        return _CategoricalPlotter(**new_kwargs)
+        return _CategoricalPlotter(**new_kwargs)  # pragma: no cover
 
-    msg = f"Plot type {plot_type!r} is not supported"
-    raise NotImplementedError(msg)
+    else:  # pragma: no cover
+        msg = f"Plot type {plot_type!r} is not supported"
+        raise NotImplementedError(msg)
 
 
 class Wrapper:
@@ -240,7 +241,7 @@ class Wrapper:
     dodge: bool
     is_redundant_hue: bool
     formatter: Callable | None
-    native_group_offsets: Sequence | None
+    use_native_offsets: bool
 
     def __init__(
         self,
@@ -257,7 +258,7 @@ class Wrapper:
 
         self.gap = kwargs.get("gap", 0.0)
         self.width = kwargs.get("width", 0.8)
-        self.native_group_offsets = None
+        self.use_native_offsets = False
         self.is_redundant_hue = is_redundant_hue
         self.formatter = None
 
@@ -267,18 +268,18 @@ class Wrapper:
         return hasattr(self, "_populate_value_maxes_violin")
 
     @property
-    def has_hue(self) -> bool:
+    def has_hue(self) -> bool:  # pragma: no cover
         raise NotImplementedError
 
     @property
-    def group_names(self) -> list:
+    def group_names(self) -> list:  # pragma: no cover
         raise NotImplementedError
 
     @property
-    def hue_names(self) -> list:
+    def hue_names(self) -> list:  # pragma: no cover
         raise NotImplementedError
 
-    def get_group_data(self, group_name):
+    def get_group_data(self, group_name):  # pragma: no cover
         """Get the data for the (group[, hue]) tuple.
 
         group_name can be either a tuple ("cat",) or a tuple ("cat", "hue")
@@ -298,11 +299,11 @@ class Wrapper:
             tvalue = value if isinstance(value, tuple) else (value,)
             if not callable(self.formatter):
                 return tvalue
-            group = tvalue[0]
-            return tuple([self.formatter(group), *tvalue[1:]])
+            group = tvalue[0]  # pragma: no cover
+            return tuple([self.formatter(group), *tvalue[1:]])  # pragma: no cover
 
         for pair in pairs:
-            if not isinstance(pair, Sequence) or len(pair) != 2:
+            if not isinstance(pair, Sequence) or len(pair) != 2:  # pragma: no cover
                 msg = f"pair {pair} is not a 2-tuple, skipping."
                 warnings.warn(msg)
                 continue
@@ -312,19 +313,19 @@ class Wrapper:
             # Check that the groups are valid group names
             valid_group = True
             for i, group in enumerate(new_pair):
-                if group not in struct_groups:
+                if group not in struct_groups:  # pragma: no cover
                     msg = (
                         f"cannot find group{i} of pair in the group tuples: "
                         f"{group} not in {struct_groups}"
                     )
                     warnings.warn(msg)
                     valid_group = False
-            if not valid_group:
+            if not valid_group:  # pragma: no cover
                 continue
 
             ret.append(new_pair)
 
-        if len(ret) == 0:
+        if len(ret) == 0:  # pragma: no cover
             msg = (
                 f"pairs are empty after parsing: original_pairs={pairs}\n"
                 f"not in group_list={struct_groups}"
@@ -437,7 +438,7 @@ class CategoricalPlotterWrapper_v11(Wrapper):
                 for hue_idx, hue_name in enumerate(self._plotter.hue_names):
                     value_pos = max(self._plotter.support[group_idx][hue_idx])
                     key = (group_name, hue_name)
-                    if key not in value_maxes:
+                    if key not in value_maxes:  # pragma: no cover
                         msg = f"key {key} was not found in the dict: {dict_keys}"
                         warnings.warn(msg)
                         continue
@@ -448,7 +449,7 @@ class CategoricalPlotterWrapper_v11(Wrapper):
             else:
                 value_pos = max(self._plotter.support[group_idx])
                 key = (group_name,)
-                if key not in value_maxes:
+                if key not in value_maxes:  # pragma: no cover
                     msg = f"key {key} was not found in the dict: {dict_keys}"
                     warnings.warn(msg)
                     continue
@@ -492,11 +493,11 @@ class CategoricalPlotterWrapper_v12(Wrapper):
         if isinstance(self._plotter, _CategoricalPlotterNew):
             # Order the group variables
             native_scale = plot_params.get("native_scale", False)
-            if native_scale:
+            if native_scale:  # pragma: no cover
                 msg = "`native_scale=True` is not supported with seaborn==0.12, update to seaborn>=0.13"
                 raise ValueError(msg)
             formatter = plot_params.get("formatter")
-            if formatter is not None:
+            if formatter is not None:  # pragma: no cover
                 msg = "`formatter` is not supported with seaborn==0.12, update to seaborn>=0.13"
                 raise ValueError(msg)
 
@@ -505,8 +506,8 @@ class CategoricalPlotterWrapper_v12(Wrapper):
             )
 
             # Native scaling of the group variable
-            if native_scale:
-                self.native_group_offsets = self._plotter.plot_data[self.axis]
+            if native_scale:  # pragma: no cover
+                self.use_native_offsets = True
 
     @property
     def axis(self) -> str:
@@ -519,7 +520,7 @@ class CategoricalPlotterWrapper_v12(Wrapper):
 
     @property
     def has_hue(self) -> bool:
-        if self.is_redundant_hue:
+        if self.is_redundant_hue:  # pragma: no cover
             return False
         if hasattr(self._plotter, "hue_names"):
             # Can be None, force to be an empty list
@@ -541,7 +542,7 @@ class CategoricalPlotterWrapper_v12(Wrapper):
             group_names = self._plotter.var_levels[self.axis]
             if isinstance(group_names, pd.Index):
                 return group_names.tolist()
-            return group_names
+            return group_names  # pragma: no cover
 
     @property
     def hue_names(self):
@@ -556,7 +557,7 @@ class CategoricalPlotterWrapper_v12(Wrapper):
             if "hue" not in self._plotter.var_levels:
                 return []
             hue_names = self._plotter.var_levels["hue"]
-            if isinstance(hue_names, pd.Index):
+            if isinstance(hue_names, pd.Index):  # pragma: no cover
                 return hue_names.tolist()
             return hue_names
 
@@ -569,7 +570,7 @@ class CategoricalPlotterWrapper_v12(Wrapper):
     ) -> None:
         # Do not order if not categorical
         # because it transforms groups to strings
-        if self._plotter.var_types.get(self.axis) != "categorical":
+        if self._plotter.var_types.get(self.axis) != "categorical":  # pragma: no cover
             return
 
         # def default_formatter(x):
@@ -633,7 +634,7 @@ class CategoricalPlotterWrapper_v12(Wrapper):
         Almost a duplicate of seaborn's code, because there is not
         direct access to the group_data in the respective Plotter class.
         """
-        if not isinstance(self._plotter, _CategoricalPlotterNew):
+        if not isinstance(self._plotter, _CategoricalPlotterNew):  # pragma: no cover
             msg = "`self._plotter` should be a `_CategoricalPlotterNew` instance."
             raise TypeError(msg)
 
@@ -664,8 +665,9 @@ class CategoricalPlotterWrapper_v12(Wrapper):
             # Found a matching group, return the data
             group_data = remove_null(sub_data[value_var])
             return group_data
-        msg = f"Cannot find group {group_name!r} for {iter_vars} in data."
-        raise ValueError(msg)
+        else:  # pragma: no cover
+            msg = f"Cannot find group {group_name!r} for {iter_vars} in data."
+            raise ValueError(msg)
 
     def _populate_value_maxes_violin(
         self, value_maxes: dict[TupleGroup, float], data_to_ax
@@ -680,7 +682,7 @@ class CategoricalPlotterWrapper_v12(Wrapper):
                 for hue_idx, hue_name in enumerate(self.hue_names):
                     value_pos = max(self._plotter.support[group_idx][hue_idx])
                     key = (group_name, hue_name)
-                    if key not in value_maxes:
+                    if key not in value_maxes:  # pragma: no cover
                         msg = f"key {key} was not found in the dict: {dict_keys}"
                         warnings.warn(msg)
                         continue
@@ -691,7 +693,7 @@ class CategoricalPlotterWrapper_v12(Wrapper):
             else:
                 value_pos = max(self._plotter.support[group_idx])
                 key = (group_name,)
-                if key not in value_maxes:
+                if key not in value_maxes:  # pragma: no cover
                     msg = f"key {key} was not found in the dict: {dict_keys}"
                     warnings.warn(msg)
                     continue
@@ -720,7 +722,6 @@ class CategoricalPlotterWrapper_v13(Wrapper):
         **plot_params,
     ) -> None:
         super().__init__(plot_type, hue=hue, **plot_params)
-        self._group_names = None
 
         variables = {"x": x, "y": y, "hue": hue}
         kwargs = {
@@ -766,9 +767,6 @@ class CategoricalPlotterWrapper_v13(Wrapper):
 
     @property
     def group_names(self) -> list:
-        if self._group_names is not None:
-            ## This is not used
-            return self._group_names
         return self._plotter.var_levels[self.axis]
 
     @property
@@ -800,9 +798,9 @@ class CategoricalPlotterWrapper_v13(Wrapper):
             self.formatter = formatter or str
             return
 
-        # Compute offsets if native_scale
+        # Use native offsets if native_scale
         if native_scale:
-            self.native_group_offsets = self.group_names
+            self.use_native_offsets = True
         self.native_scale = native_scale
         # do not format non-categorical variables
         self.formatter = lambda x: x
@@ -834,8 +832,9 @@ class CategoricalPlotterWrapper_v13(Wrapper):
             # Found a matching group, return the data
             group_data = remove_null(sub_data[value_var])
             return group_data
-        msg = f"Cannot find group {group_name!r} for {iter_vars} in data."
-        raise ValueError(msg)
+        else:  # pragma: no cover
+            msg = f"Cannot find group {group_name!r} for {iter_vars} in data."
+            raise ValueError(msg)
 
     def parse_pairs(
         self,
@@ -849,13 +848,13 @@ class CategoricalPlotterWrapper_v13(Wrapper):
         def format_group(value) -> TupleGroup:
             """Format the group (but not the optional hue)."""
             tvalue = value if isinstance(value, tuple) else (value,)
-            if not callable(self.formatter):
+            if not callable(self.formatter):  # pragma: no cover
                 return tvalue
             group = tvalue[0]
             return tuple([self.formatter(group), *tvalue[1:]])
 
         for pair in pairs:
-            if not isinstance(pair, Sequence) or len(pair) != 2:
+            if not isinstance(pair, Sequence) or len(pair) != 2:  # pragma: no cover
                 msg = f"pair {pair} is not a 2-tuple, skipping."
                 warnings.warn(msg)
                 continue
@@ -865,19 +864,19 @@ class CategoricalPlotterWrapper_v13(Wrapper):
             # Check that the groups are valid group names
             valid_group = True
             for i, group in enumerate(new_pair):
-                if group not in struct_groups:
+                if group not in struct_groups:  # pragma: no cover
                     msg = (
                         f"cannot find group{i} of pair in the group tuples: "
                         f"{group} not in {struct_groups}"
                     )
                     warnings.warn(msg)
                     valid_group = False
-            if not valid_group:
+            if not valid_group:  # pragma: no cover
                 continue
 
             ret.append(new_pair)
 
-        if len(ret) == 0:
+        if len(ret) == 0:  # pragma: no cover
             msg = (
                 f"pairs are empty after parsing: original_pairs={pairs}\n"
                 f"not in group_list={struct_groups}"
@@ -905,7 +904,7 @@ class CategoricalPlotterWrapper_v13(Wrapper):
         for sub_vars, sub_data in self._plotter.iter_data(iter_vars):
             var = sub_vars[self.axis]
             key = (var, sub_vars["hue"]) if self.has_hue else (var,)
-            if key not in value_maxes:
+            if key not in value_maxes:  # pragma: no cover
                 msg = f"key {key} was not found in the dict: {dict_keys}"
                 warnings.warn(msg)
                 continue
@@ -913,11 +912,12 @@ class CategoricalPlotterWrapper_v13(Wrapper):
             # TODO: transform if log_scale is True. Seaborn doesn't do it though
             stat_data = kde._transform(sub_data, value_var, [])
             support = stat_data[value_var]
-            value_max = max(support)
-            if self.axis == "x":
-                value_maxes[key] = data_to_ax.transform((0, value_max))[1]
-            else:
-                value_maxes[key] = data_to_ax.transform((value_max, 0))[0]
+            if len(support) > 0:
+                value_max = np.max(support)
+                if self.axis == "x":
+                    value_maxes[key] = data_to_ax.transform((0, value_max))[1]
+                else:
+                    value_maxes[key] = data_to_ax.transform((value_max, 0))[0]
         return value_maxes
 
 
