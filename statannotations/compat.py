@@ -5,6 +5,7 @@ import warnings
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, Callable
 
+from matplotlib.pyplot import plot
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -351,6 +352,7 @@ class CategoricalPlotterWrapper_v11(Wrapper):
         hue,
         data,
         order,
+        hue_order=None,
         **plot_params,
     ) -> None:
         super().__init__(plot_type, hue=hue, **plot_params)
@@ -477,10 +479,10 @@ class CategoricalPlotterWrapper_v12(Wrapper):
         hue,
         data,
         order,
+        hue_order,
         **plot_params,
     ) -> None:
         super().__init__(plot_type, hue=hue, **plot_params)
-        self._group_names = None
         self._cat_axis = {"v": "x", "h": "y"}[plot_params.get("orient", "v")]
 
         self._plotter = _get_categorical_plotter(
@@ -492,6 +494,7 @@ class CategoricalPlotterWrapper_v12(Wrapper):
             order=order,
             **plot_params,
         )
+        self._hue_order = self._check_hue_order(hue_order)
 
         if isinstance(self._plotter, _CategoricalPlotterNew):
             # Order the group variables
@@ -548,7 +551,10 @@ class CategoricalPlotterWrapper_v12(Wrapper):
             return group_names  # pragma: no cover
 
     @property
-    def hue_names(self):
+    def hue_names(self) -> list:
+        return self._hue_order
+
+    def _original_hue_names(self) -> list:
         if self.is_redundant_hue:
             return []
 
@@ -563,6 +569,22 @@ class CategoricalPlotterWrapper_v12(Wrapper):
             if isinstance(hue_names, pd.Index):  # pragma: no cover
                 return hue_names.tolist()
             return hue_names
+
+    def _check_hue_order(self, hue_order: list | None, *, check: bool = False) -> list:
+        plotter_hue_names = self._original_hue_names()
+        # No hue order defined, use the plotter list
+        if not hue_order:
+            return plotter_hue_names
+
+        # Check hue_order is a permutation of the possible hue list
+        if check and set(plotter_hue_names) != set(hue_order):
+            msg = (
+                "hue_order is not a permutation of the data hue values: "
+                f"hue_order={hue_order} not in {plotter_hue_names}"
+            )
+            raise ValueError(msg)
+
+        return hue_order
 
     def _order_variable(
         self,
@@ -725,6 +747,7 @@ class CategoricalPlotterWrapper_v13(Wrapper):
         hue,
         data,
         order,
+        hue_order,
         **plot_params,
     ) -> None:
         super().__init__(plot_type, hue=hue, **plot_params)
@@ -739,6 +762,9 @@ class CategoricalPlotterWrapper_v13(Wrapper):
             "legend": plot_params.get("legend"),
         }
         self._plotter = _CategoricalPlotter(**kwargs)
+
+        # Check hue order
+        self._hue_order = self._check_hue_order(hue_order)
 
         # Order the group variables,
         # !! will define self.native_scale and self.formatter
@@ -776,15 +802,34 @@ class CategoricalPlotterWrapper_v13(Wrapper):
         return self._plotter.var_levels[self.axis]
 
     @property
-    def hue_names(self):
-        if not self.has_hue or "hue" not in self._plotter.var_levels:
-            return []
-        return self._plotter.var_levels["hue"]
+    def hue_names(self) -> list:
+        return self._hue_order
 
     @property
     def is_categorical(self) -> bool:
         """Return True if the categorical axis is really a categorical variable."""
         return self._plotter.var_types.get(self.axis) == "categorical"
+
+    def _original_hue_names(self) -> list:
+        if not self.has_hue or "hue" not in self._plotter.var_levels:
+            return []
+        return self._plotter.var_levels["hue"]
+
+    def _check_hue_order(self, hue_order: list | None, *, check: bool = True) -> list:
+        plotter_hue_names = self._original_hue_names()
+        # No hue order defined, use the plotter list
+        if not hue_order:
+            return plotter_hue_names
+
+        # Check hue_order is a permutation of the possible hue list
+        if check and set(plotter_hue_names) != set(hue_order):
+            msg = (
+                "hue_order is not a permutation of the hue values: "
+                f"hue_order={hue_order} not in {plotter_hue_names}"
+            )
+            raise ValueError(msg)
+
+        return hue_order
 
     def _order_variable(
         self,
