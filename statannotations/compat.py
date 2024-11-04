@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import logging
+import warnings
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, Callable
-import warnings
 
 import numpy as np
 import pandas as pd
@@ -55,6 +56,8 @@ elif sns_version < (0, 13, 0):
 else:
     _CategoricalPlotter = sns.categorical._CategoricalPlotter
 
+
+logger = logging.getLogger(__name__)
 
 table_convert_orient_seaborn: dict[str, str] = {
     "v": "v" if sns_version < (0, 13, 0) else "x",
@@ -626,7 +629,7 @@ class CategoricalPlotterWrapper_v12(Wrapper):
 
         return group_data
 
-    def _get_group_data_new(self, group_name: TupleGroup) -> pd.Series:
+    def _get_group_data_new(self, group_name: TupleGroup, *, strict: bool = False) -> pd.Series:
         """Get the data for the (group[, hue]) tuple.
 
         group_name can be either a "cat" or a tuple ("cat", "hue")
@@ -667,7 +670,10 @@ class CategoricalPlotterWrapper_v12(Wrapper):
             return group_data
         else:  # pragma: no cover
             msg = f"Cannot find group {group_name!r} for {iter_vars} in data."
-            raise ValueError(msg)
+            if strict:
+                raise ValueError(msg)
+            logger.info(msg)
+            return pd.Series([])
 
     def _populate_value_maxes_violin(
         self, value_maxes: dict[TupleGroup, float], data_to_ax
@@ -805,7 +811,7 @@ class CategoricalPlotterWrapper_v13(Wrapper):
         # do not format non-categorical variables
         self.formatter = lambda x: x
 
-    def get_group_data(self, group_name: TupleGroup) -> pd.Series:
+    def get_group_data(self, group_name: TupleGroup, *, strict: bool = False) -> pd.Series:
         """Get the data for the (group[, hue]) tuple.
 
         group_name can be either a "cat" or a tuple ("cat", "hue")
@@ -834,7 +840,10 @@ class CategoricalPlotterWrapper_v13(Wrapper):
             return group_data
         else:  # pragma: no cover
             msg = f"Cannot find group {group_name!r} for {iter_vars} in data."
-            raise ValueError(msg)
+            if strict:
+                raise ValueError(msg)
+            logger.info(msg)
+            return pd.Series([])
 
     def parse_pairs(
         self,
