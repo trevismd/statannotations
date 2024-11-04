@@ -815,7 +815,7 @@ class CategoricalPlotterWrapper_v13(Wrapper):
             return []
         return self._plotter.var_levels["hue"]
 
-    def _check_hue_order(self, hue_order: list | None, *, check: bool = True) -> list:
+    def _check_hue_order(self, hue_order: list | None, *, check: bool = False) -> list:
         plotter_hue_names = self._original_hue_names()
         # No hue order defined, use the plotter list
         if not hue_order:
