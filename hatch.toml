@@ -69,10 +69,8 @@ extra-dependencies = [
 ]
 
 [[envs.tests.matrix]]
-# python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
-# seaborn_version = ["0.11", "0.12", "0.13"]
-python = ["3.8", "3.9", "3.10", "3.11"]
-seaborn_version = ["0.11"]
+python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
+seaborn_version = ["0.11", "0.12", "0.13"]
 
 [envs.tests.overrides]
 matrix.seaborn_version.extra-dependencies = [
