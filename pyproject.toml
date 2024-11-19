@@ -62,11 +62,9 @@ Homepage = "https://github.com/trevismd/statannotations"
 path = "src/statannotations/_version.py"
 
 [tool.hatch.build.targets.sdist]
-only-include = [
-    "/src/statannotations",
-    # "usage",
-    # "tests",
-    # "docs",
+exclude = [
+    # increases the size too much
+    "usage",
 ]
 
 
