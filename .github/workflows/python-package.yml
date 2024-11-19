@@ -97,7 +97,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-${{ matrix.python-version }}-${{ matrix.seaborn-version }}
-          path: "report/.coverage.*"
+          path: report/.coverage.*
+          if-no-files-found: error
+          include-hidden-files: true
 
   coverage:
     name: coverage
