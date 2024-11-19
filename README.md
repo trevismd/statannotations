@@ -139,7 +139,7 @@ annotator.apply_and_annotate()
 
 ## Requirements
 
-+ Python >= 3.6
++ Python >= 3.8, <=3.11
 + numpy >= 1.12.1
 + seaborn >= 0.9,<0.12
 + matplotlib >= 2.2.2
