@@ -55,6 +55,9 @@ jobs:
             seaborn-version: "0.11"
           - python-version: "3.13"
             seaborn-version: "0.11"
+          # exclude seaborn-version 0.12 for python >= 3.13
+          - python-version: "3.13"
+            seaborn-version: "0.12"
 
     steps:
       - name: Setup python
