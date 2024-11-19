@@ -5,23 +5,23 @@ name: Python package
 
 on:
   push:
-    branches: [ master, dev, v0.2, v0.3, v0.4]
+    branches: [ master, dev]
   pull_request:
-    branches: [ master, dev, v0.2, v0.3, v0.4]
+    branches: [ master, dev, v0.6]
 
 jobs:
   build:
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9, '3.10', 3.11]
+        python-version: [3.8, 3.9, '3.10', 3.11]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
@@ -40,4 +40,4 @@ jobs:
         coverage run -m unittest discover tests
         coverage report -m
     - name: Upload Coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
