@@ -37,6 +37,10 @@ class Test(unittest.TestCase):
             **plotting)
         self.pvalues = [0.03, 0.04, 0.9]
 
+    def tearDown(self) -> None:
+        sns.mpl.pyplot.clf()
+        return super().tearDown()
+
     def test_ns_without_correction_star(self):
         annotations = self.annotator._get_results("auto", pvalues=self.pvalues)
         self.assertEqual(["*", "*", "ns"],

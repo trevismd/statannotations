@@ -2,6 +2,7 @@ import itertools
 from bisect import bisect_left
 from typing import List, Union
 
+import numpy as np
 import pandas as pd
 
 
@@ -72,11 +73,14 @@ def _check_pairs_in_data_no_hue(pairs: Union[list, tuple],
 
     x_values = get_x_values(data, x)
     pairs_x_values = set(itertools.chain(*pairs))
+    # check if singleton tuples were used instead of directly the values
+    if all(isinstance(v, tuple) for v in pairs_x_values):  # pragma: no cover
+        pairs_x_values = set(v[0] for v in pairs_x_values)
     unmatched_x_values = pairs_x_values - x_values
     if unmatched_x_values:
-        raise ValueError(f"Missing x value(s) "
-                         f"`{render_collection(unmatched_x_values)}` in {x}"
-                         f" (specified in `pairs`) in data")
+        raise ValueError(f"Missing value(s) "
+                         f"{list(unmatched_x_values)} for {x}"
+                         f" (specified in `pairs`) in data.")
 
 
 def _check_pairs_in_data_with_hue(
@@ -116,16 +120,33 @@ def _check_hue_order_in_data(hue, hue_values: set,
                              f"`{render_collection(unmatched)}`"
                              f" in {hue} (specified in `hue_order`)")
 
+def check_redundant_hue(
+    data: Union[List[list], pd.DataFrame, None] = None,
+    coord: Union[str, list, None] = None,
+    hue: Union[str, None] = None,
+    hue_order: Union[List[str], None] = None,
+) -> bool:
+    # redundant hue
+    if data is None:
+        # arrays
+        if np.array_equal(hue, coord):
+            return True
+
+    else:
+        # column names
+        if hue == coord or (isinstance(coord, list) and hue in coord):
+            return True
+    return False
+
 
 def check_pairs_in_data(pairs: Union[list, tuple],
-                        data: Union[List[list], pd.DataFrame] = None,
-                        coord: Union[str, list] = None,
-                        hue: str = None,
-                        hue_order: List[str] = None):
+                        data: Union[List[list], pd.DataFrame, None] = None,
+                        coord: Union[str, list, None] = None,
+                        hue: Union[str, None] = None,
+                        hue_order: Union[List[str], None] = None):
     """
     Checks that values referred to in `order` and `pairs` exist in data.
     """
-
     if hue is None and hue_order is None:
         _check_pairs_in_data_no_hue(pairs, data, coord)
     else:
@@ -163,7 +184,7 @@ def get_closest(a_list, value):
     if pos == len(a_list):
         return a_list[-1]
     before, after = a_list[pos - 1: pos + 1]
-    if after - value < value - before:
+    if after - value < value - before:  # pragma: no cover
         return after
     return before
 

@@ -30,6 +30,8 @@ class TestAnnotator(unittest.TestCase):
              8: {'x': "b", 'y': 18, 'color': 'red'}
              }).T
 
+        self.x_pairs = [("a", "b")]
+        self.x_pairs_tuples = [(("a",), ("b",))]
         self.pairs = [(("a", "blue"), ("b", "blue")),
                       (("a", "blue"), ("a", "red"))]
         self.df.y = self.df.y.astype(float)
@@ -40,6 +42,21 @@ class TestAnnotator(unittest.TestCase):
             "hue": "color",
             "order": ["a", "b"],
             "hue_order": ['red', 'blue']}
+
+        self.params_df_no_hue = {
+            "data": self.df,
+            "x": "x",
+            "y": "y",
+            "order": ["a", "b"],
+        }
+
+        self.params_df_redundant_hue = {
+            "data": self.df,
+            "x": "x",
+            "y": "y",
+            "hue": "x",
+            "order": ["a", "b"],
+            "hue_order": ["b", "a"]}
 
         self.df_x_float = pd.DataFrame(
             data={
@@ -74,6 +91,18 @@ class TestAnnotator(unittest.TestCase):
             "order": ["a", "b"],
             "hue_order": ['red', 'blue']}
 
+        self.params_arrays_redundant_hue = {
+            "data": None,
+            "x": self.df['x'],
+            "y": self.df['y'],
+            "hue": self.df['x'],
+            "order": ["a", "b"],
+            "hue_order": ['b', 'a']}
+
+    def tearDown(self) -> None:
+        sns.mpl.pyplot.clf()
+        return super().tearDown()
+
     def test_init_simple(self):
         self.annot = Annotator(self.ax, [(0, 1)], data=self.data)
 
@@ -87,17 +116,46 @@ class TestAnnotator(unittest.TestCase):
             **self.params_float
         )
 
+    def test_init_df_no_hue(self):
+        self.ax = sns.boxplot(**self.params_df_no_hue)
+        self.annot = Annotator(self.ax, pairs=self.x_pairs, **self.params_df_no_hue)
+
     def test_init_df(self):
         self.ax = sns.boxplot(**self.params_df)
         self.annot = Annotator(self.ax, pairs=self.pairs, **self.params_df)
+
+    def test_init_df_with_redundant_hue(self):
+        self.ax = sns.boxplot(**self.params_df_redundant_hue)
+        self.annot = Annotator(self.ax, pairs=self.x_pairs, **self.params_df_redundant_hue)
+
+    def test_init_df_with_redundant_hue_singleton_tuples(self):
+        self.ax = sns.boxplot(**self.params_df_redundant_hue)
+        self.annot = Annotator(self.ax, pairs=self.x_pairs_tuples, **self.params_df_redundant_hue)
+
+    def test_init_df_violinplot_with_redundant_hue(self):
+        self.ax = sns.violinplot(**self.params_df_redundant_hue)
+        self.annot = Annotator(self.ax, plot="violinplot", pairs=self.x_pairs, **self.params_df_redundant_hue)
+
+    def test_init_df_violinplot_horizontal_with_redundant_hue(self):
+        horizontal_params = {**self.params_df_redundant_hue, "x": "y", "y": "x", "orient": "h"}
+        self.ax = sns.violinplot(**horizontal_params)
+        self.annot = Annotator(self.ax, plot="violinplot", pairs=self.x_pairs, **horizontal_params)
 
     def test_init_arrays(self):
         self.ax = sns.boxplot(**self.params_arrays)
         self.annot = Annotator(self.ax, pairs=self.pairs, **self.params_arrays)
 
+    def test_init_arrays_with_redundant_hue(self):
+        self.ax = sns.boxplot(**self.params_arrays_redundant_hue)
+        self.annot = Annotator(self.ax, pairs=self.x_pairs, **self.params_arrays_redundant_hue)
+
     def test_init_barplot(self):
         ax = sns.barplot(data=self.data)
         self.annot = Annotator(ax, [(0, 1)], plot="barplot", data=self.data)
+
+    def test_init_stripplot(self):
+        ax = sns.stripplot(**self.params_df)
+        self.annot = Annotator(ax, plot="stripplot", pairs=self.pairs, **self.params_df)
 
     def test_test_name_provided(self):
         self.test_init_simple()
@@ -168,7 +226,16 @@ class TestAnnotator(unittest.TestCase):
         self.test_init_simple()
         self.assertIsNone(self.annot._apply_comparisons_correction([]))
 
+    def test_get_configuration(self):
+        self.test_init_simple()
+        conf = self.annot.get_configuration()
+        assert "pvalue_format" in conf
+
     def test_correct_num_custom_annotations(self):
+        self.test_init_simple()
+        self.annot.annotate_custom_annotations(["Annotation"])
+
+    def test_wrong_num_custom_annotations(self):
         self.test_init_simple()
         with self.assertRaisesRegex(ValueError, "same length"):
             self.annot.set_custom_annotations(["One", "Two"])
@@ -302,3 +369,7 @@ class TestAnnotator(unittest.TestCase):
     def test_ensure_ax_operation_format_func_not_ok(self):
         with self.assertRaises(ValueError):
             _ensure_ax_operation_format([sum, ["param"], {"that": "this"}])
+
+    def test_apply_no_hue(self):
+        self.test_init_df_no_hue()
+        self.annot.configure(test="Mann-Whitney").apply_and_annotate()
