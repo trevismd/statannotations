@@ -47,8 +47,12 @@ jobs:
       fail-fast: false
       matrix:
         # keep synchronized with hatch tests matrix
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
         seaborn-version: ["0.11", "0.12", "0.13"]
+        exclude:
+          # excludes node 8 on macOS
+          - python-version: ["3.12", "3.13"]
+            seaborn-version: ["0.11"]
 
     steps:
       - name: Setup python
