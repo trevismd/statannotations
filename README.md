@@ -1,6 +1,6 @@
 [![Active Development](https://img.shields.io/badge/Maintenance%20Level-Actively%20Developed-brightgreen.svg)](https://gist.github.com/cheerfulstoic/d107229326a01ff0f333a1d3476e068d) 
 ![coverage](https://raw.githubusercontent.com/trevismd/statannotations/master/coverage.svg)  
-![Python](https://img.shields.io/badge/Python-3.6%2B-blue)
+![Python](https://img.shields.io/badge/Python-3.8--3.11-blue)
 [![Documentation Status](https://readthedocs.org/projects/statannotations/badge/?version=latest)](https://statannotations.readthedocs.io/en/master/?badge=latest)
 [![DOI](https://zenodo.org/badge/296015778.svg)](https://zenodo.org/badge/latestdoi/296015778)
 
