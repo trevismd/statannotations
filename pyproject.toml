@@ -45,8 +45,8 @@ tests = [
     # "coverage[toml]>=7.3",
 ]
 docs = [
-    "sphinx>=5.3",
-    "sphinx-rtd-theme",
+    "sphinx==7.4.7",
+    "sphinx-rtd-theme==3.0.2",
 ]
 dev = [
     "ipython",
