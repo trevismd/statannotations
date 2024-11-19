@@ -3,10 +3,10 @@ repos:
     rev: v5.0.0
     hooks:
       - id: check-yaml
-      # - id: end-of-file-fixer
-      #   exclude: '^(.*\.svg)$'
-      # - id: trailing-whitespace
-      #   exclude: '^(.*\.svg|.*\.tsv)$'
+      - id: end-of-file-fixer
+        exclude: '^(.*\.svg)$'
+      - id: trailing-whitespace
+        exclude: '^(.*\.svg|.*\.tsv)$'
 
   - repo: https://github.com/abravalheri/validate-pyproject
     rev: v0.23
