@@ -9,7 +9,7 @@ name = "statannotations"
 description = "add statistical significance or custom annotations on seaborn plots. Based on statannot 0.2.3"
 readme = "README.md"
 license = {text = "MIT License"}
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 maintainers = [
     { name = "Florian Charlier", email = "trevis@cascliniques.be" },
 ]
@@ -17,7 +17,6 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
