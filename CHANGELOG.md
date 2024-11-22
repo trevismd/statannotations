@@ -1,4 +1,8 @@
 ## v0.7
+### v0.7.1
+#### Fixes
+- Fix minimum Python requirements in setup.py
+
 ### v0.7.0
 #### Features
 - Compatibility with pandas v2+ and seaborn above v0.12+ 

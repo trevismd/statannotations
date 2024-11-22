@@ -37,5 +37,5 @@ setup(
         "Operating System :: OS Independent",
     ],
     install_requires=remove_dev_only(open("requirements.txt").readlines()),
-    python_requires='>=3.6',
+    python_requires='>=3.8',
 )
