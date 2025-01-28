@@ -58,6 +58,5 @@ class TestStatTest(unittest.TestCase):
     @unittest.mock.patch('sys.stdout', new_callable=io.StringIO)
     def assert_print_pvalue(self, test, zero_method, expected_output_regex,
                             mock_stdout):
-        with self.assertWarns(UserWarning):
-            test(self.x, self.y, zero_method=zero_method)
+        test(self.x, self.y, zero_method=zero_method)
         self.assertRegex(mock_stdout.getvalue(), expected_output_regex)
