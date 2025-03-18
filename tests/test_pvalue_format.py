@@ -114,6 +114,7 @@ class Test(unittest.TestCase):
         self.assertDictEqual(pvalue_format.get_configuration(),
                              {'correction_format': '{star} ({suffix})',
                               'fontsize': 'medium',
+                              'p_capitalized': False,
                               'pvalue_format_string': '{:.3e}',
                               'show_test_name': True,
                               'simple_format_string': '{:.2f}',
@@ -137,3 +138,10 @@ class Test(unittest.TestCase):
                                  "      ns: 5.00e-02 < p <= 1.00e+00\n"
                                  " <= 0.05: 1.00e-03 < p <= 5.00e-02\n"
                                  "<= 0.001: p <= 1.00e-03\n\n")
+        
+    def test_pvalue_capitalized(self):
+        self.annotator.configure(pvalue_format={"text_format": "simple",
+                                                "p_capitalized": True})
+        annotations = self.annotator._get_results("auto", pvalues=self.pvalues)
+        self.assertEqual(["P ≤ 0.05", "P ≤ 0.05", "P = 0.90"],
+                         [annotation.text for annotation in annotations])
