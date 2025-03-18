@@ -181,7 +181,8 @@ class PValueFormat(Formatter):
             p_letter = "P" if self.p_capitalized else "p"
 
             return ("{}{} = {}{}"
-                .format(text, p_letter, self.pvalue_format_string, result.pvalue, result.significance_suffix))
+                    .format('{}', p_letter, self.pvalue_format_string, '{}')
+                    .format(text, result.pvalue, result.significance_suffix))
 
         elif self.text_format == 'star':
             was_list = False
