@@ -111,22 +111,26 @@ class Test(unittest.TestCase):
 
     def test_get_configuration(self):
         pvalue_format = PValueFormat()
-        self.assertDictEqual(pvalue_format.get_configuration(),
-                             {'correction_format': '{star} ({suffix})',
-                              'fontsize': 'medium',
-                              'p_capitalized': False,
-                              'pvalue_format_string': '{:.3e}',
-                              'show_test_name': True,
-                              'simple_format_string': '{:.2f}',
-                              'text_format': 'star',
-                              'pvalue_thresholds': [
-                                  [1e-4, "****"],
-                                  [1e-3, "***"],
-                                  [1e-2, "**"],
-                                  [0.05, "*"],
-                                  [1, "ns"]]
-                              }
-                             )
+        self.assertDictEqual(
+            pvalue_format.get_configuration(),
+            {
+                'correction_format': '{star} ({suffix})',
+                'fontsize': 'medium',
+                'p_capitalized': False,
+                'p_separators': 'both',
+                'pvalue_format_string': '{:.3e}',
+                'pvalue_thresholds': [
+                    [1e-4, "****"],
+                    [1e-3, "***"],
+                    [1e-2, "**"],
+                    [0.05, "*"],
+                    [1, "ns"]
+                ],
+                'show_test_name': True,
+                'simple_format_string': '{:.2f}',
+                'text_format': 'star',
+            }
+        )
 
     def test_config_pvalue_thresholds(self):
         pvalue_format = PValueFormat()
@@ -138,7 +142,7 @@ class Test(unittest.TestCase):
                                  "      ns: 5.00e-02 < p <= 1.00e+00\n"
                                  " <= 0.05: 1.00e-03 < p <= 5.00e-02\n"
                                  "<= 0.001: p <= 1.00e-03\n\n")
-        
+
     def test_pvalue_simple_capitalized(self):
         self.annotator.configure(pvalue_format={"text_format": "simple",
                                                 "p_capitalized": True})
@@ -154,3 +158,39 @@ class Test(unittest.TestCase):
         annotations = self.annotator._get_results("auto", pvalues=self.pvalues)
         self.assertEqual(["P = 0.04", "P = 0.03", "P = 0.90"],
                          [annotation.text for annotation in annotations])
+
+    def test_pvalue_simple_separators(self):
+        self.annotator.configure(pvalue_format={"text_format": "simple"})
+        for separator, expected_results in [
+            (None, ["p ≤ 0.05", "p ≤ 0.05", "p = 0.90"]),
+            (True, ["p ≤ 0.05", "p ≤ 0.05", "p = 0.90"]),
+            ('both', ["p ≤ 0.05", "p ≤ 0.05", "p = 0.90"]),
+            ('none', ["p≤0.05", "p≤0.05", "p=0.90"]),
+            ('after', ["p≤ 0.05", "p≤ 0.05", "p= 0.90"]),
+        ]:
+            with self.subTest(separator=separator):
+                config = {"pvalue_format": {"p_separators": separator}}
+                self.annotator.configure(**config)
+                annotations = self.annotator._get_results("auto", pvalues=self.pvalues)
+                self.assertEqual(expected_results, [a.text for a in annotations])
+
+    def test_pvalue_full_separators(self):
+        self.annotator.configure(
+            pvalue_format={
+                "text_format": "full",
+                "show_test_name": False,
+                "pvalue_format_string": "{:.2f}"
+            },
+        )
+        for separator, expected_results in [
+            (None, ["p = 0.04", "p = 0.03", "p = 0.90"]),
+            (True, ["p = 0.04", "p = 0.03", "p = 0.90"]),
+            ('both', ["p = 0.04", "p = 0.03", "p = 0.90"]),
+            ('none', ["p=0.04", "p=0.03", "p=0.90"]),
+            ('after', ["p= 0.04", "p= 0.03", "p= 0.90"]),
+        ]:
+            with self.subTest(separator=separator):
+                config = {"pvalue_format": {"p_separators": separator}}
+                self.annotator.configure(**config)
+                annotations = self.annotator._get_results("auto", pvalues=self.pvalues)
+                self.assertEqual(expected_results, [a.text for a in annotations])

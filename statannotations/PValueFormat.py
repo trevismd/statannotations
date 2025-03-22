@@ -1,19 +1,21 @@
-from statannotations.stats.StatResult import StatResult
+from typing import Tuple, Union
 
 from statannotations.format_annotations import pval_annotation_text, \
     simple_text
+from statannotations.stats.StatResult import StatResult
 from statannotations.utils import DEFAULT, check_valid_text_format, \
     InvalidParametersError
 
 CONFIGURABLE_PARAMETERS = [
     'correction_format',
     'fontsize',
-    'pvalue_format_string',
     'simple_format_string',
     'text_format',
+    'pvalue_format_string',
     'pvalue_thresholds',
+    'p_capitalized',
+    'p_separators',
     'show_test_name',
-    'p_capitalized'
 ]
 
 
@@ -40,6 +42,7 @@ class PValueFormat(Formatter):
         self._correction_format = "{star} ({suffix})"
         self.show_test_name = True
         self.p_capitalized = False
+        self._p_separators = (" ", " ")
 
     def config(self, **parameters):
 
@@ -68,6 +71,30 @@ class PValueFormat(Formatter):
         """
         check_valid_text_format(text_format)
         self._text_format = text_format
+
+    @property
+    def p_separators(self):
+        return {
+            (" ", " "): 'both',
+            ("", " "): 'after',
+            ("", ""): 'none',
+        }.get(self._p_separators, self._p_separators)
+
+    @p_separators.setter
+    def p_separators(self, p_separators: Union[bool, str, Tuple[str]] = True):
+        """
+        :param p_separators:
+            'both' (or True)(default), 'none' (or False), 'after',
+            or tuple[bool] for before and after
+        """
+        if isinstance(p_separators, tuple):
+            self._p_separators = p_separators
+        elif p_separators in {'none', False}:
+            self._p_separators = ("", "")
+        elif p_separators == 'after':
+            self._p_separators = ("", " ")
+        else:
+            self._p_separators = (" ", " ")
 
     def _get_pvalue_thresholds(self, pvalue_thresholds):
         if self._default_pvalue_thresholds:
@@ -179,10 +206,10 @@ class PValueFormat(Formatter):
                     else "")
 
             p_letter = "P" if self.p_capitalized else "p"
-
-            return ("{}{} = {}{}"
-                    .format('{}', p_letter, self.pvalue_format_string, '{}')
-                    .format(text, result.pvalue, result.significance_suffix))
+            equals = f"{self._p_separators[0]}={self._p_separators[1]}"
+            formatted_pvalue = self.pvalue_format_string.format(result.pvalue)
+            full_pvalue = f"{formatted_pvalue}{result.significance_suffix}"
+            return f"{text}{p_letter}{equals}{full_pvalue}"
 
         elif self.text_format == 'star':
             was_list = False
@@ -200,10 +227,12 @@ class PValueFormat(Formatter):
 
             return annotations[0]
 
-        # elif self.text_format == 'simple':
         else:
-            return simple_text(result, self.simple_format_string,
-                               self.pvalue_thresholds, self.show_test_name, self.p_capitalized)
+            return simple_text(
+                result, self.simple_format_string, self.pvalue_thresholds,
+                short_test_name=self.show_test_name,
+                p_capitalized=self.p_capitalized, separators=self._p_separators
+            )
 
     def get_configuration(self):
         return {key: getattr(self, key) for key in CONFIGURABLE_PARAMETERS}
