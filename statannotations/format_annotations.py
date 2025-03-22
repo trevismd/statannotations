@@ -1,8 +1,10 @@
-from statannotations.stats.StatResult import StatResult
-from typing import List
+from operator import itemgetter
+from typing import List, Tuple
+
 import numpy as np
 import pandas as pd
-from operator import itemgetter
+
+from statannotations.stats.StatResult import StatResult
 
 
 def pval_annotation_text(result: List[StatResult],
@@ -32,8 +34,10 @@ def pval_annotation_text(result: List[StatResult],
     return [(star, res) for star, res in zip(x_annot, result)]
 
 
-def simple_text(result: StatResult, pvalue_format, pvalue_thresholds,
-                short_test_name=True, p_capitalized=False) -> str:
+def simple_text(result: StatResult, pvalue_format: str,
+                pvalue_thresholds: List[list],
+                short_test_name: bool = True, p_capitalized: bool = False,
+                separators: Tuple[str] = (" ", " ")) -> str:
     """
     Generates simple text for test name and pvalue.
 
@@ -41,10 +45,11 @@ def simple_text(result: StatResult, pvalue_format, pvalue_thresholds,
     :param pvalue_format: format string for pvalue
     :param pvalue_thresholds: String to display per pvalue range
     :param short_test_name: whether to display the test (short) name
+    :param p_capitalized: set True to show "P" instead of "p" in annotations
+    :param separators: separators for before and after '=' or '≤'
     :returns: simple annotation
 
     """
-    # Sort thresholds
     thresholds = sorted(pvalue_thresholds, key=lambda x: x[0])
 
     text = (f"{result.test_short_name} "
@@ -52,12 +57,15 @@ def simple_text(result: StatResult, pvalue_format, pvalue_thresholds,
             else "")
 
     p_letter = "P" if p_capitalized else "p"
+    p_equals = f"{p_letter}{separators[0]}={separators[1]}"
+    p_lte = f"{p_letter}{separators[0]}≤{separators[1]}"
 
     for threshold in thresholds:
         if result.pvalue < threshold[0]:
-            pval_text = "{} ≤ {}".format(p_letter, threshold[1])
+            pval_text = f"{p_lte}{threshold[1]}"
             break
     else:
-        pval_text = "{} = {}".format(p_letter, pvalue_format).format(result.pvalue)
+        formatted_pvalue = pvalue_format.format(result.pvalue)
+        pval_text = f"{p_equals}{formatted_pvalue}"
 
     return result.adjust(text + pval_text)

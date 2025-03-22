@@ -1,4 +1,12 @@
 ## v0.7
+### v0.7.2
+### Features
+- Add option to capitalize "p" in annotations 
+  (PR [#172](https://github.com/trevismd/statannotations/pull/172) by 
+  [Pentabyteman](https://github.com/Pentabyteman))
+- Add option to change spacing in annotations 
+  (PR [#173](https://github.com/trevismd/statannotations/pull/173))
+
 ### v0.7.1
 #### Fixes
 - Fix minimum Python requirements in setup.py
