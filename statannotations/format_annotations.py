@@ -33,7 +33,7 @@ def pval_annotation_text(result: List[StatResult],
 
 
 def simple_text(result: StatResult, pvalue_format, pvalue_thresholds,
-                short_test_name=True) -> str:
+                short_test_name=True, p_capitalized=False) -> str:
     """
     Generates simple text for test name and pvalue.
 
@@ -51,11 +51,13 @@ def simple_text(result: StatResult, pvalue_format, pvalue_thresholds,
             if short_test_name and result.test_short_name
             else "")
 
+    p_letter = "P" if p_capitalized else "p"
+
     for threshold in thresholds:
         if result.pvalue < threshold[0]:
-            pval_text = "p ≤ {}".format(threshold[1])
+            pval_text = "{} ≤ {}".format(p_letter, threshold[1])
             break
     else:
-        pval_text = "p = {}".format(pvalue_format).format(result.pvalue)
+        pval_text = "{} = {}".format(p_letter, pvalue_format).format(result.pvalue)
 
     return result.adjust(text + pval_text)

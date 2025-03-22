@@ -12,7 +12,8 @@ CONFIGURABLE_PARAMETERS = [
     'simple_format_string',
     'text_format',
     'pvalue_thresholds',
-    'show_test_name'
+    'show_test_name',
+    'p_capitalized'
 ]
 
 
@@ -38,6 +39,7 @@ class PValueFormat(Formatter):
         self._pvalue_thresholds = self._get_pvalue_thresholds(DEFAULT)
         self._correction_format = "{star} ({suffix})"
         self.show_test_name = True
+        self.p_capitalized = False
 
     def config(self, **parameters):
 
@@ -176,8 +178,10 @@ class PValueFormat(Formatter):
             text = (f"{result.test_short_name} " if self.show_test_name
                     else "")
 
-            return ("{}p = {}{}"
-                    .format('{}', self.pvalue_format_string, '{}')
+            p_letter = "P" if self.p_capitalized else "p"
+
+            return ("{}{} = {}{}"
+                    .format('{}', p_letter, self.pvalue_format_string, '{}')
                     .format(text, result.pvalue, result.significance_suffix))
 
         elif self.text_format == 'star':
@@ -199,7 +203,7 @@ class PValueFormat(Formatter):
         # elif self.text_format == 'simple':
         else:
             return simple_text(result, self.simple_format_string,
-                               self.pvalue_thresholds, self.show_test_name)
+                               self.pvalue_thresholds, self.show_test_name, self.p_capitalized)
 
     def get_configuration(self):
         return {key: getattr(self, key) for key in CONFIGURABLE_PARAMETERS}
