@@ -1,7 +1,7 @@
 # This workflow will install Python dependencies, run tests and lint with a variety of Python versions
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: Python package
+name: CI
 
 on:
   push:
@@ -10,34 +10,134 @@ on:
     branches: [ master, dev, v0.7]
 
 jobs:
-  build:
-
+  check:
+    name: ${{ matrix.env.name }}
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.8, 3.9, '3.10', 3.11, 3.12]
+        env:
+          - {"name": "pkg", "target": "show"}
+          - {"name": "lint", "target": "run"}
+          # - {"name": "type", "target": "run"}
+          - {"name": "docs", "target": "all"}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Let us have colors
+        run: echo "FORCE_COLOR=true" >> "$GITHUB_ENV"
+      - name: Install Hatch
+        uses: pypa/hatch@install
+      - name: Setup ${{ matrix.env.name }}
+        run: |
+          hatch -v env create ${{ matrix.env.name }}
+          hatch run ${{ matrix.env.name }}:pip freeze
+      - name: Run ${{ matrix.env.name }}
+        run: hatch -v run ${{ matrix.env.name }}:${{ matrix.env.target }}
+
+  test:
+    name: test py${{ matrix.python-version }} - seaborn-${{ matrix.seaborn-version }}
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        # keep synchronized with hatch tests matrix
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        seaborn-version: ["0.11", "0.12", "0.13"]
+        exclude:
+          # exclude seaborn-version 0.11 for python >= 3.12
+          - python-version: "3.12"
+            seaborn-version: "0.11"
+          - python-version: "3.13"
+            seaborn-version: "0.11"
+          # exclude seaborn-version 0.12 for python >= 3.13
+          - python-version: "3.13"
+            seaborn-version: "0.12"
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install flake8 coverage packaging
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Lint with flake8
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Test with unittest
-      run: |
-        coverage run -m unittest discover tests
-        coverage report -m
-    - name: Upload Coverage to Codecov
-      uses: codecov/codecov-action@v4
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Pick environment to run
+        run: |
+          import codecs
+          import os
+          env = "tests.py{}-{}".format("${{ matrix.python-version }}", "${{ matrix.seaborn-version }}")
+          print(f"Environment {env}")
+          with codecs.open(os.environ["GITHUB_ENV"], mode="a", encoding="utf-8") as file_handler:
+              file_handler.write("FORCE_COLOR=1\n")
+              file_handler.write(f"ENV={env}\n")
+        shell: python
+      - name: Install Hatch
+        uses: pypa/hatch@install
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Setup test environment
+        run: |
+          hatch -v env create ${ENV}
+          hatch run ${ENV}:pip freeze
+        shell: bash
+      - name: Run test suite
+        run: hatch -v run ${ENV}:run-cov
+        env:
+          CI_RUN: "yes"
+        shell: bash
+      - name: Upload coverage data
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.python-version }}-${{ matrix.seaborn-version }}
+          path: report/.coverage.*
+          if-no-files-found: error
+          include-hidden-files: true
+
+  coverage:
+    name: coverage
+    runs-on: ubuntu-22.04
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Let us have colors
+        run: echo "FORCE_COLOR=true" >> "$GITHUB_ENV"
+      - name: Install Hatch
+        uses: pypa/hatch@install
+      - name: Setup coverage tool
+        run: |
+          hatch -v env create coverage
+          hatch run coverage:pip freeze
+      - name: Download coverage data
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-*
+          path: report
+          merge-multiple: true
+      - name: Combine and report coverage
+        run: hatch run coverage:run
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: html-report
+          path: report/html
+
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          directory: report
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
