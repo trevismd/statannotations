@@ -2,7 +2,7 @@
 # ---------------------------------------------------------
 [envs.default]
 description = "Development environment"
-installer = "uv pip install"
+installer = "uv"
 
 # ---------------------------------------------------------
 [envs.pkg]
@@ -17,7 +17,7 @@ show = [
 # ---------------------------------------------------------
 [envs.lint]
 template = "lint"
-installer = "uv pip install"
+installer = "uv"
 description = "lint and format"
 detached = true
 dependencies = ["pre-commit"]
@@ -29,8 +29,9 @@ run = "pre-commit run --all-files"
 # ---------------------------------------------------------
 [envs.docs]
 template = "docs"
-installer = "uv pip install"
+installer = "uv"
 description = "build and check documentation"
+dev-mode = false
 features = ["docs"]
 
 [envs.docs.scripts]
@@ -43,7 +44,7 @@ all = ["build", "doctest", "linkcheck"]
 # ---------------------------------------------------------
 [envs.types]
 template = "types"
-installer = "uv pip install"
+installer = "uv"
 description = "Run the type checker"
 dev-mode = false
 dependencies = ["mypy"]
@@ -60,11 +61,11 @@ run = [
 # ---------------------------------------------------------
 [envs.tests]
 template = "tests"
-installer = "uv pip install"
+installer = "uv"
 description = "Run the tests suite"
 features = ["tests"]
 extra-dependencies = [
-    "matplotlib<3.9",
+#    "matplotlib<3.9",
     "seaborn=={matrix:seaborn_version}",
 ]
 
@@ -74,7 +75,7 @@ seaborn_version = ["0.11", "0.12", "0.13"]
 
 [envs.tests.overrides]
 matrix.seaborn_version.extra-dependencies = [
-    "matplotlib<3.9",
+#    "matplotlib<3.9",
     "seaborn=={matrix:seaborn_version}",
     { value = "pandas<2", if = ["0.11", "0.12"]},
     { value = "numpy<2", if = ["0.11", "0.12"]},
@@ -102,7 +103,7 @@ run = "pytest {args:-n auto}"
 # ---------------------------------------------------------
 [envs.coverage]
 template = "coverage"
-installer = "uv pip install"
+installer = "uv"
 description = "combine coverage files"
 detached = true
 dependencies = [
@@ -122,7 +123,7 @@ run = [
 # ---------------------------------------------------------
 [envs.examples]
 template = "examples"
-installer = "uv pip install"
+installer = "uv"
 description = "Run the examples"
 python = "3.11"
 extra-dependencies = [
@@ -135,7 +136,7 @@ seaborn_version = ["0.11", "0.12", "0.13"]
 
 [envs.examples.overrides]
 matrix.seaborn_version.extra-dependencies = [
-    "matplotlib<3.9",
+#    "matplotlib<3.9",
     "seaborn=={matrix:seaborn_version}",
     { value = "pandas<2", if = ["0.11", "0.12"]},
     { value = "numpy<2", if = ["0.11", "0.12"]},
