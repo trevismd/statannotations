@@ -59,7 +59,7 @@ Homepage = "https://github.com/trevismd/statannotations"
 
 # https://hatch.pypa.io/latest/config/metadata/
 [tool.hatch.version]
-path = "src/statannotations/_version.py"
+path = "statannotations/_version.py"
 
 [tool.hatch.build.targets.sdist]
 exclude = [
