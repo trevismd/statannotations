@@ -4,6 +4,7 @@ from typing import List, Optional, Union
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
 import numpy as np
+import pandas as pd
 import seaborn as sns
 from matplotlib import lines
 from matplotlib.font_manager import FontProperties
@@ -80,7 +81,7 @@ class Annotator:
 
     def __init__(self, ax, pairs, plot='boxplot', data=None, x=None,
                  y=None, hue=None, order=None, hue_order=None,
-                 engine="seaborn", verbose=True, **plot_params):
+                 engine="seaborn", verbose=True, paired=None, **plot_params):
         """
         :param ax: Ax of existing plot
         :param pairs: can be of either form:
@@ -98,7 +99,12 @@ class Annotator:
         :param engine: currently only "seaborn" is implemented
         :param verbose: verbosity flag
         :param plot_params: Other parameters for plotter engine
+        :param paired: Column where samples are paired for paired tests.
         """
+        self.paired=paired
+        if self.paired:
+            data = data.set_index(paired)
+
         self.pairs = pairs
         self.ax = ax
 
@@ -477,6 +483,13 @@ class Annotator:
         for group_struct1, group_struct2 in self._struct_pairs:
             group1 = group_struct1['group']
             group2 = group_struct2['group']
+
+            if self.paired: 
+                group_data1 = group_struct1["group_data"]
+                group_data2 = group_struct2["group_data"]
+                table = pd.concat([group_data1, group_data2], axis=1, join="inner")
+                group_struct1["group_data"] = table.iloc[:, 0]
+                group_struct2["group_data"] = table.iloc[:, 1]
 
             if self.perform_stat_test:
                 result = self._get_stat_result_from_test(
