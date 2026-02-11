@@ -200,7 +200,7 @@ class Annotator:
 
         return self
 
-    def annotate(self, line_offset=None, line_offset_to_group=None):
+    def annotate(self, line_offset=None, line_offset_to_group=None, text_kwargs={}):
         """Add configured annotations to the plot."""
         self._check_has_plotter()
 
@@ -234,6 +234,7 @@ class Annotator:
                 ax_to_data=ax_to_data,
                 ann_list=ann_list,
                 orig_value_lim=orig_value_lim,
+                text_kwargs=text_kwargs,
             )
 
         # reset transformation
@@ -503,7 +504,7 @@ class Annotator:
                 "Not plotter is defined. If `get_empty_annotator` was used, "
                 "`new_plot` must be called to provide data")
 
-    def _annotate_pair(self, annotation, ax_to_data, ann_list, orig_value_lim):
+    def _annotate_pair(self, annotation, ax_to_data, ann_list, orig_value_lim, text_kwargs={}):
 
         if self._verbose >= 1:  # pragma: no branch
             annotation.print_labels_and_content()
@@ -553,6 +554,7 @@ class Annotator:
             clip_on=False,
             annotation_clip=False,
             **xy_params,
+            **text_kwargs,
         )
 
         if annotation.text is not None:
