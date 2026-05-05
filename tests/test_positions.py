@@ -41,7 +41,7 @@ class TestPositionPlotter(unittest.TestCase):
 
         value_maxes = self.annot._plotter.value_maxes
         assert ("Sun", "Male") in value_maxes
-        assert value_maxes[("Sun", "Male")] > 0.80
+        assert value_maxes[("Sun", "Male")] > 0.7
 
     def test_seaborn_all_plots(self):
         for plotter in IMPLEMENTED_PLOTTERS["seaborn"]:

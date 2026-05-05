@@ -48,7 +48,7 @@ class TestClosest(unittest.TestCase):
         value = 31
         self.assertEqual(30, get_closest(self.a_list, value))
 
-    def test_btween1(self):
+    def test_between1(self):
         value = 12.1
         self.assertAlmostEqual(12, get_closest(self.a_list, value))
 

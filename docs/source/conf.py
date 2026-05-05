@@ -33,7 +33,12 @@ release = '1.0.0a0'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.coverage', 'sphinx_rtd_theme']
+extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx.ext.coverage',
+    'sphinx.ext.doctest',
+    'sphinx_rtd_theme',
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -43,6 +48,10 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
+# A set or list of (warning_type, target) tuples that should be ignored when
+# generating warnings in "nitpicky mode". Note that warning_type should include
+# the domain name if present.
+nitpick_ignore = [('py:class', 'pandas.DataFrame')]
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -55,3 +64,9 @@ html_theme = 'sphinx_rtd_theme'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+# Locations and names of other projects that should be linked to in this documentation.
+# https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html#confval-intersphinx_mapping
+intersphinx_mapping = {
+    "pandas": ("https://pandas.pydata.org/docs/", None),
+}

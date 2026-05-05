@@ -167,6 +167,7 @@ class Test(unittest.TestCase):
             ('both', ["p ≤ 0.05", "p ≤ 0.05", "p = 0.90"]),
             ('none', ["p≤0.05", "p≤0.05", "p=0.90"]),
             ('after', ["p≤ 0.05", "p≤ 0.05", "p= 0.90"]),
+            (("_value ", " "), ["p_value ≤ 0.05", "p_value ≤ 0.05", "p_value = 0.90"]),
         ]:
             with self.subTest(separator=separator):
                 config = {"pvalue_format": {"p_separators": separator}}

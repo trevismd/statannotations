@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Union, List
+from typing import Union, List, Callable
 
 import numpy as np
 
@@ -78,7 +78,7 @@ def check_valid_correction_name(name):
                 label='argument `comparisons_correction`')
 
 
-def _get_correction_attributes(method: Union[str, callable], alpha, name,
+def _get_correction_attributes(method: Union[str, Callable], alpha, name,
                                method_type, corr_kwargs):
     if isinstance(method, str):
         if multipletests is None:
@@ -109,7 +109,7 @@ def _get_correction_attributes(method: Union[str, callable], alpha, name,
 
 
 class ComparisonsCorrection(object):
-    def __init__(self, method: Union[str, callable], alpha: float = 0.05,
+    def __init__(self, method: Union[str, Callable], alpha: float = 0.05,
                  name: str = None, method_type: int = None,
                  statsmodels_api: bool = True, corr_kwargs: dict = None):
         """

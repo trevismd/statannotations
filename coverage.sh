@@ -1,1 +1,0 @@
-coverage run -m unittest discover tests && coverage report && coverage-badge -f -o coverage.svg

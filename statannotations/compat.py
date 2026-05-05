@@ -367,6 +367,7 @@ class CategoricalPlotterWrapper_v11(Wrapper):
             order=order,
             **plot_params,
         )
+        self._hue_order = self._check_hue_order(hue_order)
 
     @property
     def axis(self) -> str:
@@ -382,12 +383,31 @@ class CategoricalPlotterWrapper_v11(Wrapper):
 
     @property
     def hue_names(self) -> list:
+        return self._hue_order
+
+    def _original_hue_names(self) -> list:
         if self.is_redundant_hue:
             return []
         if not self.has_hue:
             return []
         # Can be None, force to be an empty list
         return self._plotter.hue_names or []
+
+    def _check_hue_order(self, hue_order: list | None, *, check: bool = False) -> list:
+        plotter_hue_names = self._original_hue_names()
+        # No hue order defined, use the plotter list
+        if not hue_order:
+            return plotter_hue_names
+
+        # Check hue_order is a permutation of the possible hue list
+        if check and set(plotter_hue_names) != set(hue_order):  # pragma: no cover
+            msg = (
+                "hue_order is not a permutation of the data hue values: "
+                f"hue_order={hue_order} not in {plotter_hue_names}"
+            )
+            raise ValueError(msg)
+
+        return hue_order
 
     def _get_group_data_from_plotter(
         self,
