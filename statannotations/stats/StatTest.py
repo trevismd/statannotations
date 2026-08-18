@@ -124,4 +124,7 @@ STATTEST_LIBRARY = {
 
     'Wilcoxon-legacy':  StatTest(wilcoxon,
                                  'Wilcoxon test (paired samples)', 'Wilcoxon'),
+    
+    'Kolmogorov-Smirnov': StatTest(stats.kstest,
+                                   'Kolmogorov-Smirnov', 'KStest', alternative='two-sided'),
 }
