@@ -478,18 +478,14 @@ class Annotator:
             num_comparisons = len(self._struct_pairs)
 
         for group_struct1, group_struct2 in self._struct_pairs:
-            group1 = group_struct1['group']
-            group2 = group_struct2['group']
-
             if self.perform_stat_test:
                 result = self._get_stat_result_from_test(
                     group_struct1, group_struct2, num_comparisons,
                     **stats_params)
             else:
                 result = self._get_custom_results(group_struct1, pvalues)
-
-            result.group1 = group1
-            result.group2 = group2
+                result.group1 = group_struct1['group']
+                result.group2 = group_struct2['group']
 
             test_result_list.append(Annotation((group_struct1, group_struct2),
                                                result,
@@ -620,16 +616,28 @@ class Annotator:
                                    num_comparisons,
                                    **stats_params) -> StatResult:
 
+        test = self.test
+        if not isinstance(test, StatTest):
+            test = StatTest.from_library(test)
+
+        default_alternative = getattr(test, 'kwargs', {}).get('alternative')
+        alternative = stats_params.get('alternative', default_alternative)
+        if (isinstance(alternative, str)
+                and alternative.lower() in ('greater', 'less')
+                and not group_struct1['is_first_in_pair']):
+            group_struct1, group_struct2 = group_struct2, group_struct1
+
         result = apply_test(
             group_struct1['group_data'],
             group_struct2['group_data'],
-            self.test,
+            test,
             comparisons_correction=self.comparisons_correction,
             num_comparisons=num_comparisons,
             alpha=self.alpha,
             **stats_params
         )
-
+        result.group1 = group_struct1['group']
+        result.group2 = group_struct2['group']
         return result
 
     @staticmethod

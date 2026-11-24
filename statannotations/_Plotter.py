@@ -249,10 +249,12 @@ class _SeabornPlotter(_Plotter):
 
         for i_group_pair, (group1, group2) in enumerate(self.pairs):
             group_struct1 = dict(group_structs_dic[group1],
-                                 i_group_pair=i_group_pair)
+                                 i_group_pair=i_group_pair,
+                                 is_first_in_pair=True)
 
             group_struct2 = dict(group_structs_dic[group2],
-                                 i_group_pair=i_group_pair)
+                                 i_group_pair=i_group_pair,
+                                 is_first_in_pair=False)
 
             if group_struct1['group_coord'] <= group_struct2['group_coord']:
                 group_struct_pairs.append((group_struct1, group_struct2))

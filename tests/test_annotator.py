@@ -1,9 +1,12 @@
+import io
 import re
 import unittest
+from contextlib import redirect_stdout
 
 import scipy
 from packaging import version
 
+import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
@@ -302,3 +305,59 @@ class TestAnnotator(unittest.TestCase):
     def test_ensure_ax_operation_format_func_not_ok(self):
         with self.assertRaises(ValueError):
             _ensure_ax_operation_format([sum, ["param"], {"that": "this"}])
+
+
+class TestDirectionalComparisons(unittest.TestCase):
+    def test_one_sided_tests_follow_pair_order(self):
+        data = pd.DataFrame({
+            "group": ["high"] * 4 + ["low"] * 4,
+            "value": [8, 9, 10, 11, 1, 2, 3, 4],
+        })
+        values = {
+            name: data.loc[data["group"] == name, "value"]
+            for name in ("high", "low")
+        }
+        pairs = [("high", "low")]
+        cases = [
+            ("Mann-Whitney-gt", "greater", {}),
+            ("Mann-Whitney-ls", "less", {}),
+            ("Mann-Whitney", "greater", {"alternative": "greater"}),
+            ("Mann-Whitney", "greater", {"alternative": "GREATER"}),
+            ("Mann-Whitney-gt", "two-sided", {"alternative": "two-sided"}),
+        ]
+
+        for order in (["high", "low"], ["low", "high"]):
+            for test, alternative, kwargs in cases:
+                with self.subTest(order=order, test=test,
+                                  alternative=alternative):
+                    fig, ax = plt.subplots()
+                    self.addCleanup(plt.close, fig)
+                    plot_params = dict(data=data, x="group", y="value",
+                                       order=order)
+                    sns.boxplot(ax=ax, **plot_params)
+                    test_pairs = (
+                        set(pairs) if kwargs.get("alternative") == "GREATER"
+                        else pairs
+                    )
+                    annotator = Annotator(ax, test_pairs, **plot_params)
+                    annotator.configure(test=test, verbose=1)
+                    output = io.StringIO()
+                    with redirect_stdout(output):
+                        annotator.apply_test(**kwargs).annotate()
+
+                    annotation = annotator.annotations[0]
+                    first, second = (order if alternative == "two-sided"
+                                     else pairs[0])
+                    expected = scipy.stats.mannwhitneyu(
+                        values[first], values[second], alternative=alternative
+                    )
+                    self.assertEqual(annotation.data.stat_value,
+                                     expected.statistic)
+                    self.assertAlmostEqual(annotation.data.pvalue,
+                                           expected.pvalue)
+                    self.assertEqual(annotation.data.group1, first)
+                    self.assertEqual(annotation.data.group2, second)
+                    self.assertIn(f"{first} vs. {second}:", output.getvalue())
+                    self.assertEqual(
+                        [s["group"] for s in annotation.structs], order
+                    )

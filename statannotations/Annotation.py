@@ -40,8 +40,12 @@ class Annotation:
             return self.data.formatted_output
 
     def print_labels_and_content(self, sep=" vs. "):
-        labels_string = sep.join(str(struct["label"])
-                                 for struct in self.structs)
+        structs = self.structs
+        first_group = getattr(self.data, "group1", None)
+        if (first_group is not None and len(structs) == 2
+                and first_group == structs[1].get("group")):
+            structs = structs[::-1]
+        labels_string = sep.join(str(struct["label"]) for struct in structs)
 
         print(f"{labels_string}: {self.formatted_output}")
 
