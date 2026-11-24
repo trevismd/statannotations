@@ -1,3 +1,8 @@
+## Unreleased
+
+- Use the caller's pair order for one-sided tests with a `greater` or `less`
+  alternative ([#180](https://github.com/trevismd/statannotations/issues/180)).
+
 ## v0.6
 ### v0.6.0
 #### Features
