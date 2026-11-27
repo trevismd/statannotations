@@ -1,4 +1,5 @@
 import itertools
+import warnings
 from bisect import bisect_left
 from typing import List, Union
 
@@ -48,6 +49,13 @@ def get_x_values(data, x) -> set:
             return set(data.columns)
         return set(data[x].unique())
     elif data is not None:
+        if type(data).__module__.split(".")[0] == "polars":
+            warnings.warn(
+                "Polars DataFrames are not supported; please convert `data` "
+                "to a pandas DataFrame (e.g., `data.to_pandas()`).",
+                UserWarning,
+                stacklevel=2,
+            )
         return set([_ for _ in range(len(data))])
     else:
         return set(x)
